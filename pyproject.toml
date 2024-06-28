@@ -1,17 +1,32 @@
 [project]
 name = "vericlient"
 version = "0.1.0"
-description = "Default template for PDM package"
+description = "Provides a simple and robust interaction with the Veridas API."
 authors = [
     {name = "Carlos Larriu", email = "larriucarlos@gmail.com"},
 ]
 dependencies = [
     "pydantic>=2.7.4",
 ]
-requires-python = "==3.10.*"
+requires-python = ">=3.9"
 readme = "README.md"
-license = {text = "MIT"}
+license = { file = "LICENSE" }
+classifiers = [
+    "Development Status :: 1 - Planning",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+]
 
+[project.urls]
+Homepage = "https://clarriu97.github.io/verimodels/"
+Documentation = "https://clarriu97.github.io/verimodels/docs"
+Repository = "https://github.com/clarriu97/vericlient"
+Issues = "https://github.com/clarriu97/vericlient/issues"
+Changelog = "https://github.com/clarriu97/vericlient/blob/master/CHANGELOG.md"
 
 [tool.pdm]
 distribution = false

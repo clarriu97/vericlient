@@ -1,7 +1,7 @@
 # Welcome
 
 Vericlient is a Python library designed to facilitate interaction with
-the (Veridas API)[https://docs.veridas.com/].
+the [Veridas API](https://docs.veridas.com/).
 It provides a simple and robust interface for making API requests and
 handling responses efficiently.
 
