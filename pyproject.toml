@@ -17,7 +17,6 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
 ]
 
@@ -30,6 +29,9 @@ Changelog = "https://github.com/clarriu97/vericlient/blob/master/CHANGELOG.md"
 
 [tool.pdm]
 distribution = false
+
+[tool.pdm.source]
+default = ["src"]
 
 [tool.pdm.dev-dependencies]
 dev = [
