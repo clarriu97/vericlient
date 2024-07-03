@@ -6,6 +6,7 @@ import structlog
 
 from vericlient.environments import Environments, Locations, Target, cloud_env2url
 from vericlient.config.config import settings
+from vericlient.apis import APIs
 
 
 logger = structlog.get_logger(__name__)
@@ -17,7 +18,7 @@ class Client(ABC):
     """
     def __init__(
             self,
-            api: str,
+            api: str = None,
             apikey: str = None,
             target: str = None,
             timeout: int = None,
@@ -48,7 +49,7 @@ class Client(ABC):
             self._timeout = settings.timeout or timeout
 
         if self._target == Target.CLOUD:
-            self._configure_cloud_url(apikey, timeout, environment, location)
+            self._configure_cloud_url(api, timeout, environment, location)
             if not apikey and not settings.apikey:
                 raise ValueError("If target is cloud, apikey must be provided")
             apikey = settings.apikey or apikey
@@ -56,10 +57,9 @@ class Client(ABC):
         elif self._target == Target.CUSTOM:
             self._configure_custom_url(url)
 
-        self._url = f"{self._url}/{api}"
         self._session.headers.update(self._headers)
 
-    def _configure_cloud_url(self, apikey: str, environment: str, location: str):
+    def _configure_cloud_url(self, api: str, environment: str, location: str):
         if not environment and not settings.environment:
             logger.warning("No environment provided. Defaulting to sandbox")
             environment = Environments.SANDBOX
@@ -76,7 +76,9 @@ class Client(ABC):
         if location not in Locations:
             raise ValueError(f"Invalid location: {location}. Valid options are: {', '.join(Locations)}")
 
-        self._url = cloud_env2url[environment][location]
+        if api not in APIs:
+            raise ValueError(f"If target is cloud, valid api must be provided. Valid options are: {', '.join(APIs)}")
+        self._url = cloud_env2url[environment][location] + f"/{api}"
 
     def _configure_custom_url(self, url: str):
         if not url and not settings.url:
@@ -114,11 +116,16 @@ class Client(ABC):
             self._handle_error_response(response)
         return response
 
-    def _post(self, endpoint: str, data: dict) -> requests.Response:
+    def _post(self, endpoint: str, data: dict = None, json_: dict = None) -> requests.Response:
         """
         Method to make a POST request to the API.
         """
-        response = self._session.post(f"{self._url}/{endpoint}", json=data, timeout=self._timeout)
+        response = self._session.post(
+            f"{self._url}/{endpoint}",
+            data=data,
+            json=json_,
+            timeout=self._timeout,
+        )
         if not response.ok:
             self._handle_error_response(response)
         return response
