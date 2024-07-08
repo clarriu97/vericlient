@@ -58,6 +58,6 @@ class DaspeakClient(Client):
         response = self._get(endpoint=DaspeakEndpoints.MODELS.value)
         try:
             response.raise_for_status()
-        except requests.exceptions.HTTPError as e:
+        except requests.exceptions.HTTPError:
             self._handle_error_response(response)
         return ModelsOutput(**response.json())

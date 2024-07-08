@@ -35,3 +35,11 @@ dev = [
     "ruff>=0.5.0",
     "pytest>=8.2.2",
 ]
+
+[tool.pdm.scripts]
+lint = "ruff check ."
+
+[tool.ruff]
+line-length = 140
+exclude = ["tests"]
+ignore = []
