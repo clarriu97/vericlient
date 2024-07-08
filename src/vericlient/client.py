@@ -35,11 +35,11 @@ class Client(ABC):
 
         if not target and not settings.target:
             logger.warning("No target provided. Defaulting to cloud")
-            self._target = Target.CLOUD
+            self._target = Target.CLOUD.value
         else:
             self._target = settings.target or target
-        if self._target not in Target:
-            raise ValueError(f"Invalid target: {target}. Valid options are: {', '.join(Target)}")
+        if not any(self._target == target.value for target in Target):
+            raise ValueError(f"Invalid target: {target}. Valid options are: {', '.join(target.value for target in Target)}")
 
         if not timeout and not settings.timeout:
             seconds = 10
@@ -48,8 +48,8 @@ class Client(ABC):
         else:
             self._timeout = settings.timeout or timeout
 
-        if self._target == Target.CLOUD:
-            self._configure_cloud_url(api, timeout, environment, location)
+        if self._target == Target.CLOUD.value:
+            self._configure_cloud_url(api, environment, location)
             if not apikey and not settings.apikey:
                 raise ValueError("If target is cloud, apikey must be provided")
             apikey = settings.apikey or apikey
@@ -62,22 +62,22 @@ class Client(ABC):
     def _configure_cloud_url(self, api: str, environment: str, location: str):
         if not environment and not settings.environment:
             logger.warning("No environment provided. Defaulting to sandbox")
-            environment = Environments.SANDBOX
+            environment = Environments.SANDBOX.value
         else:
             environment = settings.environment or environment
-        if environment not in Environments:
-            raise ValueError(f"Invalid environment: {environment}. Valid options are: {', '.join(Environments)}")
+        if not any(environment == env.value for env in Environments):
+            raise ValueError(f"Invalid environment: {environment}. Valid options are: {', '.join(env.value for env in Environments)}")
 
         if not location and not settings.location:
             logger.warning("No location provided. Defaulting to EU")
-            location = Locations.EU
+            location = Locations.EU.value
         else:
             location = settings.location or location
-        if location not in Locations:
-            raise ValueError(f"Invalid location: {location}. Valid options are: {', '.join(Locations)}")
+        if not any(location == loc.value for loc in Locations):
+            raise ValueError(f"Invalid location: {location}. Valid options are: {', '.join(loc.value for loc in Locations)}")
 
-        if api not in APIs:
-            raise ValueError(f"If target is cloud, valid api must be provided. Valid options are: {', '.join(APIs)}")
+        if not any(api == api_.value for api_ in APIs):
+            raise ValueError(f"If target is cloud, valid api must be provided. Valid options are: {', '.join(api.value for api in APIs)}")
         self._url = cloud_env2url[environment][location] + f"/{api}"
 
     def _configure_custom_url(self, url: str):
@@ -86,14 +86,16 @@ class Client(ABC):
         self._url = url
  
     @property
-    @abstractmethod
     def url(self):
         return self._url
 
     @property
-    @abstractmethod
     def headers(self):
         return self._headers
+
+    @property
+    def timeout(self):
+        return self._timeout
 
     @abstractmethod
     def alive(self) -> bool:

@@ -19,12 +19,12 @@ class Locations(Enum):
 
 
 cloud_env2url = {
-    Environments.SANDBOX: {
-        Locations.EU: f"https://api-work.{Locations.EU}.veri-das.com",
-        Locations.US: f"https://api-work.{Locations.US}.veri-das.com",
+    Environments.SANDBOX.value: {
+        Locations.EU.value: f"https://api-work.{Locations.EU.value}.veri-das.com",
+        Locations.US.value: f"https://api-work.{Locations.US.value}.veri-das.com",
     },
     Environments.PRODUCTION: {
-        Locations.EU: f"https://api.{Locations.EU}.veri-das.com",
-        Locations.US: f"https://api.{Locations.US}.veri-das.com",
+        Locations.EU.value: f"https://api.{Locations.EU.value}.veri-das.com",
+        Locations.US.value: f"https://api.{Locations.US.value}.veri-das.com",
     },
 }

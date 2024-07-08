@@ -6,4 +6,4 @@ class APIs(Enum):
     """
     Enum with the available APIs
     """
-    DASPEAK = "daspeak"
+    DASPEAK = "daspeak/v1"
