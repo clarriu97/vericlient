@@ -1,9 +1,15 @@
 """
 Implementation of the client for the DASPEaK service.
 """
+import requests
+
 from requests.models import Response as Response
+
 from vericlient.client import Client
-from vericlient.daspeak.endpoints import Endpoints
+from vericlient.daspeak.endpoints import DaspeakEndpoints
+from vericlient.daspeak.models import (
+    ModelsOutput
+)
 
 
 class DaspeakClient(Client):
@@ -39,8 +45,19 @@ class DaspeakClient(Client):
         """
         Method to check if the service is alive
         """
-        response = self._get(endpoint=Endpoints.ALIVE.value)
+        response = self._get(endpoint=DaspeakEndpoints.ALIVE.value)
         return response.status_code == 200
 
     def _handle_error_response(self, response: Response):
         pass
+
+    def get_models(self) -> ModelsOutput:
+        """
+        Get the models available biometrics models in the service.
+        """
+        response = self._get(endpoint=DaspeakEndpoints.MODELS.value)
+        try:
+            response.raise_for_status()
+        except requests.exceptions.HTTPError as e:
+            self._handle_error_response(response)
+        return ModelsOutput(**response.json())
