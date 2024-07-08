@@ -7,6 +7,9 @@ authors = [
 ]
 dependencies = [
     "pydantic>=2.7.4",
+    "structlog>=24.2.0",
+    "requests>=2.32.3",
+    "dynaconf>=3.2.5",
 ]
 requires-python = ">=3.10"
 readme = "README.md"
