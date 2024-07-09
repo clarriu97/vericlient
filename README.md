@@ -46,10 +46,10 @@ from vericlient import VericlientFactory, APIs
 factory = VericlientFactory()
 
 # Create a client for the das-Peak API
-daspeak_client = factory.create_client(APIs.DAS_PEAK, api_key='your-api-key')
+client = VericlientFactory.get_client(APIs.DASPEAK.value, apikey="your_api_key")
 
 # Test the connection
-print(daspeak_client.alive())
+print(client.alive())
 ```
 
 You can also use the client against any self-hosted Veridas API:
@@ -61,10 +61,10 @@ from vericlient import VericlientFactory
 factory = VericlientFactory()
 
 # Create a client for the das-Peak API
-daspeak_client = factory.create_client(url="https://your-self-hosted-api.com")
+client = factory.get_client(url="https://your-self-hosted-api.com")
 
 # Test the connection
-print(daspeak_client.alive())
+print(client.alive())
 ```
 
 # Configuration
