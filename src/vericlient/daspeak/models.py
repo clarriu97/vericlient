@@ -2,7 +2,7 @@
 from typing import Union
 from io import BytesIO
 
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 
 
 class DaspeakResponse(BaseModel):
@@ -50,6 +50,14 @@ class ModelsHashCredentialWavInput(BaseModel):
     channel: int = 1
     calibration: str = "telephone-channel"
 
+    @field_validator("audio")
+    def must_be_str_or_bytesio(cls, value):
+        if not isinstance(value, (str, BytesIO)):
+            raise ValueError("audio must be a string or a BytesIO object")
+
+    class Config:
+        arbitrary_types_allowed = True
+
 
 class ModelMetadata(BaseModel):
     hash: str
@@ -81,6 +89,14 @@ class SimilarityCredential2WavInput(BaseModel):
     channel: int = 1
     calibration: str = "telephone-channel"
 
+    @field_validator("audio_to_evaluate")
+    def must_be_str_or_bytesio(cls, value):
+        if not isinstance(value, (str, BytesIO)):
+            raise ValueError("audio must be a string or a BytesIO object")
+
+    class Config:
+        arbitrary_types_allowed = True
+
 
 class SimilarityCredential2WavOutput(DaspeakResponse):
     score: float
@@ -97,6 +113,19 @@ class SimilarityWav2WavInput(BaseModel):
     channel_reference: int = 1
     channel_to_evaluate: int = 1
     calibration: str = "telephone-channel"
+
+    @field_validator("audio_reference")
+    def must_be_str_or_bytesio(cls, value):
+        if not isinstance(value, (str, BytesIO)):
+            raise ValueError("audio must be a string or a BytesIO object")
+
+    @field_validator("audio_to_evaluate")
+    def must_be_str_or_bytesio(cls, value):
+        if not isinstance(value, (str, BytesIO)):
+            raise ValueError("audio must be a string or a BytesIO object")
+
+    class Config:
+        arbitrary_types_allowed = True
 
 
 class SimilarityWav2WavOutput(DaspeakResponse):

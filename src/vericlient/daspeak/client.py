@@ -60,4 +60,4 @@ class DaspeakClient(Client):
             response.raise_for_status()
         except requests.exceptions.HTTPError:
             self._handle_error_response(response)
-        return ModelsOutput(**response.json())
+        return ModelsOutput(status_code=response.status_code, **response.json())

@@ -12,6 +12,5 @@ config_path = os.path.join(basepath, "config.yml")
 settings = Dynaconf(
     root_path=current_directory,
     settings_files=[config_path],
-    envvar_prefix="VCSP",
-    # environments=True,
+    envvar_prefix="VERICLIENT"
 )
