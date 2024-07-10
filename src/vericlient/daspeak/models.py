@@ -115,12 +115,12 @@ class SimilarityWav2WavInput(BaseModel):
     calibration: str = "telephone-channel"
 
     @field_validator("audio_reference")
-    def must_be_str_or_bytesio(cls, value):
+    def audio_ref_must_be_str_or_bytesio(cls, value):
         if not isinstance(value, (str, BytesIO)):
             raise ValueError("audio must be a string or a BytesIO object")
 
     @field_validator("audio_to_evaluate")
-    def must_be_str_or_bytesio(cls, value):
+    def audio_to_eval_must_be_str_or_bytesio(cls, value):
         if not isinstance(value, (str, BytesIO)):
             raise ValueError("audio must be a string or a BytesIO object")
 
