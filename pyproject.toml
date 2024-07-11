@@ -37,7 +37,7 @@ dev = [
 ]
 
 [tool.pdm.scripts]
-lint = "ruff check src/vericlient --fix"
+lint = "ruff check ."
 
 [tool.ruff]
 exclude = [
