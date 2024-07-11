@@ -7,6 +7,7 @@ import structlog
 from vericlient.environments import Environments, Locations, Target, cloud_env2url
 from vericlient.config.config import settings
 from vericlient.apis import APIs
+from vericlient.exceptions import ServerError
 
 
 logger = structlog.get_logger(__name__)
@@ -118,7 +119,7 @@ class Client(ABC):
             self._handle_error_response(response)
         return response
 
-    def _post(self, endpoint: str, data: dict = None, json_: dict = None) -> requests.Response:
+    def _post(self, endpoint: str, data: dict = None, json_: dict = None, files: dict = None) -> requests.Response:
         """
         Method to make a POST request to the API.
         """
@@ -126,8 +127,15 @@ class Client(ABC):
             f"{self._url}/{endpoint}",
             data=data,
             json=json_,
+            files=files,
             timeout=self._timeout,
         )
         if not response.ok:
             self._handle_error_response(response)
         return response
+
+    def _raise_server_error(self, response: requests.Response):
+        """
+        Method to raise a ServerError exception.
+        """
+        raise ServerError(response)

@@ -54,6 +54,7 @@ class ModelsHashCredentialWavInput(BaseModel):
     def must_be_str_or_bytesio(cls, value):
         if not isinstance(value, (str, BytesIO)):
             raise ValueError("audio must be a string or a BytesIO object")
+        return value
 
     class Config:
         arbitrary_types_allowed = True
@@ -93,6 +94,7 @@ class SimilarityCredential2WavInput(BaseModel):
     def must_be_str_or_bytesio(cls, value):
         if not isinstance(value, (str, BytesIO)):
             raise ValueError("audio must be a string or a BytesIO object")
+        return value
 
     class Config:
         arbitrary_types_allowed = True
@@ -118,11 +120,13 @@ class SimilarityWav2WavInput(BaseModel):
     def audio_ref_must_be_str_or_bytesio(cls, value):
         if not isinstance(value, (str, BytesIO)):
             raise ValueError("audio must be a string or a BytesIO object")
+        return value
 
     @field_validator("audio_to_evaluate")
     def audio_to_eval_must_be_str_or_bytesio(cls, value):
         if not isinstance(value, (str, BytesIO)):
             raise ValueError("audio must be a string or a BytesIO object")
+        return value
 
     class Config:
         arbitrary_types_allowed = True
