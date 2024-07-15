@@ -3,11 +3,11 @@ Example script to demonstrate how to use the daspeak module.
 """
 from io import BytesIO
 
-from vericlient import VericlientFactory, APIs
+from vericlient import DaspeakClient
 from vericlient.daspeak.models import ModelsHashCredentialWavInput
 
 
-client = VericlientFactory.get_client(APIs.DASPEAK.value, apikey="your_api_key")
+client = DaspeakClient(apikey="your_api_key")
 
 # check if the server is alive
 print(f"Alive: {client.alive()}")

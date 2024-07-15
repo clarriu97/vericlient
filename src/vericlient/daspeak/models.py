@@ -6,11 +6,24 @@ from pydantic import BaseModel, field_validator
 
 
 class DaspeakResponse(BaseModel):
+    """
+    Base class for the Daspeak API responses.
+
+    Attributes:
+        version: str
+        status_code: int
+    """
     version: str
     status_code: int
 
 
 class ModelsOutput(DaspeakResponse):
+    """
+    Output class for the get models endpoint.
+
+    Attributes:
+        models: the available models in the service
+    """
     models: list
 
 
@@ -45,6 +58,15 @@ class ModelsMetadataFromCredentialOutput(DaspeakResponse):
 
 
 class ModelsHashCredentialWavInput(BaseModel):
+    """
+    Input class for the generate credential endpoint.
+
+    Attributes:
+        audio: the audio to generate the credential with
+        hash: the hash of the biometrics model to use
+        channel: the `nchannel` of the audio if it is stereo
+        calibration: the calibration to use
+    """
     audio: Union[str, BytesIO]
     hash: str
     channel: int = 1
@@ -61,11 +83,28 @@ class ModelsHashCredentialWavInput(BaseModel):
 
 
 class ModelMetadata(BaseModel):
+    """
+    Metadata of the model used to generate the credential.
+
+    Attributes:
+        hash: the hash of the model
+        mode: the mode of the model
+    """
     hash: str
     mode: str
 
 
 class ModelsHashCredentialWavOutput(DaspeakResponse):
+    """
+    Output class for the generate credential endpoint.
+
+    Attributes:
+        model: the model used to generate the credential
+        credential: the generated credential
+        authenticity: the authenticity of the audio sample used
+        input_audio_duration: the duration of the input audio
+        net_speech_duration: the duration of the speech in the audio
+    """
     model: ModelMetadata
     credential: str
     authenticity: float

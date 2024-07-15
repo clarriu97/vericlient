@@ -7,7 +7,7 @@ import structlog
 from vericlient.environments import Environments, Locations, Target, cloud_env2url
 from vericlient.config.config import settings
 from vericlient.apis import APIs
-from vericlient.exceptions import ServerError
+from vericlient.exceptions import ServerError, AuthorizationError
 
 
 logger = structlog.get_logger(__name__)
@@ -19,7 +19,7 @@ class Client(ABC):
     """
     def __init__(
             self,
-            api: str = None,
+            api: str,
             apikey: str = None,
             target: str = None,
             timeout: int = None,
@@ -139,3 +139,14 @@ class Client(ABC):
         Method to raise a ServerError exception.
         """
         raise ServerError(response)
+
+    def _handle_authorization_error(self, response: requests.Response):
+        """
+        Method to handle authorization errors.
+        """
+        try:
+            message = response.json()["message"]
+            if "no Authorization header found" in message:
+                raise AuthorizationError()
+        except KeyError:
+            pass
