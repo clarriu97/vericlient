@@ -1,0 +1,49 @@
+site_name: vericlient
+nav:
+  - Home: index.md
+  - Changelog: CHANGELOG.md
+  - API Documentation:
+      - Vericlient: modules/vericlient.md
+      - Daspeak client: modules/daspeak/client.md
+      - Daspeak models: modules/daspeak/models.md
+
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            docstring_style: google
+            show_root_heading: true
+            show_source: true
+
+markdown_extensions:
+  - toc:
+      permalink: true
+  - admonition
+  - codehilite
+  - footnotes
+  - meta
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.tabbed
+
+extra_css:
+  - stylesheets/extra.css
+
+extra_javascript:
+  - javascripts/extra.js
+
+theme:
+  name: material
+  features:
+    - navigation.instant
+    - navigation.sections
+    - navigation.top
+    - search.highlight
+    - search.share
+    - toc.follow
+    - content.code.annotate
+    - content.tabs.link
+    - content.tabs.expand
+    - header.autohide
