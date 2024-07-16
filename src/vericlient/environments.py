@@ -29,7 +29,7 @@ cloud_env2url = {
         Locations.EU.value: f"https://api-work.{Locations.EU.value}.veri-das.com",
         Locations.US.value: f"https://api-work.{Locations.US.value}.veri-das.com",
     },
-    Environments.PRODUCTION: {
+    Environments.PRODUCTION.value: {
         Locations.EU.value: f"https://api.{Locations.EU.value}.veri-das.com",
         Locations.US.value: f"https://api.{Locations.US.value}.veri-das.com",
     },

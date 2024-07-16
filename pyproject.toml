@@ -42,6 +42,7 @@ dev = [
     "pytest>=8.2.2",
     "pytest-cov>=5.0.0",
     "pytest-html>=4.1.1",
+    "requests-mock>=1.12.1",
 ]
 
 [tool.pdm.scripts]
@@ -49,9 +50,17 @@ lint = "ruff check ."
 lint-fix = "ruff check . --fix"
 docs-serve = "mkdocs serve"
 docs-build = "mkdocs build"
-test = """pytest tests \
+test = """pytest tests --mock \
     --cov src/vericlient \
-    --cov-report term --cov-fail-under 0 \
+    --cov-report term --cov-fail-under 50 \
+    --cov-report html:docs/_build/coverage \
+    --cov-report xml:docs/_build/coverage/coverage.xml \
+    --html=docs/_build/test-reports/index.html \
+    --junitxml=docs/_build/test-reports/junit.xml \
+    -o junit_suite_name=test"""
+test-prod = """pytest tests \
+    --cov src/vericlient \
+    --cov-report term --cov-fail-under 50 \
     --cov-report html:docs/_build/coverage \
     --cov-report xml:docs/_build/coverage/coverage.xml \
     --html=docs/_build/test-reports/index.html \
