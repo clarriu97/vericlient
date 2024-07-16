@@ -44,10 +44,14 @@ dev = [
 
 [tool.pdm.scripts]
 lint = "ruff check ."
+lint-fix = "ruff check . --fix"
 docs-serve = "mkdocs serve"
 docs-build = "mkdocs build"
 
 [tool.ruff]
+line-length = 130
+indent-width = 4
+target-version = "py310"
 exclude = [
     ".bzr",
     ".direnv",
@@ -75,14 +79,26 @@ exclude = [
     "node_modules",
     "site-packages",
     "venv",
-    "tests"
+    "tests",
+    "scripts",
 ]
-line-length = 140
-indent-width = 4
 
 [tool.ruff.lint]
-ignore = []
 fixable = ["ALL"]
+select = ["ALL"]
+ignore = [
+    "D107",     # Missing docstring in `__init__`
+    "D106",     # Missing docstring in public nested class
+    "PTH123",   # `open()` should be replaced by `Path.open()`
+    "PLR0913",  # Too many arguments in function definition
+    "PTH118",   # `os.path` should be replaced by `pathlib.Path`
+    "PTH120",   # `os.path.dirname()` should be replaced by `Path.parent`
+    "D203",     # 1 blank line required before class docstring
+    "D213",     # multi-line-summary-second-line
+    "UP038",    # Use `X | Y` in `isinstance` call instead of `(X, Y)`
+    "D406",     # Section name should end with a newline
+    "D407",     # Missing dashed underline after section
+]
 unfixable = []
 
 [tool.ruff.format]

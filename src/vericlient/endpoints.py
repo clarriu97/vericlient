@@ -3,7 +3,6 @@ from enum import Enum
 
 
 class Endpoints(Enum):
-    """
-    Enum with the common available endpoints for the APIs.
-    """
+    """Enum with the common available endpoints for the APIs."""
+
     ALIVE = "alive"

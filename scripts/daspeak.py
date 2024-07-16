@@ -1,11 +1,9 @@
-"""
-Example script to demonstrate how to use the daspeak module.
+"""Example script to demonstrate how to use the daspeak module.
 """
 from io import BytesIO
 
 from vericlient import DaspeakClient
 from vericlient.daspeak.models import ModelsHashCredentialWavInput
-
 
 client = DaspeakClient(apikey="your_api_key")
 
@@ -27,7 +25,7 @@ print(f"Credential generated with an audio file: {model_output.credential}")
 with open("/home/audio.wav", "rb") as f:
     model_input = ModelsHashCredentialWavInput(
         audio=BytesIO(f.read()),
-        hash=client.get_models().models[-1]
+        hash=client.get_models().models[-1],
     )
 model_output = client.generate_credential(model_input)
 print(f"Credential generated with virtual file: {model_output.credential}")

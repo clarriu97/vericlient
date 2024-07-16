@@ -1,73 +1,73 @@
-"""Module with the abstraction of the client to interact with the Veridas APIs"""
-import requests
+"""Module with the abstraction of the client to interact with the Veridas APIs."""
 from abc import ABC, abstractmethod
 
+import requests
 import structlog
 
-from vericlient.environments import Environments, Locations, Target, cloud_env2url
-from vericlient.config.config import settings
 from vericlient.apis import APIs
-from vericlient.exceptions import ServerError, AuthorizationError
-
+from vericlient.config.config import settings
+from vericlient.environments import Environments, Locations, Target, cloud_env2url
+from vericlient.exceptions import AuthorizationError, ServerError
 
 logger = structlog.get_logger(__name__)
 
 
 class Client(ABC):
-    """
-    Class to interact with the Veridas APIs
-    """
+    """Class to interact with the Veridas APIs."""
+
     def __init__(
             self,
             api: str,
-            apikey: str = None,
-            target: str = None,
-            timeout: int = None,
-            environment: str = None,
-            location: str = None,
-            url: str = None,
-            headers: dict = None,
+            apikey: str | None = None,
+            target: str | None = None,
+            timeout: int | None = None,
+            environment: str | None = None,
+            location: str | None = None,
+            url: str | None = None,
+            headers: dict | None = None,
     ) -> None:
-        """
-        Constructor for the Client class
-        """
+        """Create Client class."""
         self._headers = headers or {}
         self._session = requests.Session()
 
         if not target and not settings.target:
             logger.warning("No target provided. Defaulting to cloud")
-            self._target = Target.CLOUD.value
+            target = Target.CLOUD.value
         else:
-            self._target = settings.target or target
-        if not any(self._target == target.value for target in Target):
-            raise ValueError(f"Invalid target: {target}. Valid options are: {', '.join(target.value for target in Target)}")
+            target = settings.target or target
+        if not any(target == target_.value for target_ in Target):
+            error = f"Invalid target: {target}. Valid options are: {', '.join(target.value for target in Target)}"
+            raise ValueError(error)
 
         if not timeout and not settings.timeout:
             seconds = 10
-            logger.warning(f"No timeout provided. Defaulting to {seconds} seconds")
+            logging_message = f"No timeout provided. Defaulting to {seconds} seconds"
+            logger.warning(logging_message)
             self._timeout = seconds
         else:
             self._timeout = settings.timeout or timeout
 
-        if self._target == Target.CLOUD.value:
+        if target == Target.CLOUD.value:
             self._configure_cloud_url(api, environment, location)
             if not apikey and not settings.apikey:
-                raise ValueError("If target is cloud, apikey must be provided")
+                error = "If target is cloud, apikey must be provided"
+                raise ValueError(error)
             apikey = settings.apikey or apikey
             self._headers.update({"apikey": apikey})
-        elif self._target == Target.CUSTOM:
+        elif target == Target.CUSTOM:
             self._configure_custom_url(url)
 
         self._session.headers.update(self._headers)
 
-    def _configure_cloud_url(self, api: str, environment: str, location: str):
+    def _configure_cloud_url(self, api: str, environment: str, location: str) -> None:
         if not environment and not settings.environment:
             logger.warning("No environment provided. Defaulting to sandbox")
             environment = Environments.SANDBOX.value
         else:
             environment = settings.environment or environment
         if not any(environment == env.value for env in Environments):
-            raise ValueError(f"Invalid environment: {environment}. Valid options are: {', '.join(env.value for env in Environments)}")
+            error = f"Invalid environment: {environment}. Valid options are: {', '.join(env.value for env in Environments)}"
+            raise ValueError(error)
 
         if not location and not settings.location:
             logger.warning("No location provided. Defaulting to EU")
@@ -75,54 +75,58 @@ class Client(ABC):
         else:
             location = settings.location or location
         if not any(location == loc.value for loc in Locations):
-            raise ValueError(f"Invalid location: {location}. Valid options are: {', '.join(loc.value for loc in Locations)}")
+            error = f"Invalid location: {location}. Valid options are: {', '.join(loc.value for loc in Locations)}"
+            raise ValueError(error)
 
         if not any(api == api_.value for api_ in APIs):
-            raise ValueError(f"If target is cloud, valid api must be provided. Valid options are: {', '.join(api.value for api in APIs)}")
+            error = f"If target is cloud, valid api must be provided. Valid options are: {', '.join(api.value for api in APIs)}"
+            raise ValueError(error)
         self._url = cloud_env2url[environment][location] + f"/{api}"
 
-    def _configure_custom_url(self, url: str):
+    def _configure_custom_url(self, url: str) -> None:
         if not url and not settings.url:
-            raise ValueError("If target is custom, url must be provided")
+            error = "If target is custom, url must be provided"
+            raise ValueError(error)
         self._url = url
- 
+
     @property
-    def url(self):
+    def url(self) -> str:
+        """Return the URL of the API."""
         return self._url
 
     @property
-    def headers(self):
+    def headers(self) -> dict:
+        """Return the headers of the API."""
         return self._headers
 
     @property
-    def timeout(self):
+    def timeout(self) -> int:
+        """Return the timeout of the API."""
         return self._timeout
 
     @abstractmethod
     def alive(self) -> bool:
-        """
-        Method to check if the API is alive and responding.
-        """
+        """Check if the API is alive and responding."""
 
     @abstractmethod
-    def _handle_error_response(self, response: requests.Response):
-        """
-        Method to handle error responses from the API.
-        """
+    def _handle_error_response(self, response: requests.Response) -> None:
+        """Handle error responses from the API."""
 
     def _get(self, endpoint: str) -> requests.Response:
-        """
-        Method to make a GET request to the API.
-        """
+        """Make a GET request to the API."""
         response = self._session.get(f"{self._url}/{endpoint}", timeout=self._timeout)
         if not response.ok:
+            self._handle_authorization_error(response)
             self._handle_error_response(response)
         return response
 
-    def _post(self, endpoint: str, data: dict = None, json_: dict = None, files: dict = None) -> requests.Response:
-        """
-        Method to make a POST request to the API.
-        """
+    def _post(
+            self, endpoint: str,
+            data: dict | None = None,
+            json_: dict | None = None,
+            files: dict | None = None,
+    ) -> requests.Response:
+        """Make a POST request to the API."""
         response = self._session.post(
             f"{self._url}/{endpoint}",
             data=data,
@@ -131,22 +135,19 @@ class Client(ABC):
             timeout=self._timeout,
         )
         if not response.ok:
+            self._handle_authorization_error(response)
             self._handle_error_response(response)
         return response
 
-    def _raise_server_error(self, response: requests.Response):
-        """
-        Method to raise a ServerError exception.
-        """
+    def _raise_server_error(self, response: requests.Response) -> None:
+        """Raise a ServerError exception."""
         raise ServerError(response)
 
-    def _handle_authorization_error(self, response: requests.Response):
-        """
-        Method to handle authorization errors.
-        """
+    def _handle_authorization_error(self, response: requests.Response) -> None:
+        """Handle authorization errors."""
         try:
             message = response.json()["message"]
             if "no Authorization header found" in message:
-                raise AuthorizationError()
+                raise AuthorizationError
         except KeyError:
             pass
