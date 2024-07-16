@@ -1,11 +1,14 @@
 site_name: vericlient
+site_url: https://clarriu97.github.io/vericlient/
+repo_url: https://github.com/clarriu97/vericlient
+repo_name: clarriu97/vericlient
 nav:
-  - Home: index.md
+  - Get Started: index.md
   - Changelog: CHANGELOG.md
   - API Documentation:
-      - Vericlient: modules/vericlient.md
-      - Daspeak client: modules/daspeak/client.md
-      - Daspeak models: modules/daspeak/models.md
+      - Vericlient: api_docs/vericlient.md
+      - Daspeak client: api_docs/daspeak/client.md
+      - Daspeak models: api_docs/daspeak/models.md
 
 plugins:
   - search
@@ -36,10 +39,19 @@ extra_javascript:
 
 theme:
   name: material
+  language: en
+  palette:
+    scheme: slate
+    primary: pink
+    accent: pink
+  font:
+    text: Roboto
+    code: Roboto Mono
   features:
     - navigation.instant
     - navigation.sections
     - navigation.top
+    - navigation.tabs
     - search.highlight
     - search.share
     - toc.follow

@@ -25,7 +25,7 @@ classifiers = [
 
 [project.urls]
 Homepage = "https://clarriu97.github.io/verimodels/"
-Documentation = "https://clarriu97.github.io/verimodels/docs"
+Documentation = "https://clarriu97.github.io/verimodels/"
 Repository = "https://github.com/clarriu97/vericlient"
 Issues = "https://github.com/clarriu97/vericlient/issues"
 Changelog = "https://github.com/clarriu97/vericlient/blob/master/CHANGELOG.md"
