@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+    <url>
+         <loc>https://clarriu97.github.io/vericlient/</loc>
+         <lastmod>2024-07-17</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://clarriu97.github.io/vericlient/CHANGELOG/</loc>
+         <lastmod>2024-07-17</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://clarriu97.github.io/vericlient/docs/</loc>
+         <lastmod>2024-07-17</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://clarriu97.github.io/vericlient/api_docs/vericlient/</loc>
+         <lastmod>2024-07-17</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://clarriu97.github.io/vericlient/api_docs/daspeak/client/</loc>
+         <lastmod>2024-07-17</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://clarriu97.github.io/vericlient/api_docs/daspeak/models/</loc>
+         <lastmod>2024-07-17</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+</urlset>
