@@ -650,12 +650,15 @@
 
 
 <h1 id="daspeak-client">Daspeak Client<a class="headerlink" href="#daspeak-client" title="Permanent link">&para;</a></h1>
-<p>This is an example of how to use the Daspeak client:</p>
+<p>This is an example of how to use the
+<a href="https://docs.veridas.com/das-peak/cloud/latest/">Daspeak</a> client:</p>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">io</span> <span class="kn">import</span> <span class="n">BytesIO</span>
 
 <span class="kn">from</span> <span class="nn">vericlient</span> <span class="kn">import</span> <span class="n">DaspeakClient</span>
-<span class="kn">from</span> <span class="nn">vericlient.daspeak.models</span> <span class="kn">import</span> <span class="n">ModelsHashCredentialWavInput</span>
-
+<span class="kn">from</span> <span class="nn">vericlient.daspeak.models</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">ModelsHashCredentialAudioInput</span><span class="p">,</span>
+    <span class="n">SimilarityCredential2AudioInput</span>
+<span class="p">)</span>
 
 <span class="n">client</span> <span class="o">=</span> <span class="n">DaspeakClient</span><span class="p">(</span><span class="n">apikey</span><span class="o">=</span><span class="s2">&quot;your_api_key&quot;</span><span class="p">)</span>
 
@@ -666,7 +669,7 @@
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Biometrics models: </span><span class="si">{</span><span class="n">client</span><span class="o">.</span><span class="n">get_models</span><span class="p">()</span><span class="o">.</span><span class="n">models</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
 <span class="c1"># generate a credential from an audio file using the last model</span>
-<span class="n">model_input</span> <span class="o">=</span> <span class="n">ModelsHashCredentialWavInput</span><span class="p">(</span>
+<span class="n">model_input</span> <span class="o">=</span> <span class="n">ModelsHashCredentialAudioInput</span><span class="p">(</span>
     <span class="n">audio</span><span class="o">=</span><span class="s2">&quot;/home/audio.wav&quot;</span><span class="p">,</span>
     <span class="nb">hash</span><span class="o">=</span><span class="n">client</span><span class="o">.</span><span class="n">get_models</span><span class="p">()</span><span class="o">.</span><span class="n">models</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span>
 <span class="p">)</span>
@@ -675,12 +678,33 @@
 
 <span class="c1"># generate a credential from a BytesIO object using the last model</span>
 <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;/home/audio.wav&quot;</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-    <span class="n">model_input</span> <span class="o">=</span> <span class="n">ModelsHashCredentialWavInput</span><span class="p">(</span>
+    <span class="n">model_input</span> <span class="o">=</span> <span class="n">ModelsHashCredentialAudioInput</span><span class="p">(</span>
         <span class="n">audio</span><span class="o">=</span><span class="n">BytesIO</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()),</span>
-        <span class="nb">hash</span><span class="o">=</span><span class="n">client</span><span class="o">.</span><span class="n">get_models</span><span class="p">()</span><span class="o">.</span><span class="n">models</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="nb">hash</span><span class="o">=</span><span class="n">client</span><span class="o">.</span><span class="n">get_models</span><span class="p">()</span><span class="o">.</span><span class="n">models</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span>
     <span class="p">)</span>
 <span class="n">model_output</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">generate_credential</span><span class="p">(</span><span class="n">model_input</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Credential generated with virtual file: </span><span class="si">{</span><span class="n">model_output</span><span class="o">.</span><span class="n">credential</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># compare a credential with an audio file</span>
+<span class="n">similarity_input</span> <span class="o">=</span> <span class="n">SimilarityCredential2AudioInput</span><span class="p">(</span>
+    <span class="n">audio_to_evaluate</span><span class="o">=</span><span class="s2">&quot;/home/audio.wav&quot;</span><span class="p">,</span>
+    <span class="n">credential_reference</span><span class="o">=</span><span class="n">model_output</span><span class="o">.</span><span class="n">credential</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">similarity_output</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">similarity_credential2audio</span><span class="p">(</span><span class="n">similarity_input</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Similarity between the credential and the audio file: </span><span class="si">{</span><span class="n">similarity_output</span><span class="o">.</span><span class="n">score</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Authenticity of the audio file: </span><span class="si">{</span><span class="n">similarity_output</span><span class="o">.</span><span class="n">authenticity_to_evaluate</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Net speech duration of the audio file: </span><span class="si">{</span><span class="n">similarity_output</span><span class="o">.</span><span class="n">net_speech_duration_to_evaluate</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># compare a credential with a BytesIO object</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;/home/audio.wav&quot;</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="n">similarity_input</span> <span class="o">=</span> <span class="n">SimilarityCredential2AudioInput</span><span class="p">(</span>
+        <span class="n">audio_to_evaluate</span><span class="o">=</span><span class="n">BytesIO</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()),</span>
+        <span class="n">credential_reference</span><span class="o">=</span><span class="n">model_output</span><span class="o">.</span><span class="n">credential</span><span class="p">,</span>
+    <span class="p">)</span>
+<span class="n">similarity_output</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">similarity_credential2audio</span><span class="p">(</span><span class="n">similarity_input</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Similarity between the credential and the virtual file: </span><span class="si">{</span><span class="n">similarity_output</span><span class="o">.</span><span class="n">score</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Authenticity of the virtual file: </span><span class="si">{</span><span class="n">similarity_output</span><span class="o">.</span><span class="n">authenticity_to_evaluate</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Net speech duration of the virtual file: </span><span class="si">{</span><span class="n">similarity_output</span><span class="o">.</span><span class="n">net_speech_duration_to_evaluate</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </code></pre></div>
 
 
