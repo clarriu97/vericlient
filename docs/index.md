@@ -13,6 +13,6 @@ Installation is as simple as:
 pip install vericlient
 ```
 
-## Getting Started
+## API Documentation
 
 Visit the [API Documentation](./api_docs/vericlient.md) to learn how to use the library.

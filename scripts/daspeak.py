@@ -53,4 +53,3 @@ similarity_output = client.similarity_credential2audio(similarity_input)
 print(f"Similarity between the credential and the virtual file: {similarity_output.score}")
 print(f"Authenticity of the virtual file: {similarity_output.authenticity_to_evaluate}")
 print(f"Net speech duration of the virtual file: {similarity_output.net_speech_duration_to_evaluate}")
-
