@@ -17,7 +17,13 @@ from vericlient.daspeak.exceptions import (
     UnsupportedAudioCodecError,
     UnsupportedSampleRateError,
 )
-from vericlient.daspeak.models import ModelsHashCredentialWavInput, ModelsHashCredentialWavOutput, ModelsOutput
+from vericlient.daspeak.models import (
+    ModelsHashCredentialAudioInput,
+    ModelsHashCredentialAudioOutput,
+    ModelsOutput,
+    SimilarityCredential2AudioInput,
+    SimilarityCredential2AudioOutput,
+)
 
 
 class DaspeakClient(Client):
@@ -117,7 +123,7 @@ class DaspeakClient(Client):
         response = self._get(endpoint=DaspeakEndpoints.MODELS.value)
         return ModelsOutput(status_code=response.status_code, **response.json())
 
-    def generate_credential(self, data_model: ModelsHashCredentialWavInput) -> ModelsHashCredentialWavOutput:
+    def generate_credential(self, data_model: ModelsHashCredentialAudioInput) -> ModelsHashCredentialAudioOutput:
         """Generate a credential from a WAV file.
 
         **Warning**: if the audio provided is a `BytesIO` object, make sure to close it after using this method.
@@ -126,10 +132,10 @@ class DaspeakClient(Client):
             data_model: The data required to generate the credential
 
         Returns:
-            ModelsHashCredentialWavOutput: The response from the service
+            ModelsHashCredentialAudioOutput: The response from the service
 
         """
-        endpoint = DaspeakEndpoints.MODELS_HASH_CREDENTIAL_WAV.value.replace("<hash>", data_model.hash)
+        endpoint = DaspeakEndpoints.MODELS_HASH_CREDENTIAL_AUDIO.value.replace("<hash>", data_model.hash)
         audio = self._get_virtual_audio_file(data_model.audio)
         files = {
             "audio": ("audio", audio.read(), "audio/wav"),
@@ -139,7 +145,37 @@ class DaspeakClient(Client):
             "calibration": data_model.calibration,
         }
         response = self._post(endpoint=endpoint, data=data, files=files)
-        return ModelsHashCredentialWavOutput(status_code=response.status_code, **response.json())
+        audio.close()
+        return ModelsHashCredentialAudioOutput(status_code=response.status_code, **response.json())
+
+    def similarity_credential2audio(
+            self,
+            data_model: SimilarityCredential2AudioInput,
+        ) -> SimilarityCredential2AudioOutput:
+        """Compare a credential with an audio file.
+
+        **Warning**: if the audio provided is a `BytesIO` object, make sure to close it after using this method.
+
+        Args:
+            data_model: The data required to compare the credential with the audio
+
+        Returns:
+            SimilarityCredential2AudioOutput: The response from the service
+
+        """
+        endpoint = DaspeakEndpoints.SIMILARITY_CREDENTIAL2AUDIO.value
+        audio = self._get_virtual_audio_file(data_model.audio_to_evaluate)
+        files = {
+            "audio_to_evaluate": ("audio", audio.read(), "audio/wav"),
+        }
+        data = {
+            "credential_reference": data_model.credential_reference,
+            "channel": data_model.channel,
+            "calibration": data_model.calibration,
+        }
+        response = self._post(endpoint=endpoint, data=data, files=files)
+        audio.close()
+        return SimilarityCredential2AudioOutput(status_code=response.status_code, **response.json())
 
     def _get_virtual_audio_file(self, audio_input: object) -> BytesIO:
         if isinstance(audio_input, str):

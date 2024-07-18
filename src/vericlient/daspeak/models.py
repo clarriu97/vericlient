@@ -29,7 +29,7 @@ class ModelsOutput(DaspeakResponse):
     models: list
 
 
-class ModelsHashCredentialWavInput(BaseModel):
+class ModelsHashCredentialAudioInput(BaseModel):
     """Input class for the generate credential endpoint.
 
     Attributes:
@@ -69,7 +69,7 @@ class ModelMetadata(BaseModel):
     mode: str
 
 
-class ModelsHashCredentialWavOutput(DaspeakResponse):
+class ModelsHashCredentialAudioOutput(DaspeakResponse):
     """Output class for the generate credential endpoint.
 
     Attributes:
@@ -86,6 +86,10 @@ class ModelsHashCredentialWavOutput(DaspeakResponse):
     authenticity: float
     input_audio_duration: float
     net_speech_duration: float
+
+    @field_validator("authenticity")
+    def round_authenticity(cls, value: float) -> float:
+        return round(value, 3)
 
 
 class SimilarityCredential2CredentialInput(BaseModel):
@@ -115,9 +119,13 @@ class SimilarityCredential2CredentialOutput(DaspeakResponse):
     calibration: str
     score: float
 
+    @field_validator("score")
+    def round_authenticity(cls, value: float) -> float:
+        return round(value, 3)
 
-class SimilarityCredential2WavInput(BaseModel):
-    """Input class for the similarity credential to wav endpoint.
+
+class SimilarityCredential2AudioInput(BaseModel):
+    """Input class for the similarity credential to audio endpoint.
 
     Attributes:
         credential_reference: the reference credential
@@ -143,8 +151,8 @@ class SimilarityCredential2WavInput(BaseModel):
         arbitrary_types_allowed = True
 
 
-class SimilarityCredential2WavOutput(DaspeakResponse):
-    """Output class for the similarity credential to wav endpoint.
+class SimilarityCredential2AudioOutput(DaspeakResponse):
+    """Output class for the similarity credential to audio endpoint.
 
     Attributes:
         score: the similarity score between the credential and the audio
@@ -160,12 +168,16 @@ class SimilarityCredential2WavOutput(DaspeakResponse):
     model: ModelMetadata
     calibration: str
     authenticity_to_evaluate: float
-    input_audio_duration: float
-    net_speech_duration: float
+    input_audio_duration_to_evaluate: float
+    net_speech_duration_to_evaluate: float
+
+    @field_validator("score", "authenticity_to_evaluate")
+    def round_authenticity(cls, value: float) -> float:
+        return round(value, 3)
 
 
-class SimilarityWav2WavInput(BaseModel):
-    """Input class for the similarity wav to wav endpoint.
+class SimilarityAudio2AudioInput(BaseModel):
+    """Input class for the similarity audio to audio endpoint.
 
     Attributes:
         audio_reference: the reference audio
@@ -182,15 +194,8 @@ class SimilarityWav2WavInput(BaseModel):
     channel_to_evaluate: int = 1
     calibration: str = "telephone-channel"
 
-    @field_validator("audio_reference")
+    @field_validator("audio_reference", "audio_to_evaluate")
     def audio_ref_must_be_str_or_bytesio(cls, value: object):
-        if not isinstance(value, (str, BytesIO)):
-            error = "audio must be a string or a BytesIO object"
-            raise TypeError(error)
-        return value
-
-    @field_validator("audio_to_evaluate")
-    def audio_to_eval_must_be_str_or_bytesio(cls, value: object):
         if not isinstance(value, (str, BytesIO)):
             error = "audio must be a string or a BytesIO object"
             raise TypeError(error)
@@ -200,8 +205,8 @@ class SimilarityWav2WavInput(BaseModel):
         arbitrary_types_allowed = True
 
 
-class SimilarityWav2WavOutput(DaspeakResponse):
-    """Output class for the similarity wav to wav endpoint.
+class SimilarityAudio2AudioOutput(DaspeakResponse):
+    """Output class for the similarity audio to audio endpoint.
 
     Attributes:
         score: the similarity score between the two audios
@@ -225,3 +230,7 @@ class SimilarityWav2WavOutput(DaspeakResponse):
     input_audio_duration_to_evaluate: float
     net_speech_duration_reference: float
     net_speech_duration_to_evaluate: float
+
+    @field_validator("score", "authenticity_reference", "authenticity_to_evaluate")
+    def round_authenticity(cls, value: float) -> float:
+        return round(value, 3)
