@@ -1,6 +1,6 @@
 # Welcome
 
-[![Documentation Status](https://readthedocs.org/projects/vericlient/badge/?version=latest)](https://clarriu97.github.io/vericlient/) [![PyPI version](https://badge.fury.io/py/vericlient.svg)](https://badge.fury.io/py/vericlient) [![codecov](https://codecov.io/github/clarriu97/vericlient/branch/master/graph/badge.svg?token=H361XPC52E)](https://codecov.io/github/clarriu97/vericlient) [![CI](https://github.com/clarriu97/vericlient/actions/workflows/ci.yml/badge.svg)](https://github.com/clarriu97/vericlient/actions/workflows/ci.yml) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) [![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://github.com/clarriu97/vericlient/graphs/commit-activity)
+[![Documentation Status](https://readthedocs.org/projects/vericlient/badge/?version=latest)](https://vericlient.readthedocs.io/en/latest/?badge=latest) [![PyPI version](https://badge.fury.io/py/vericlient.svg)](https://badge.fury.io/py/vericlient) [![codecov](https://codecov.io/github/clarriu97/vericlient/branch/master/graph/badge.svg?token=H361XPC52E)](https://codecov.io/github/clarriu97/vericlient) [![CI](https://github.com/clarriu97/vericlient/actions/workflows/ci.yml/badge.svg)](https://github.com/clarriu97/vericlient/actions/workflows/ci.yml) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) [![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://github.com/clarriu97/vericlient/graphs/commit-activity)
 
 Vericlient is a Python library designed to facilitate interaction with
 the [Veridas API](https://docs.veridas.com/).
@@ -42,28 +42,68 @@ client instance.
 Finally, use the client to make requests to the API.
 
 ```python
-from vericlient import VericlientFactory, APIs
+from io import BytesIO
 
-# Create a factory instance
-factory = VericlientFactory()
+from vericlient import DaspeakClient
+from vericlient.daspeak.models import (
+    ModelsHashCredentialAudioInput,
+    SimilarityCredential2AudioInput
+)
 
-# Create a client for the das-Peak API
-client = VericlientFactory.get_client(APIs.DASPEAK.value, apikey="your_api_key")
+client = DaspeakClient(apikey="your_api_key")
 
-# Test the connection
-print(client.alive())
+# check if the server is alive
+print(f"Alive: {client.alive()}")
+
+# get the available biometrics models
+print(f"Biometrics models: {client.get_models().models}")
+
+# generate a credential from an audio file using the last model
+model_input = ModelsHashCredentialAudioInput(
+    audio="/home/audio.wav",
+    hash=client.get_models().models[-1],
+)
+model_output = client.generate_credential(model_input)
+print(f"Credential generated with an audio file: {model_output.credential}")
+
+# generate a credential from a BytesIO object using the last model
+with open("/home/audio.wav", "rb") as f:
+    model_input = ModelsHashCredentialAudioInput(
+        audio=BytesIO(f.read()),
+        hash=client.get_models().models[-1],
+    )
+model_output = client.generate_credential(model_input)
+print(f"Credential generated with virtual file: {model_output.credential}")
+
+# compare a credential with an audio file
+similarity_input = SimilarityCredential2AudioInput(
+    audio_to_evaluate="/home/audio.wav",
+    credential_reference=model_output.credential,
+)
+similarity_output = client.similarity_credential2audio(similarity_input)
+print(f"Similarity between the credential and the audio file: {similarity_output.score}")
+print(f"Authenticity of the audio file: {similarity_output.authenticity_to_evaluate}")
+print(f"Net speech duration of the audio file: {similarity_output.net_speech_duration_to_evaluate}")
+
+# compare a credential with a BytesIO object
+with open("/home/audio.wav", "rb") as f:
+    similarity_input = SimilarityCredential2AudioInput(
+        audio_to_evaluate=BytesIO(f.read()),
+        credential_reference=model_output.credential,
+    )
+similarity_output = client.similarity_credential2audio(similarity_input)
+print(f"Similarity between the credential and the virtual file: {similarity_output.score}")
+print(f"Authenticity of the virtual file: {similarity_output.authenticity_to_evaluate}")
+print(f"Net speech duration of the virtual file: {similarity_output.net_speech_duration_to_evaluate}")
 ```
 
 You can also use the client against any self-hosted Veridas API:
 
 ```python
-from vericlient import VericlientFactory
-
-# Create a factory instance
-factory = VericlientFactory()
+from vericlient import DaspeakClient
 
 # Create a client for the das-Peak API
-client = factory.get_client(url="https://your-self-hosted-api.com")
+client = DaspeakClient(url="https://your-self-hosted-api.com")
 
 # Test the connection
 print(client.alive())
