@@ -22,6 +22,8 @@ from vericlient.daspeak.models import (
     CompareAudio2AudioOutput,
     CompareCredential2AudioInput,
     CompareCredential2AudioOutput,
+    CompareCredential2CredentialInput,
+    CompareCredential2CredentialOutput,
     CompareInput,
     ModelsHashCredentialAudioInput,
     ModelsHashCredentialAudioOutput,
@@ -75,6 +77,11 @@ class DaspeakClient(Client):
             "CalibrationNotAvailable",
             "ServerError",
         ]
+        self._compare_functions_map = {
+            CompareCredential2AudioInput: self._compare_credential2audio,
+            CompareAudio2AudioInput: self._compare_audio2audio,
+            CompareCredential2CredentialInput: self._compare_credential2credential,
+        }
 
     def alive(self) -> bool:
         """Check if the service is alive.
@@ -175,12 +182,12 @@ class DaspeakClient(Client):
             CalibrationNotAvailableError: If the calibration is not available
 
         """
-        if isinstance(data_model, CompareCredential2AudioInput):
-            return self._compare_credential2audio(data_model)
-        if isinstance(data_model, CompareAudio2AudioInput):
-            return self._compare_audio2audio(data_model)
-        error = "data_model must be an instance of CompareInput"
-        raise ValueError(error)
+        try:
+            func = self._compare_functions_map.get(type(data_model))
+            return func(data_model)
+        except AttributeError:
+            error = "data_model must be an instance of CompareInput"
+            raise ValueError(error) from None
 
     def _compare_credential2audio(
             self,
@@ -232,6 +239,28 @@ class DaspeakClient(Client):
         }
         response = self._post(endpoint=endpoint, data=data, files=files)
         return CompareAudio2AudioOutput(status_code=response.status_code, **response.json())
+
+    def _compare_credential2credential(
+            self,
+            data_model: CompareCredential2CredentialInput,
+        ) -> CompareCredential2CredentialOutput:
+        """Compare two credentials.
+
+        Args:
+            data_model: The data required to compare the credentials
+
+        Returns:
+            CompareCredential2CredentialOutput: The response from the service
+
+        """
+        endpoint = DaspeakEndpoints.SIMILARITY_CREDENTIAL2CREDENTIAL.value
+        data = {
+            "credential_reference": data_model.credential_reference,
+            "credential_to_evaluate": data_model.credential_to_evaluate,
+            "calibration": data_model.calibration,
+        }
+        response = self._post(endpoint=endpoint, data=data)
+        return CompareCredential2CredentialOutput(status_code=response.status_code, **response.json())
 
     def _get_virtual_audio_file(self, audio_input: object) -> BytesIO:
         if isinstance(audio_input, str):

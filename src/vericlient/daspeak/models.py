@@ -118,7 +118,7 @@ class CompareOutput(DaspeakResponse):
         return round(value, 3)
 
 
-class SimilarityCredential2CredentialInput(CompareInput):
+class CompareCredential2CredentialInput(CompareInput):
     """Input class for the similarity credential to credential endpoint.
 
     Attributes:
@@ -132,7 +132,7 @@ class SimilarityCredential2CredentialInput(CompareInput):
     credential_to_evaluate: str
 
 
-class SimilarityCredential2CredentialOutput(CompareOutput):
+class CompareCredential2CredentialOutput(CompareOutput):
     """Output class for the similarity credential to credential endpoint.
 
     Attributes:
