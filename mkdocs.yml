@@ -9,6 +9,7 @@ nav:
       - Vericlient: api_docs/vericlient.md
       - Daspeak client: api_docs/daspeak/client.md
       - Daspeak models: api_docs/daspeak/models.md
+      - Daspeak exceptions: api_docs/daspeak/exceptions.md
 
 plugins:
   - search

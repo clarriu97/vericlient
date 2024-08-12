@@ -5,7 +5,8 @@ from io import BytesIO
 from vericlient import DaspeakClient
 from vericlient.daspeak.models import (
     ModelsHashCredentialAudioInput,
-    SimilarityCredential2AudioInput
+    CompareCredential2AudioInput,
+    CompareAudio2AudioInput,
 )
 
 client = DaspeakClient(apikey="your_api_key")
@@ -34,22 +35,33 @@ model_output = client.generate_credential(model_input)
 print(f"Credential generated with virtual file: {model_output.credential}")
 
 # compare a credential with an audio file
-similarity_input = SimilarityCredential2AudioInput(
+similarity_input = CompareCredential2AudioInput(
     audio_to_evaluate="/home/audio.wav",
     credential_reference=model_output.credential,
 )
-similarity_output = client.similarity_credential2audio(similarity_input)
+similarity_output = client.compare(similarity_input)
 print(f"Similarity between the credential and the audio file: {similarity_output.score}")
 print(f"Authenticity of the audio file: {similarity_output.authenticity_to_evaluate}")
 print(f"Net speech duration of the audio file: {similarity_output.net_speech_duration_to_evaluate}")
 
 # compare a credential with a BytesIO object
 with open("/home/audio.wav", "rb") as f:
-    similarity_input = SimilarityCredential2AudioInput(
+    similarity_input = CompareCredential2AudioInput(
         audio_to_evaluate=BytesIO(f.read()),
         credential_reference=model_output.credential,
     )
-similarity_output = client.similarity_credential2audio(similarity_input)
+similarity_output = client.compare(similarity_input)
 print(f"Similarity between the credential and the virtual file: {similarity_output.score}")
 print(f"Authenticity of the virtual file: {similarity_output.authenticity_to_evaluate}")
 print(f"Net speech duration of the virtual file: {similarity_output.net_speech_duration_to_evaluate}")
+
+# compare two audio files, no matter if they are virtual or real
+with open ("/home/audio.wav", "rb") as f:
+    similarity_input = CompareAudio2AudioInput(
+        audio_reference="/home/audio.wav",
+        audio_to_evaluate=BytesIO(f.read()),
+    )
+similarity_output = client.compare(similarity_input)
+print(f"Similarity between the two audio files: {similarity_output.score}")
+print(f"Authenticity of the audio file reference: {similarity_output.authenticity_reference}")
+print(f"Authenticity of the audio file to evaluate: {similarity_output.authenticity_to_evaluate}")

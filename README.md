@@ -47,7 +47,7 @@ from io import BytesIO
 from vericlient import DaspeakClient
 from vericlient.daspeak.models import (
     ModelsHashCredentialAudioInput,
-    SimilarityCredential2AudioInput
+    CompareCredential2AudioInput
 )
 
 client = DaspeakClient(apikey="your_api_key")
@@ -76,7 +76,7 @@ model_output = client.generate_credential(model_input)
 print(f"Credential generated with virtual file: {model_output.credential}")
 
 # compare a credential with an audio file
-similarity_input = SimilarityCredential2AudioInput(
+similarity_input = CompareCredential2AudioInput(
     audio_to_evaluate="/home/audio.wav",
     credential_reference=model_output.credential,
 )
@@ -87,7 +87,7 @@ print(f"Net speech duration of the audio file: {similarity_output.net_speech_dur
 
 # compare a credential with a BytesIO object
 with open("/home/audio.wav", "rb") as f:
-    similarity_input = SimilarityCredential2AudioInput(
+    similarity_input = CompareCredential2AudioInput(
         audio_to_evaluate=BytesIO(f.read()),
         credential_reference=model_output.credential,
     )
