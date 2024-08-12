@@ -1,5 +1,6 @@
 """Implementation of the client for the DASPEaK service."""
 from io import BytesIO
+from typing import Union
 
 from requests.models import Response
 
@@ -21,8 +22,11 @@ from vericlient.daspeak.models import (
     ModelsHashCredentialAudioInput,
     ModelsHashCredentialAudioOutput,
     ModelsOutput,
-    SimilarityCredential2AudioInput,
-    SimilarityCredential2AudioOutput,
+    CompareAudio2AudioInput,
+    CompareAudio2AudioOutput,
+    CompareCredential2AudioInput,
+    CompareCredential2AudioOutput,
+    CompareInput,
 )
 
 
@@ -116,8 +120,8 @@ class DaspeakClient(Client):
     def get_models(self) -> ModelsOutput:
         """Get the models available biometrics models in the service.
 
-        Returns
-            ModelsOutput: The response from the service
+        Returns:
+            The response from the service
 
         """
         response = self._get(endpoint=DaspeakEndpoints.MODELS.value)
@@ -126,47 +130,75 @@ class DaspeakClient(Client):
     def generate_credential(self, data_model: ModelsHashCredentialAudioInput) -> ModelsHashCredentialAudioOutput:
         """Generate a credential from a WAV file.
 
-        **Warning**: if the audio provided is a `BytesIO` object, make sure to close it after using this method.
-
         Args:
             data_model: The data required to generate the credential
 
         Returns:
-            ModelsHashCredentialAudioOutput: The response from the service
+            The response from the service
 
         """
         endpoint = DaspeakEndpoints.MODELS_HASH_CREDENTIAL_AUDIO.value.replace("<hash>", data_model.hash)
         audio = self._get_virtual_audio_file(data_model.audio)
         files = {
-            "audio": ("audio", audio.read(), "audio/wav"),
+            "audio": ("audio", audio, "audio/wav"),
         }
         data = {
             "channel": data_model.channel,
             "calibration": data_model.calibration,
         }
         response = self._post(endpoint=endpoint, data=data, files=files)
-        audio.close()
         return ModelsHashCredentialAudioOutput(status_code=response.status_code, **response.json())
 
-    def similarity_credential2audio(
+    def compare(
             self,
-            data_model: SimilarityCredential2AudioInput,
-        ) -> SimilarityCredential2AudioOutput:
-        """Compare a credential with an audio file.
+            data_model: CompareInput,
+        ) -> Union[CompareCredential2AudioOutput, CompareAudio2AudioOutput]:
+        """Compare audio files or credentials.
 
-        **Warning**: if the audio provided is a `BytesIO` object, make sure to close it after using this method.
+        Args:
+            data_model (CompareCredential2AudioInput | CompareAudio2AudioInput):
+                The data required to compare the audio files or credentials
+
+        Returns:
+            (CompareCredential2AudioOutput | CompareAudio2AudioOutput): The response from the service, depending on the input type.
+
+        Raises:
+            ValueError: If the `data_model` is not an instance of `CompareInput`
+            TooManyAudioChannelsError: If the audio has more channels than the service supports
+            UnsupportedAudioCodecError: If the audio has an unsupported codec
+            UnsupportedSampleRateError: If the audio has an unsupported sample rate
+            AudioDurationTooLongError: If the audio duration is longer than the service supports
+            SignalNoiseRatioError: If the signal-to-noise ratio is too low
+            NetSpeechDurationIsNotEnoughError: If the net speech duration is not enough
+            InvalidSpecifiedChannelError: If the specified channel is invalid
+            InsufficientQualityError: If the audio quality is insufficient
+            CalibrationNotAvailableError: If the calibration is not available
+
+        """
+        if isinstance(data_model, CompareCredential2AudioInput):
+            return self._compare_credential2audio(data_model)
+        if isinstance(data_model, CompareAudio2AudioInput):
+            return self._compare_audio2audio(data_model)
+        error = "data_model must be an instance of CompareInput"
+        raise ValueError(error)
+
+    def _compare_credential2audio(
+            self,
+            data_model: CompareCredential2AudioInput,
+        ) -> CompareCredential2AudioOutput:
+        """Compare a credential with an audio file.
 
         Args:
             data_model: The data required to compare the credential with the audio
 
         Returns:
-            SimilarityCredential2AudioOutput: The response from the service
+            CompareCredential2AudioOutput: The response from the service
 
         """
         endpoint = DaspeakEndpoints.SIMILARITY_CREDENTIAL2AUDIO.value
         audio = self._get_virtual_audio_file(data_model.audio_to_evaluate)
         files = {
-            "audio_to_evaluate": ("audio", audio.read(), "audio/wav"),
+            "audio_to_evaluate": ("audio", audio, "audio/wav"),
         }
         data = {
             "credential_reference": data_model.credential_reference,
@@ -174,18 +206,44 @@ class DaspeakClient(Client):
             "calibration": data_model.calibration,
         }
         response = self._post(endpoint=endpoint, data=data, files=files)
-        audio.close()
-        return SimilarityCredential2AudioOutput(status_code=response.status_code, **response.json())
+        return CompareCredential2AudioOutput(status_code=response.status_code, **response.json())
+
+    def _compare_audio2audio(self, data_model: CompareAudio2AudioInput) -> CompareAudio2AudioOutput:
+        """Compare two audio files.
+
+        Args:
+            data_model: The data required to compare the audio files
+
+        Returns:
+            CompareAudio2AudioOutput: The response from the service
+
+        """
+        endpoint = DaspeakEndpoints.SIMILARITY_AUDIO2AUDIO.value
+        audio_reference = self._get_virtual_audio_file(data_model.audio_reference)
+        audio_to_evaluate = self._get_virtual_audio_file(data_model.audio_to_evaluate)
+        files = {
+            "audio_reference": ("audio", audio_reference, "audio/wav"),
+            "audio_to_evaluate": ("audio", audio_to_evaluate, "audio/wav"),
+        }
+        data = {
+            "channel_reference": data_model.channel_reference,
+            "channel_to_evaluate": data_model.channel_to_evaluate,
+            "calibration": data_model.calibration,
+        }
+        response = self._post(endpoint=endpoint, data=data, files=files)
+        return CompareAudio2AudioOutput(status_code=response.status_code, **response.json())
 
     def _get_virtual_audio_file(self, audio_input: object) -> BytesIO:
         if isinstance(audio_input, str):
             try:
-                audio = open(audio_input, "rb")     # noqa: SIM115
+                with open(audio_input, "rb") as f:
+                    audio = f.read()
             except FileNotFoundError as e:
                 error = f"File {audio_input} not found"
                 raise FileNotFoundError(error) from e
         elif isinstance(audio_input, BytesIO):
-            audio = audio_input
+            audio = audio_input.read()
+            audio_input.close()
         else:
             error = "audio must be a string or a BytesIO object"
             raise TypeError(error)

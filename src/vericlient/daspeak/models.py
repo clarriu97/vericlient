@@ -92,7 +92,33 @@ class ModelsHashCredentialAudioOutput(DaspeakResponse):
         return round(value, 3)
 
 
-class SimilarityCredential2CredentialInput(BaseModel):
+class CompareInput(BaseModel):
+    """Base class for the similarity inputs.
+
+    Attributes:
+        calibration: the calibration to use
+
+    """
+
+    calibration: str = "telephone-channel"
+
+
+class CompareOutput(DaspeakResponse):
+    """Base class for the similarity outputs.
+
+    Attributes:
+        score: the similarity score between the two inputs
+
+    """
+
+    score: float
+
+    @field_validator("score")
+    def round_value(cls, value: float) -> float:
+        return round(value, 3)
+
+
+class SimilarityCredential2CredentialInput(CompareInput):
     """Input class for the similarity credential to credential endpoint.
 
     Attributes:
@@ -104,41 +130,32 @@ class SimilarityCredential2CredentialInput(BaseModel):
 
     credential_reference: str
     credential_to_evaluate: str
-    caliration: str = "telephone-channel"
 
 
-class SimilarityCredential2CredentialOutput(DaspeakResponse):
+class SimilarityCredential2CredentialOutput(CompareOutput):
     """Output class for the similarity credential to credential endpoint.
 
     Attributes:
-        score: the similarity score between the two credentials
         calibration: the calibration used
 
     """
 
     calibration: str
-    score: float
-
-    @field_validator("score")
-    def round_authenticity(cls, value: float) -> float:
-        return round(value, 3)
 
 
-class SimilarityCredential2AudioInput(BaseModel):
+class CompareCredential2AudioInput(CompareInput):
     """Input class for the similarity credential to audio endpoint.
 
     Attributes:
         credential_reference: the reference credential
         audio_to_evaluate: the audio to evaluate
         channel: the `nchannel` of the audio if it is stereo
-        calibration: the calibration to use
 
     """
 
     credential_reference: str
     audio_to_evaluate: str | BytesIO
     channel: int = 1
-    calibration: str = "telephone-channel"
 
     @field_validator("audio_to_evaluate")
     def must_be_str_or_bytesio(cls, value: object):
@@ -151,11 +168,10 @@ class SimilarityCredential2AudioInput(BaseModel):
         arbitrary_types_allowed = True
 
 
-class SimilarityCredential2AudioOutput(DaspeakResponse):
+class CompareCredential2AudioOutput(CompareOutput):
     """Output class for the similarity credential to audio endpoint.
 
     Attributes:
-        score: the similarity score between the credential and the audio
         model: the model used to generate the credential
         calibration: the calibration used
         authenticity_to_evaluate: the authenticity of the audio sample used
@@ -164,19 +180,18 @@ class SimilarityCredential2AudioOutput(DaspeakResponse):
 
     """
 
-    score: float
     model: ModelMetadata
     calibration: str
     authenticity_to_evaluate: float
     input_audio_duration_to_evaluate: float
     net_speech_duration_to_evaluate: float
 
-    @field_validator("score", "authenticity_to_evaluate")
-    def round_authenticity(cls, value: float) -> float:
+    @field_validator("authenticity_to_evaluate")
+    def round_value(cls, value: float) -> float:
         return round(value, 3)
 
 
-class SimilarityAudio2AudioInput(BaseModel):
+class CompareAudio2AudioInput(CompareInput):
     """Input class for the similarity audio to audio endpoint.
 
     Attributes:
@@ -184,7 +199,6 @@ class SimilarityAudio2AudioInput(BaseModel):
         audio_to_evaluate: the audio to evaluate
         channel_reference: the `nchannel` of the reference audio if it is stereo
         channel_to_evaluate: the `nchannel` of the audio to evaluate if it is stereo
-        calibration: the calibration to use
 
     """
 
@@ -192,7 +206,6 @@ class SimilarityAudio2AudioInput(BaseModel):
     audio_to_evaluate: str | BytesIO
     channel_reference: int = 1
     channel_to_evaluate: int = 1
-    calibration: str = "telephone-channel"
 
     @field_validator("audio_reference", "audio_to_evaluate")
     def audio_ref_must_be_str_or_bytesio(cls, value: object):
@@ -205,11 +218,10 @@ class SimilarityAudio2AudioInput(BaseModel):
         arbitrary_types_allowed = True
 
 
-class SimilarityAudio2AudioOutput(DaspeakResponse):
+class CompareAudio2AudioOutput(CompareOutput):
     """Output class for the similarity audio to audio endpoint.
 
     Attributes:
-        score: the similarity score between the two audios
         model: the model used to generate the credential
         calibration: the calibration used
         authenticity_reference: the authenticity of the reference audio sample
@@ -221,7 +233,6 @@ class SimilarityAudio2AudioOutput(DaspeakResponse):
 
     """
 
-    score: float
     model: ModelMetadata
     calibration: str
     authenticity_reference: float
@@ -231,6 +242,6 @@ class SimilarityAudio2AudioOutput(DaspeakResponse):
     net_speech_duration_reference: float
     net_speech_duration_to_evaluate: float
 
-    @field_validator("score", "authenticity_reference", "authenticity_to_evaluate")
-    def round_authenticity(cls, value: float) -> float:
+    @field_validator("authenticity_reference", "authenticity_to_evaluate")
+    def round_value(cls, value: float) -> float:
         return round(value, 3)
