@@ -1,6 +1,5 @@
 """Implementation of the client for the DASPEaK service."""
 from io import BytesIO
-from typing import Union
 
 from requests.models import Response
 
@@ -19,14 +18,14 @@ from vericlient.daspeak.exceptions import (
     UnsupportedSampleRateError,
 )
 from vericlient.daspeak.models import (
-    ModelsHashCredentialAudioInput,
-    ModelsHashCredentialAudioOutput,
-    ModelsOutput,
     CompareAudio2AudioInput,
     CompareAudio2AudioOutput,
     CompareCredential2AudioInput,
     CompareCredential2AudioOutput,
     CompareInput,
+    ModelsHashCredentialAudioInput,
+    ModelsHashCredentialAudioOutput,
+    ModelsOutput,
 )
 
 
@@ -152,7 +151,7 @@ class DaspeakClient(Client):
     def compare(
             self,
             data_model: CompareInput,
-        ) -> Union[CompareCredential2AudioOutput, CompareAudio2AudioOutput]:
+        ) -> CompareCredential2AudioOutput | CompareAudio2AudioOutput:
         """Compare audio files or credentials.
 
         Args:
@@ -160,7 +159,8 @@ class DaspeakClient(Client):
                 The data required to compare the audio files or credentials
 
         Returns:
-            (CompareCredential2AudioOutput | CompareAudio2AudioOutput): The response from the service, depending on the input type.
+            (CompareCredential2AudioOutput | CompareAudio2AudioOutput): The response from the service,
+                depending on the input type.
 
         Raises:
             ValueError: If the `data_model` is not an instance of `CompareInput`
