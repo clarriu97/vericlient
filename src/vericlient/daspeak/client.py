@@ -1,4 +1,5 @@
 """Implementation of the client for the DASPEaK service."""
+import json
 from io import BytesIO
 
 from requests.models import Response
@@ -20,6 +21,8 @@ from vericlient.daspeak.exceptions import (
 from vericlient.daspeak.models import (
     CompareAudio2AudioInput,
     CompareAudio2AudioOutput,
+    CompareAudio2CredentialsInput,
+    CompareAudio2CredentialsOutput,
     CompareCredential2AudioInput,
     CompareCredential2AudioOutput,
     CompareCredential2CredentialInput,
@@ -81,6 +84,7 @@ class DaspeakClient(Client):
             CompareCredential2AudioInput: self._compare_credential2audio,
             CompareAudio2AudioInput: self._compare_audio2audio,
             CompareCredential2CredentialInput: self._compare_credential2credential,
+            CompareAudio2CredentialsInput: self._compare_audio2credentials,
         }
 
     def alive(self) -> bool:
@@ -158,7 +162,8 @@ class DaspeakClient(Client):
     def compare(
             self,
             data_model: CompareInput,
-        ) -> CompareCredential2AudioOutput | CompareAudio2AudioOutput:
+        ) -> CompareCredential2AudioOutput | CompareAudio2AudioOutput | \
+             CompareCredential2CredentialOutput | CompareAudio2CredentialsOutput :
         """Compare audio files or credentials.
 
         Args:
@@ -261,6 +266,33 @@ class DaspeakClient(Client):
         }
         response = self._post(endpoint=endpoint, data=data)
         return CompareCredential2CredentialOutput(status_code=response.status_code, **response.json())
+
+    def _compare_audio2credentials(
+        self,
+        data_model: CompareAudio2CredentialsInput,
+    ) -> CompareAudio2CredentialsOutput:
+        """Compare an audio file with a list of credentials.
+
+        Args:
+            data_model: The data required to compare the audio file with the credentials
+
+        Returns:
+            CompareAudio2CredentialsOutput: The response from the service
+
+        """
+        endpoint = DaspeakEndpoints.IDENTIFICATION_AUDIO2CREDENTIALS.value
+        audio = self._get_virtual_audio_file(data_model.audio_reference)
+        files = {
+            "audio_reference": ("audio_reference", audio, "audio/wav"),
+        }
+        credential_list = json.dumps(data_model.credential_list)
+        data = {
+            "credential_list": credential_list,
+            "channel": data_model.channel,
+            "calibration": data_model.calibration,
+        }
+        response = self._post(endpoint=endpoint, data=data, files=files)
+        return CompareAudio2CredentialsOutput(status_code=response.status_code, **response.json())
 
     def _get_virtual_audio_file(self, audio_input: object) -> BytesIO:
         if isinstance(audio_input, str):

@@ -7,7 +7,8 @@ from vericlient.daspeak.models import (
     ModelsHashCredentialAudioInput,
     CompareCredential2AudioInput,
     CompareAudio2AudioInput,
-    CompareCredential2CredentialInput
+    CompareCredential2CredentialInput,
+    CompareAudio2CredentialsInput
 )
 
 client = DaspeakClient(apikey="your_api_key")
@@ -75,3 +76,13 @@ compare_input = CompareCredential2CredentialInput(
 compare_output = client.compare(compare_input)
 print(f"Similarity between the two credentials: {compare_output.score}")
 
+# identify a subject comparing an audio againts a list of credentials
+compare_input = CompareAudio2CredentialsInput(
+    audio_reference="/home/audio.wav",
+    credential_list=[
+        ("subject1_credential", generate_credential_output.credential),
+        ("subject2_credential", generate_credential_output.credential),   
+    ],
+)
+compare_output = client.compare(compare_input)
+print(f"Subject identified: {compare_output.scores}")

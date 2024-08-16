@@ -245,3 +245,72 @@ class CompareAudio2AudioOutput(CompareOutput):
     @field_validator("authenticity_reference", "authenticity_to_evaluate")
     def round_value(cls, value: float) -> float:
         return round(value, 3)
+
+
+class CompareAudio2CredentialsInput(CompareInput):
+    """Input class for the identification audio to credentials endpoint.
+
+    Attributes:
+        audio_reference: the audio to evaluate
+        credential_list: the credentials to compare the audio with.
+            The list contains touples with two strings: the id and the credential
+        channel: the `nchannel` of the audio if it is stereo
+
+    """
+
+    audio_reference: str | BytesIO
+    credential_list: list[tuple[str, str]]
+    channel: int = 1
+
+    @field_validator("audio_reference")
+    def must_be_str_or_bytesio(cls, value: object):
+        if not isinstance(value, (str, BytesIO)):
+            error = "audio must be a string or a BytesIO object"
+            raise TypeError(error)
+        return value
+
+    @field_validator("credential_list")
+    def validate_and_build_list_format(cls, value: list):
+        if not value:
+            error = "credential_list must not be empty"
+            raise ValueError(error)
+        error = "credential_list must contain touples with two strings"
+        n_items = 2
+        for item in value:
+            if not isinstance(item, tuple) or len(item) != n_items:
+                raise ValueError(error)
+            if not all(isinstance(i, str) for i in item):
+                raise ValueError(error)
+        return [{"id": item[0], "credential": item[1]} for item in value]
+
+    class Config:
+        arbitrary_types_allowed = True
+
+
+class CompareAudio2CredentialsOutput(DaspeakResponse):
+    """Output class for the identification audio to credentials endpoint.
+
+    Attributes:
+        result: the result of the identification, a dictionary with the "id" and the "score"
+            of the best match
+        scores: the whole list of scores for each credential.
+            The list contains dictionaries with two keys (and values): "id" and "score"
+        calibration: the calibration used
+        model: the model used to generate the credential
+        authenticity_reference: the authenticity of the reference audio sample
+        input_audio_duration_reference: the duration of the input audio
+        net_speech_duration_reference: the duration of the speech in the audio
+
+    """
+
+    result: dict
+    scores: list[dict]
+    calibration: str
+    model: ModelMetadata
+    authenticity_reference: float
+    input_audio_duration_reference: float
+    net_speech_duration_reference: float
+
+    @field_validator("authenticity_reference")
+    def round_value(cls, value: float) -> float:
+        return round(value, 3)
