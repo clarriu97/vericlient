@@ -14,16 +14,17 @@ handling responses efficiently.
 - **Modular and Extensible**: Structured to easily add new functionalities and endpoints.
 - **Minimal Dependencies** to work.
 
-# APIs support
+# Current APIs support
 
-- 🟢: fully supported. 
+- 🟢: fully supported.
 - 🟠: partly supported.
 - 🔴: not yet supported.
 
-| **API**  | **Supported** |
+| **API**  | **Status** |
 |----------|:-------------:|
-| das-Peak |       🟠      |
-| VCSP     |       🔴      |
+| [das-Peak](https://docs.veridas.com/das-peak/cloud/latest) |       🟠      |
+| [VCSP](https://docs.veridas.com/vcsp/cloud/latest)         |       🔴      |
+| [das-Face](https://docs.veridas.com/das-face/cloud/latest) |       🔴      |
 
 # Installation
 
