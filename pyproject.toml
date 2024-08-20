@@ -58,7 +58,31 @@ test = """pytest tests --mock \
     --html=docs/_build/test-reports/index.html \
     --junitxml=docs/_build/test-reports/junit.xml \
     -o junit_suite_name=test"""
-test-prod = """pytest tests \
+test-eu-sandbox = """pytest tests --env EU_SANDBOX \
+    --cov src/vericlient \
+    --cov-report term --cov-fail-under 50 \
+    --cov-report html:docs/_build/coverage \
+    --cov-report xml:docs/_build/coverage/coverage.xml \
+    --html=docs/_build/test-reports/index.html \
+    --junitxml=docs/_build/test-reports/junit.xml \
+    -o junit_suite_name=test"""
+test-us-sandbox = """pytest tests --env US_SANDBOX \
+    --cov src/vericlient \
+    --cov-report term --cov-fail-under 50 \
+    --cov-report html:docs/_build/coverage \
+    --cov-report xml:docs/_build/coverage/coverage.xml \
+    --html=docs/_build/test-reports/index.html \
+    --junitxml=docs/_build/test-reports/junit.xml \
+    -o junit_suite_name=test"""
+test-eu-production = """pytest tests --env EU_PRODUCTION \
+    --cov src/vericlient \
+    --cov-report term --cov-fail-under 50 \
+    --cov-report html:docs/_build/coverage \
+    --cov-report xml:docs/_build/coverage/coverage.xml \
+    --html=docs/_build/test-reports/index.html \
+    --junitxml=docs/_build/test-reports/junit.xml \
+    -o junit_suite_name=test"""
+test-us-production = """pytest tests --env US_PRODUCTION \
     --cov src/vericlient \
     --cov-report term --cov-fail-under 50 \
     --cov-report html:docs/_build/coverage \
