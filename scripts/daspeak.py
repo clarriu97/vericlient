@@ -4,7 +4,7 @@ from io import BytesIO
 
 from vericlient import DaspeakClient
 from vericlient.daspeak.models import (
-    ModelsHashCredentialAudioInput,
+    GenerateCredentialInput,
     CompareCredential2AudioInput,
     CompareAudio2AudioInput,
     CompareCredential2CredentialInput,
@@ -20,7 +20,7 @@ print(f"Alive: {client.alive()}")
 print(f"Biometrics models: {client.get_models().models}")
 
 # generate a credential from an audio file using the last model
-model_input = ModelsHashCredentialAudioInput(
+model_input = GenerateCredentialInput(
     audio="/home/audio.wav",
     hash=client.get_models().models[-1],
 )
@@ -29,7 +29,7 @@ print(f"Credential generated with an audio file: {generate_credential_output.cre
 
 # generate a credential from a BytesIO object using the last model
 with open("/home/audio.wav", "rb") as f:
-    model_input = ModelsHashCredentialAudioInput(
+    model_input = GenerateCredentialInput(
         audio=BytesIO(f.read()),
         hash=client.get_models().models[-1],
     )

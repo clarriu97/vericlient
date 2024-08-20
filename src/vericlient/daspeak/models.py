@@ -29,7 +29,7 @@ class ModelsOutput(DaspeakResponse):
     models: list
 
 
-class ModelsHashCredentialAudioInput(BaseModel):
+class GenerateCredentialInput(BaseModel):
     """Input class for the generate credential endpoint.
 
     Attributes:
@@ -69,7 +69,7 @@ class ModelMetadata(BaseModel):
     mode: str
 
 
-class ModelsHashCredentialAudioOutput(DaspeakResponse):
+class GenerateCredentialOutput(DaspeakResponse):
     """Output class for the generate credential endpoint.
 
     Attributes:

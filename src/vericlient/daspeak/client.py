@@ -28,8 +28,8 @@ from vericlient.daspeak.models import (
     CompareCredential2CredentialInput,
     CompareCredential2CredentialOutput,
     CompareInput,
-    ModelsHashCredentialAudioInput,
-    ModelsHashCredentialAudioOutput,
+    GenerateCredentialInput,
+    GenerateCredentialOutput,
     ModelsOutput,
 )
 
@@ -137,7 +137,7 @@ class DaspeakClient(Client):
         response = self._get(endpoint=DaspeakEndpoints.MODELS.value)
         return ModelsOutput(status_code=response.status_code, **response.json())
 
-    def generate_credential(self, data_model: ModelsHashCredentialAudioInput) -> ModelsHashCredentialAudioOutput:
+    def generate_credential(self, data_model: GenerateCredentialInput) -> GenerateCredentialOutput:
         """Generate a credential from a WAV file.
 
         Args:
@@ -157,7 +157,7 @@ class DaspeakClient(Client):
             "calibration": data_model.calibration,
         }
         response = self._post(endpoint=endpoint, data=data, files=files)
-        return ModelsHashCredentialAudioOutput(status_code=response.status_code, **response.json())
+        return GenerateCredentialOutput(status_code=response.status_code, **response.json())
 
     def compare(
             self,
