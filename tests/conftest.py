@@ -1,8 +1,8 @@
 import pytest
 import requests_mock
 
-from vericlient.environments import Target, Environments, Locations
 
+# pytest hooks
 
 def pytest_addoption(parser):
     parser.addoption(
@@ -12,6 +12,21 @@ def pytest_addoption(parser):
         "--env", action="store", default=None, help="Specify the environment to run tests against (e.g., EU_SANDBOX, US_PRODUCTION)"
     )
 
+
+# variables
+
+eu_sandbox_url = "https://api-work.eu.veri-das.com"
+ue_production_url = "https://api.eu.veri-das.com"
+us_sandbox_url = "https://api-work.us.veri-das.com"
+us_production_url = "https://api.us.veri-das.com"
+
+eu_sandobox_test_env = "EU_SANDBOX"
+eu_production_test_env = "EU_PRODUCTION"
+us_sandbox_test_env = "US_SANDBOX"
+us_production_test_env = "US_PRODUCTION"
+
+
+# general fixtures
 
 @pytest.fixture(scope="session")
 def mock_option(request):
@@ -37,62 +52,8 @@ def mock_server(mock_option, test_environment):
 @pytest.fixture(scope="session")
 def all_environments():
     return [
-        "EU_SANDBOX",
-        "EU_PRODUCTION",
-        "US_SANDBOX",
-        "US_PRODUCTION",
+        eu_sandobox_test_env,
+        eu_production_test_env,
+        us_sandbox_test_env,
+        us_production_test_env,
     ]
-
-
-@pytest.fixture(scope="session")
-def daspeak_alive_parameters(mock_option, test_environment, all_environments):
-    ue_sandbox = ('https://api-work.eu.veri-das.com/daspeak/v1/alive', "", 200, None, Target.CLOUD.value, Environments.SANDBOX.value, Locations.EU.value)
-    ue_production = ('https://api.eu.veri-das.com/daspeak/v1/alive', "", 200, None, Target.CLOUD.value, Environments.PRODUCTION.value, Locations.EU.value)
-    us_sandbox = ('https://api-work.us.veri-das.com/daspeak/v1/alive', "", 200, None, Target.CLOUD.value, Environments.SANDBOX.value, Locations.US.value)
-    us_production = ('https://api.us.veri-das.com/daspeak/v1/alive', "", 200, None, Target.CLOUD.value, Environments.PRODUCTION.value, Locations.US.value)
-    if mock_option:
-        alive_parameters = [
-            ue_sandbox,
-            ue_production,
-            us_sandbox,
-            us_production,
-            ('https://custom-daspeak-url.com/alive', "", 200, "https://custom-daspeak-url.com", None, None, None),
-        ]
-    elif test_environment not in all_environments:
-        pytest.fail(f"Invalid environment specified. Use one of {all_environments}")
-    elif test_environment == "EU_SANDBOX":
-        alive_parameters = [ue_sandbox]
-    elif test_environment == "EU_PRODUCTION":
-        alive_parameters = [ue_production]
-    elif test_environment == "US_SANDBOX":
-        alive_parameters = [us_sandbox]
-    elif test_environment == "US_PRODUCTION":
-        alive_parameters = [us_production]
-    return alive_parameters
-
-
-@pytest.fixture(scope="session")
-def daspeak_get_models_parameters(mock_option, test_environment, all_environments):
-    ue_sandbox = ('https://api-work.eu.veri-das.com/daspeak/v1/models', {"version": "", "models": ["model1", "model2"]}, 200, None, Target.CLOUD.value, Environments.SANDBOX.value, Locations.EU.value)
-    ue_production = ('https://api.eu.veri-das.com/daspeak/v1/models', {"version": "", "models": ["model1", "model2"]}, 200, None, Target.CLOUD.value, Environments.PRODUCTION.value, Locations.EU.value)
-    us_sandbox = ('https://api-work.us.veri-das.com/daspeak/v1/models', {"version": "", "models": ["model1", "model2"]}, 200, None, Target.CLOUD.value, Environments.SANDBOX.value, Locations.US.value)
-    us_production = ('https://api.us.veri-das.com/daspeak/v1/models', {"version": "", "models": ["model1", "model2"]}, 200, None, Target.CLOUD.value, Environments.PRODUCTION.value, Locations.US.value)
-    if mock_option:
-        get_models_parameters = [
-            ue_sandbox,
-            ue_production,
-            us_sandbox,
-            us_production,
-            ('https://custom-daspeak-url.com/models', {"version": "", "models": ["model1", "model2"]}, 200, "https://custom-daspeak-url.com", None, None, None),
-        ]
-    elif test_environment not in all_environments:
-        pytest.fail(f"Invalid environment specified. Use one of {all_environments}")
-    elif test_environment == "EU_SANDBOX":
-        get_models_parameters = [ue_sandbox]
-    elif test_environment == "EU_PRODUCTION":
-        get_models_parameters = [ue_production]
-    elif test_environment == "US_SANDBOX":
-        get_models_parameters = [us_sandbox]
-    elif test_environment == "US_PRODUCTION":
-        get_models_parameters = [us_production]
-    return get_models_parameters

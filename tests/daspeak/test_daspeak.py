@@ -1,7 +1,10 @@
-import pytest
+from io import BytesIO
 
 from vericlient import DaspeakClient
-from vericlient.environments import Target, Environments, Locations
+from vericlient.daspeak.models import (
+    GenerateCredentialInput,
+    GenerateCredentialOutput,
+)
 
 
 
@@ -42,3 +45,34 @@ def test_daspeak_get_models(mock_server, daspeak_get_models_parameters):
             assert response.models == mock_response["models"]
         else:
             assert isinstance(response.models, list)
+
+
+def test_daspeak_generate_credential(mock_server, daspeak_generate_credential_parameters, audio_file, audio_file_bytes):
+    for param in daspeak_generate_credential_parameters:
+        endpoint, mock_response, mock_status_code, url, target, environment, location = param
+        daspeak_client = DaspeakClient(
+            apikey="fake-apikey",
+            target=target,
+            environment=environment,
+            location=location,
+            url=url,
+        )
+        if mock_server:
+            mock_server.post(endpoint, json=mock_response, status_code=mock_status_code)
+            model = "fake-model"
+        else:
+            model = daspeak_client.get_models().models[-1]
+
+        input_model = GenerateCredentialInput(
+            audio=audio_file,
+            hash=model,
+        )
+        response = daspeak_client.generate_credential(input_model)
+        assert isinstance(response, GenerateCredentialOutput)
+
+        input_model = GenerateCredentialInput(
+            audio=audio_file_bytes,
+            hash=model,
+        )
+        response = daspeak_client.generate_credential(input_model)
+        assert isinstance(response, GenerateCredentialOutput)
