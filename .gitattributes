@@ -1,1 +1,1 @@
-tests/resources filter=lfs diff=lfs merge=lfs -text
+tests/daspeak/resources filter=lfs diff=lfs merge=lfs -text
