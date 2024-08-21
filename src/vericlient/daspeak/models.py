@@ -1,6 +1,5 @@
 """Module to define the models for the Daspeak API."""
 # ruff: noqa: N805, D102, ANN201
-from io import BytesIO
 
 from pydantic import BaseModel, field_validator
 
@@ -9,8 +8,8 @@ class DaspeakResponse(BaseModel):
     """Base class for the Daspeak API responses.
 
     Attributes:
-        version: the version of the API
-        status_code: the status code of the response
+        version: The version of the API
+        status_code: The status code of the response
 
     """
 
@@ -22,7 +21,7 @@ class ModelsOutput(DaspeakResponse):
     """Output class for the get models endpoint.
 
     Attributes:
-        models: the available models in the service
+        models: The available models in the service
 
     """
 
@@ -33,22 +32,24 @@ class GenerateCredentialInput(BaseModel):
     """Input class for the generate credential endpoint.
 
     Attributes:
-        audio: the audio to generate the credential with
-        hash: the hash of the biometrics model to use
-        channel: the `nchannel` of the audio if it is stereo
-        calibration: the calibration to use
+        audio: The audio to generate the credential with.
+            It can be a path to a file or a bytes object
+            with the audio content
+        hash: The hash of the biometrics model to use
+        channel: The `nchannel` of the audio if it is stereo
+        calibration: The calibration to use
 
     """
 
-    audio: str | BytesIO
+    audio: str | bytes
     hash: str
     channel: int = 1
     calibration: str = "telephone-channel"
 
     @field_validator("audio")
-    def must_be_str_or_bytesio(cls, value: object):
-        if not isinstance(value, (str, BytesIO)):
-            error = "audio must be a string or a BytesIO object"
+    def must_be_str_or_bytes(cls, value: object):
+        if not isinstance(value, (str, bytes)):
+            error = "audio must be a string or a bytes object"
             raise TypeError(error)
         return value
 
@@ -60,8 +61,8 @@ class ModelMetadata(BaseModel):
     """Metadata of the model used to generate the credential.
 
     Attributes:
-        hash: the hash of the model
-        mode: the mode of the model
+        hash: The hash of the model
+        mode: The mode of the model
 
     """
 
@@ -73,11 +74,11 @@ class GenerateCredentialOutput(DaspeakResponse):
     """Output class for the generate credential endpoint.
 
     Attributes:
-        model: the model used to generate the credential
-        credential: the generated credential
-        authenticity: the authenticity of the audio sample used
-        input_audio_duration: the duration of the input audio
-        net_speech_duration: the duration of the speech in the audio
+        model: The model used to generate the credential
+        credential: The generated credential
+        authenticity: The authenticity of the audio sample used
+        input_audio_duration: The duration of the input audio
+        net_speech_duration: The duration of the speech in the audio
 
     """
 
@@ -96,7 +97,7 @@ class CompareInput(BaseModel):
     """Base class for the similarity inputs.
 
     Attributes:
-        calibration: the calibration to use
+        calibration: The calibration to use
 
     """
 
@@ -107,7 +108,7 @@ class CompareOutput(DaspeakResponse):
     """Base class for the similarity outputs.
 
     Attributes:
-        score: the similarity score between the two inputs
+        score: The similarity score between the two inputs
 
     """
 
@@ -122,9 +123,9 @@ class CompareCredential2CredentialInput(CompareInput):
     """Input class for the similarity credential to credential endpoint.
 
     Attributes:
-        credential_reference: the reference credential
-        credential_to_evaluate: the credential to evaluate
-        calibration: the calibration to use
+        credential_reference: The reference credential
+        credential_to_evaluate: The credential to evaluate
+        calibration: The calibration to use
 
     """
 
@@ -136,7 +137,7 @@ class CompareCredential2CredentialOutput(CompareOutput):
     """Output class for the similarity credential to credential endpoint.
 
     Attributes:
-        calibration: the calibration used
+        calibration: The calibration used
 
     """
 
@@ -147,20 +148,22 @@ class CompareCredential2AudioInput(CompareInput):
     """Input class for the similarity credential to audio endpoint.
 
     Attributes:
-        credential_reference: the reference credential
-        audio_to_evaluate: the audio to evaluate
-        channel: the `nchannel` of the audio if it is stereo
+        credential_reference: The reference credential
+        audio_to_evaluate: The audio to evaluate.
+            It can be a path to a file or a bytes object
+            with the audio content
+        channel: The `nchannel` of the audio if it is stereo
 
     """
 
     credential_reference: str
-    audio_to_evaluate: str | BytesIO
+    audio_to_evaluate: str | bytes
     channel: int = 1
 
     @field_validator("audio_to_evaluate")
-    def must_be_str_or_bytesio(cls, value: object):
-        if not isinstance(value, (str, BytesIO)):
-            error = "audio must be a string or a BytesIO object"
+    def must_be_str_or_bytes(cls, value: object):
+        if not isinstance(value, (str, bytes)):
+            error = "audio must be a string or a bytes object"
             raise TypeError(error)
         return value
 
@@ -172,11 +175,11 @@ class CompareCredential2AudioOutput(CompareOutput):
     """Output class for the similarity credential to audio endpoint.
 
     Attributes:
-        model: the model used to generate the credential
-        calibration: the calibration used
-        authenticity_to_evaluate: the authenticity of the audio sample used
-        input_audio_duration: the duration of the input audio
-        net_speech_duration: the duration of the speech in the audio
+        model: The model used to generate the credential
+        calibration: The calibration used
+        authenticity_to_evaluate: The authenticity of the audio sample used
+        input_audio_duration: The duration of the input audio
+        net_speech_duration: The duration of the speech in the audio
 
     """
 
@@ -195,22 +198,26 @@ class CompareAudio2AudioInput(CompareInput):
     """Input class for the similarity audio to audio endpoint.
 
     Attributes:
-        audio_reference: the reference audio
-        audio_to_evaluate: the audio to evaluate
-        channel_reference: the `nchannel` of the reference audio if it is stereo
-        channel_to_evaluate: the `nchannel` of the audio to evaluate if it is stereo
+        audio_reference: The reference audio.
+            It can be a path to a file or a bytes object
+            with the audio content
+        audio_to_evaluate: The audio to evaluate.
+            It can be a path to a file or a bytes object
+            with the audio content
+        channel_reference: The `nchannel` of the reference audio if it is stereo
+        channel_to_evaluate: The `nchannel` of the audio to evaluate if it is stereo
 
     """
 
-    audio_reference: str | BytesIO
-    audio_to_evaluate: str | BytesIO
+    audio_reference: str | bytes
+    audio_to_evaluate: str | bytes
     channel_reference: int = 1
     channel_to_evaluate: int = 1
 
     @field_validator("audio_reference", "audio_to_evaluate")
-    def audio_ref_must_be_str_or_bytesio(cls, value: object):
-        if not isinstance(value, (str, BytesIO)):
-            error = "audio must be a string or a BytesIO object"
+    def audio_ref_must_be_str_or_bytes(cls, value: object):
+        if not isinstance(value, (str, bytes)):
+            error = "audio must be a string or a bytes object"
             raise TypeError(error)
         return value
 
@@ -222,14 +229,14 @@ class CompareAudio2AudioOutput(CompareOutput):
     """Output class for the similarity audio to audio endpoint.
 
     Attributes:
-        model: the model used to generate the credential
-        calibration: the calibration used
-        authenticity_reference: the authenticity of the reference audio sample
-        authenticity_to_evaluate: the authenticity of the audio to evaluate
-        input_audio_duration_reference: the duration of the reference audio
-        input_audio_duration_to_evaluate: the duration of the audio to evaluate
-        net_speech_duration_reference: the duration of the speech in the reference audio
-        net_speech_duration_to_evaluate: the duration of the speech in the audio to evaluate
+        model: The model used to generate the credential
+        calibration: The calibration used
+        authenticity_reference: The authenticity of the reference audio sample
+        authenticity_to_evaluate: The authenticity of the audio to evaluate
+        input_audio_duration_reference: The duration of the reference audio
+        input_audio_duration_to_evaluate: The duration of the audio to evaluate
+        net_speech_duration_reference: The duration of the speech in the reference audio
+        net_speech_duration_to_evaluate: The duration of the speech in the audio to evaluate
 
     """
 
@@ -251,21 +258,23 @@ class CompareAudio2CredentialsInput(CompareInput):
     """Input class for the identification audio to credentials endpoint.
 
     Attributes:
-        audio_reference: the audio to evaluate
-        credential_list: the credentials to compare the audio with.
+        audio_reference: The audio to evaluate.
+            It can be a path to a file or a bytes object
+            with the audio content
+        credential_list: The credentials to compare the audio with.
             The list contains touples with two strings: the id and the credential
-        channel: the `nchannel` of the audio if it is stereo
+        channel: The `nchannel` of the audio if it is stereo
 
     """
 
-    audio_reference: str | BytesIO
+    audio_reference: str | bytes
     credential_list: list[tuple[str, str]]
     channel: int = 1
 
     @field_validator("audio_reference")
-    def must_be_str_or_bytesio(cls, value: object):
-        if not isinstance(value, (str, BytesIO)):
-            error = "audio must be a string or a BytesIO object"
+    def must_be_str_or_bytes(cls, value: object):
+        if not isinstance(value, (str, bytes)):
+            error = "audio must be a string or a bytes object"
             raise TypeError(error)
         return value
 
@@ -291,15 +300,15 @@ class CompareAudio2CredentialsOutput(DaspeakResponse):
     """Output class for the identification audio to credentials endpoint.
 
     Attributes:
-        result: the result of the identification, a dictionary with the "id" and the "score"
+        result: The result of the identification, a dictionary with the "id" and the "score"
             of the best match
-        scores: the whole list of scores for each credential.
+        scores: The whole list of scores for each credential.
             The list contains dictionaries with two keys (and values): "id" and "score"
-        calibration: the calibration used
-        model: the model used to generate the credential
-        authenticity_reference: the authenticity of the reference audio sample
-        input_audio_duration_reference: the duration of the input audio
-        net_speech_duration_reference: the duration of the speech in the audio
+        calibration: The calibration used
+        model: The model used to generate the credential
+        authenticity_reference: The authenticity of the reference audio sample
+        input_audio_duration_reference: The duration of the input audio
+        net_speech_duration_reference: The duration of the speech in the audio
 
     """
 

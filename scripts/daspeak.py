@@ -1,7 +1,5 @@
 """Example script to demonstrate how to use the daspeak module.
 """
-from io import BytesIO
-
 from vericlient import DaspeakClient
 from vericlient.daspeak.models import (
     GenerateCredentialInput,
@@ -30,7 +28,7 @@ print(f"Credential generated with an audio file: {generate_credential_output.cre
 # generate a credential from a BytesIO object using the last model
 with open("/home/audio.wav", "rb") as f:
     model_input = GenerateCredentialInput(
-        audio=BytesIO(f.read()),
+        audio=f.read(),
         hash=client.get_models().models[-1],
     )
 generate_credential_output = client.generate_credential(model_input)
@@ -49,7 +47,7 @@ print(f"Net speech duration of the audio file: {compare_output.net_speech_durati
 # compare a credential with a BytesIO object
 with open("/home/audio.wav", "rb") as f:
     compare_input = CompareCredential2AudioInput(
-        audio_to_evaluate=BytesIO(f.read()),
+        audio_to_evaluate=f.read(),
         credential_reference=generate_credential_output.credential,
     )
 compare_output = client.compare(compare_input)
@@ -61,7 +59,7 @@ print(f"Net speech duration of the virtual file: {compare_output.net_speech_dura
 with open ("/home/audio.wav", "rb") as f:
     compare_input = CompareAudio2AudioInput(
         audio_reference="/home/audio.wav",
-        audio_to_evaluate=BytesIO(f.read()),
+        audio_to_evaluate=f.read(),
     )
 compare_output = client.compare(compare_input)
 print(f"Similarity between the two audio files: {compare_output.score}")

@@ -1,6 +1,5 @@
 """Implementation of the client for the DASPEaK service."""
 import json
-from io import BytesIO
 
 from requests.models import Response
 
@@ -294,7 +293,7 @@ class DaspeakClient(Client):
         response = self._post(endpoint=endpoint, data=data, files=files)
         return CompareAudio2CredentialsOutput(status_code=response.status_code, **response.json())
 
-    def _get_virtual_audio_file(self, audio_input: object) -> BytesIO:
+    def _get_virtual_audio_file(self, audio_input: object) -> bytes:
         if isinstance(audio_input, str):
             try:
                 with open(audio_input, "rb") as f:
@@ -302,10 +301,9 @@ class DaspeakClient(Client):
             except FileNotFoundError as e:
                 error = f"File {audio_input} not found"
                 raise FileNotFoundError(error) from e
-        elif isinstance(audio_input, BytesIO):
-            audio = audio_input.read()
-            audio_input.close()
+        elif isinstance(audio_input, bytes):
+            audio = audio_input
         else:
-            error = "audio must be a string or a BytesIO object"
+            error = "audio must be a string or a bytes object"
             raise TypeError(error)
         return audio
