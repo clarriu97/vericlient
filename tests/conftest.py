@@ -1,15 +1,15 @@
 import pytest
 import requests_mock
 
-
 # pytest hooks
 
 def pytest_addoption(parser):
     parser.addoption(
-        "--mock", action="store_true", default=False, help="Run tests with mock server responses"
+        "--mock", action="store_true", default=False, help="Run tests with mock server responses",
     )
     parser.addoption(
-        "--env", action="store", default=None, help="Specify the environment to run tests against (e.g., EU_SANDBOX, US_PRODUCTION)"
+        "--env", action="store", default=None, help=\
+            "Specify the environment to run tests against (e.g., EU_SANDBOX, US_PRODUCTION)",
     )
 
 

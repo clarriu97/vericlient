@@ -1,11 +1,8 @@
-from io import BytesIO
-
 from vericlient import DaspeakClient
 from vericlient.daspeak.models import (
     GenerateCredentialInput,
     GenerateCredentialOutput,
 )
-
 
 
 def test_daspeak_alive(mock_server, daspeak_alive_parameters):
@@ -47,7 +44,7 @@ def test_daspeak_get_models(mock_server, daspeak_get_models_parameters):
             assert isinstance(response.models, list)
 
 
-def test_daspeak_generate_credential(mock_server, daspeak_generate_credential_parameters, audio_file, audio_file_bytes):
+def test_daspeak_generate_credential(mock_server, daspeak_generate_credential_parameters, audio_file_path, audio_file):
     for param in daspeak_generate_credential_parameters:
         endpoint, mock_response, mock_status_code, url, target, environment, location = param
         daspeak_client = DaspeakClient(
@@ -64,14 +61,14 @@ def test_daspeak_generate_credential(mock_server, daspeak_generate_credential_pa
             model = daspeak_client.get_models().models[-1]
 
         input_model = GenerateCredentialInput(
-            audio=audio_file,
+            audio=audio_file_path,
             hash=model,
         )
         response = daspeak_client.generate_credential(input_model)
         assert isinstance(response, GenerateCredentialOutput)
 
         input_model = GenerateCredentialInput(
-            audio=audio_file_bytes,
+            audio=audio_file,
             hash=model,
         )
         response = daspeak_client.generate_credential(input_model)
