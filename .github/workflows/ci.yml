@@ -73,7 +73,7 @@ jobs:
       run: pdm install
 
     - name: Run lint
-      run: pdm run lint
+      run: pdm run lint && pdm run lint-tests
 
   docs:
     runs-on: ubuntu-latest

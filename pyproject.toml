@@ -48,6 +48,8 @@ dev = [
 [tool.pdm.scripts]
 lint = "ruff check ."
 lint-fix = "ruff check . --fix"
+lint-tests = "ruff check tests"
+lint-tests-fix = "ruff check tests --fix"
 docs-serve = "mkdocs serve"
 docs-build = "mkdocs build"
 test = """pytest tests --mock \
@@ -124,6 +126,16 @@ exclude = [
     "venv",
     "tests",
     "scripts",
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*.py" = [
+    "S101",     # Use of assert detected
+    "ANN001",   # Missing type annotation for function argument
+    "D103",     # Missing docstring in public function
+    "ANN201",   # Missing type annotation for public function
+    "D100",     # Missing docstring in public module
+    "D104",     # Missing docstring in public package
 ]
 
 [tool.ruff.lint]
