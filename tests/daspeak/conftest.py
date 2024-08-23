@@ -1,5 +1,17 @@
 import pytest
+from vericlient.daspeak.exceptions import (
+    AudioDurationTooLongError,
+    CalibrationNotAvailableError,
+    InsufficientQualityError,
+    InvalidSpecifiedChannelError,
+    NetSpeechDurationIsNotEnoughError,
+    SignalNoiseRatioError,
+    TooManyAudioChannelsError,
+    UnsupportedAudioCodecError,
+    UnsupportedSampleRateError,
+)
 from vericlient.environments import Environments, Locations, Target
+from vericlient.exceptions import UnsupportedMediaTypeError
 
 from tests.conftest import (
     eu_production_test_env,
@@ -12,7 +24,9 @@ from tests.conftest import (
     us_sandbox_url,
 )
 
-# server responses OK
+####################
+# SERVER RESPONSES #
+####################
 
 @pytest.fixture(scope="session")
 def daspeak_alive_response():
@@ -39,17 +53,140 @@ def daspeak_generate_credential_response():
     }
 
 
-# server responses with errors
+#################
+# SERVER ERRORS #
+#################
+
+@pytest.fixture(scope="session")
+def daspeak_channels_error_response():
+    return {
+        "error": "The wav has more channels than are accepted by the system",
+        "exception": "AudioInputException",
+    }
+
+
+@pytest.fixture(scope="session")
+def daspeak_sample_rate_error_response():
+    return {
+        "error": "The sample rate is not supported, must be 8 Khz or 16 Khz",
+        "exception": "AudioInputException",
+    }
+
+
+@pytest.fixture(scope="session")
+def daspeak_codec_error_response():
+    return {
+        "error": "Provided audio data uses an unsupported codec. Supported codecs are:",
+        "exception": "AudioInputException",
+    }
+
+
+@pytest.fixture(scope="session")
+def daspeak_long_audio_error_response():
+    return {
+        "error": "The wav duration is longer than 30 seconds",
+        "exception": "AudioInputException",
+    }
+
+
+@pytest.fixture(scope="session")
+def daspeak_snr_error_response():
+    return {
+        "error": "Noise level exceeded",
+        "exception": "SignalNoiseRatioException",
+    }
+
 
 @pytest.fixture(scope="session")
 def daspeak_net_speech_duration_error_response():
     return {
-        "error": "Voice duration is less than 3 seconds",
+        "error": "Voice duration is not enough 2.55s < 3.00s",
         "exception": "VoiceDurationIsNotEnoughException",
     }
 
 
-# parameters fixtures for daspeak
+@pytest.fixture(scope="session")
+def daspeak_invalid_specified_channel_error_response():
+    return {
+        "error": "Invalid specified channel/s",
+        "exception": "InvalidChannelException",
+    }
+
+
+@pytest.fixture(scope="session")
+def daspeak_quality_error_response():
+    return {
+        "error": "The audio quality is not good enough",
+        "exception": "InsufficientQuality",
+    }
+
+
+@pytest.fixture(scope="session")
+def daspeak_calibration_not_available_error_response():
+    return {
+        "error": "The calibration <calibration> is not available",
+        "exception": "CalibrationNotAvailable",
+    }
+
+
+@pytest.fixture(scope="session")
+def daspeak_invalid_credential_error_response():
+    return {
+        "error": "Decryption error",
+        "exception": "InvalidCredential",
+    }
+
+
+@pytest.fixture(scope="session")
+def daspeak_unsupported_media_type_error_response():
+    return {
+        "error": "415 Unsupported Media Type: The server does not support the media type transmitted in the request",
+        "exception": "UnsupportedMediaType",
+    }
+
+
+#######################
+# PARAMETERS FIXTURES #
+#######################
+
+def _provide_daspeak_parameters(
+        test_environment: str,
+        all_environments: list,
+        mock_option: bool,      # noqa: FBT001
+        endpoint: str,
+        response: dict,
+        status_code: int,
+        exception: Exception,
+    ) -> list:
+    ue_sandbox = (f"{eu_sandbox_url}/{endpoint}", response, status_code, None, \
+        Target.CLOUD.value, Environments.SANDBOX.value, Locations.EU.value, exception)
+    ue_production = (f"{ue_production_url}/{endpoint}", response, status_code, None, \
+        Target.CLOUD.value, Environments.PRODUCTION.value, Locations.EU.value, exception)
+    us_sandbox = (f"{us_sandbox_url}/{endpoint}", response, status_code, None, \
+        Target.CLOUD.value, Environments.SANDBOX.value, Locations.US.value, exception)
+    us_production = (f"{us_production_url}/{endpoint}", response, status_code, None, \
+        Target.CLOUD.value, Environments.PRODUCTION.value, Locations.US.value, exception)
+    if mock_option:
+        parameters = [
+            ue_sandbox,
+            ue_production,
+            us_sandbox,
+            us_production,
+            (f"https://custom-daspeak-url.com/{endpoint}", response, status_code, \
+                "https://custom-daspeak-url.com", None, None, None, exception),
+        ]
+    elif test_environment not in all_environments:
+        pytest.fail(f"Invalid environment specified. Use one of {all_environments}")
+    elif test_environment == eu_sandobox_test_env:
+        parameters = [ue_sandbox]
+    elif test_environment == eu_production_test_env:
+        parameters = [ue_production]
+    elif test_environment == us_sandbox_test_env:
+        parameters = [us_sandbox]
+    elif test_environment == us_production_test_env:
+        parameters = [us_production]
+    return parameters
+
 
 @pytest.fixture(scope="session")
 def daspeak_alive_parameters(
@@ -58,34 +195,10 @@ def daspeak_alive_parameters(
         all_environments,
         daspeak_alive_response,
     ) -> list:
-    ue_sandbox = (f"{eu_sandbox_url}/daspeak/v1/alive", daspeak_alive_response, 200, None, \
-        Target.CLOUD.value, Environments.SANDBOX.value, Locations.EU.value)
-    ue_production = (f"{ue_production_url}/daspeak/v1/alive", daspeak_alive_response, 200, \
-        None, Target.CLOUD.value, Environments.PRODUCTION.value, Locations.EU.value)
-    us_sandbox = (f"{us_sandbox_url}/daspeak/v1/alive", daspeak_alive_response, 200, None, \
-        Target.CLOUD.value, Environments.SANDBOX.value, Locations.US.value)
-    us_production = (f"{us_production_url}/daspeak/v1/alive", daspeak_alive_response, 200, \
-        None, Target.CLOUD.value, Environments.PRODUCTION.value, Locations.US.value)
-    if mock_option:
-        alive_parameters = [
-            ue_sandbox,
-            ue_production,
-            us_sandbox,
-            us_production,
-            ("https://custom-daspeak-url.com/alive", daspeak_alive_response, 200, \
-                "https://custom-daspeak-url.com", None, None, None),
-        ]
-    elif test_environment not in all_environments:
-        pytest.fail(f"Invalid environment specified. Use one of {all_environments}")
-    elif test_environment == eu_sandobox_test_env:
-        alive_parameters = [ue_sandbox]
-    elif test_environment == eu_production_test_env:
-        alive_parameters = [ue_production]
-    elif test_environment == us_sandbox_test_env:
-        alive_parameters = [us_sandbox]
-    elif test_environment == us_production_test_env:
-        alive_parameters = [us_production]
-    return alive_parameters
+    return _provide_daspeak_parameters(
+        test_environment, all_environments, mock_option, "daspeak/v1/alive", \
+        daspeak_alive_response, 200, None,
+    )
 
 
 @pytest.fixture(scope="session")
@@ -95,34 +208,10 @@ def daspeak_get_models_parameters(
         all_environments,
         daspeak_get_models_response,
     )-> list:
-    ue_sandbox = (f"{eu_sandbox_url}/daspeak/v1/models", daspeak_get_models_response, 200, \
-        None, Target.CLOUD.value, Environments.SANDBOX.value, Locations.EU.value)
-    ue_production = (f"{ue_production_url}/daspeak/v1/models", daspeak_get_models_response, \
-        200, None, Target.CLOUD.value, Environments.PRODUCTION.value, Locations.EU.value)
-    us_sandbox = (f"{us_sandbox_url}/daspeak/v1/models", daspeak_get_models_response, 200, \
-        None, Target.CLOUD.value, Environments.SANDBOX.value, Locations.US.value)
-    us_production = (f"{us_production_url}/daspeak/v1/models", daspeak_get_models_response, \
-        200, None, Target.CLOUD.value, Environments.PRODUCTION.value, Locations.US.value)
-    if mock_option:
-        get_models_parameters = [
-            ue_sandbox,
-            ue_production,
-            us_sandbox,
-            us_production,
-            ("https://custom-daspeak-url.com/models", daspeak_get_models_response, 200, \
-                "https://custom-daspeak-url.com", None, None, None),
-        ]
-    elif test_environment not in all_environments:
-        pytest.fail(f"Invalid environment specified. Use one of {all_environments}")
-    elif test_environment == eu_sandobox_test_env:
-        get_models_parameters = [ue_sandbox]
-    elif test_environment == eu_production_test_env:
-        get_models_parameters = [ue_production]
-    elif test_environment == us_sandbox_test_env:
-        get_models_parameters = [us_sandbox]
-    elif test_environment == us_production_test_env:
-        get_models_parameters = [us_production]
-    return get_models_parameters
+    return _provide_daspeak_parameters(
+        test_environment, all_environments, mock_option, "daspeak/v1/models", \
+        daspeak_get_models_response, 200, None,
+    )
 
 
 @pytest.fixture(scope="session")
@@ -132,37 +221,145 @@ def daspeak_generate_credential_parameters(
         all_environments,
         daspeak_generate_credential_response,
     ) -> list:
-    ue_sandbox = (f"{eu_sandbox_url}/daspeak/v1/models/fake-model/credential/wav", daspeak_generate_credential_response, \
-        200, None, Target.CLOUD.value, Environments.SANDBOX.value, Locations.EU.value)
-    ue_production = (f"{ue_production_url}/daspeak/v1/models/fake-model/credential/wav", daspeak_generate_credential_response, \
-        200, None, Target.CLOUD.value, Environments.PRODUCTION.value, Locations.EU.value)
-    us_sandbox = (f"{us_sandbox_url}/daspeak/v1/models/fake-model/credential/wav", daspeak_generate_credential_response, \
-        200, None, Target.CLOUD.value, Environments.SANDBOX.value, Locations.US.value)
-    us_production = (f"{us_production_url}/daspeak/v1/models/fake-model/credential/wav", daspeak_generate_credential_response, \
-        200, None, Target.CLOUD.value, Environments.PRODUCTION.value, Locations.US.value)
-    if mock_option:
-        generate_credential_parameters = [
-            ue_sandbox,
-            ue_production,
-            us_sandbox,
-            us_production,
-            ("https://custom-daspeak-url.com/models/fake-model/credential/wav", daspeak_generate_credential_response, \
-                200, "https://custom-daspeak-url.com", None, None, None),
-        ]
-    elif test_environment not in all_environments:
-        pytest.fail(f"Invalid environment specified. Use one of {all_environments}")
-    elif test_environment == eu_sandobox_test_env:
-        generate_credential_parameters = [ue_sandbox]
-    elif test_environment == eu_production_test_env:
-        generate_credential_parameters = [ue_production]
-    elif test_environment == us_sandbox_test_env:
-        generate_credential_parameters = [us_sandbox]
-    elif test_environment == us_production_test_env:
-        generate_credential_parameters = [us_production]
-    return generate_credential_parameters
+    return _provide_daspeak_parameters(
+        test_environment, all_environments, mock_option, "daspeak/v1/models/fake-model/credential/wav", \
+        daspeak_generate_credential_response, 200, None,
+    )
 
 
-# resources fixtures for daspeak
+@pytest.fixture(scope="session")
+def daspeak_generate_credential_channels_error_response_parameters(
+        mock_option,
+        test_environment,
+        all_environments,
+        daspeak_channels_error_response,
+    ):
+    return _provide_daspeak_parameters(
+        test_environment, all_environments, mock_option, "daspeak/v1/models/fake-model/credential/wav", \
+        daspeak_channels_error_response, 400, TooManyAudioChannelsError,
+    )
+
+
+@pytest.fixture(scope="session")
+def daspeak_generate_credential_sample_rate_error_response_parameters(
+        mock_option,
+        test_environment,
+        all_environments,
+        daspeak_sample_rate_error_response,
+    ):
+    return _provide_daspeak_parameters(
+        test_environment, all_environments, mock_option, "daspeak/v1/models/fake-model/credential/wav", \
+        daspeak_sample_rate_error_response, 400, UnsupportedSampleRateError,
+    )
+
+
+@pytest.fixture(scope="session")
+def daspeak_generate_credential_net_speech_duration_error_response_parameters(
+        mock_option,
+        test_environment,
+        all_environments,
+        daspeak_net_speech_duration_error_response,
+    ):
+    return _provide_daspeak_parameters(
+        test_environment, all_environments, mock_option, "daspeak/v1/models/fake-model/credential/wav", \
+        daspeak_net_speech_duration_error_response, 400, NetSpeechDurationIsNotEnoughError,
+    )
+
+
+@pytest.fixture(scope="session")
+def daspeak_generate_credential_bad_snr_error_response_parameters(
+        mock_option,
+        test_environment,
+        all_environments,
+        daspeak_snr_error_response,
+    ):
+    return _provide_daspeak_parameters(
+        test_environment, all_environments, mock_option, "daspeak/v1/models/fake-model/credential/wav", \
+        daspeak_snr_error_response, 400, SignalNoiseRatioError,
+    )
+
+
+@pytest.fixture(scope="session")
+def daspeak_generate_credential_audio_too_long_error_response_parameters(
+        mock_option,
+        test_environment,
+        all_environments,
+        daspeak_long_audio_error_response,
+    ):
+    return _provide_daspeak_parameters(
+        test_environment, all_environments, mock_option, "daspeak/v1/models/fake-model/credential/wav", \
+        daspeak_long_audio_error_response, 400, AudioDurationTooLongError,
+    )
+
+
+@pytest.fixture(scope="session")
+def daspeak_generate_credential_codec_error_response_parameters(
+        mock_option,
+        test_environment,
+        all_environments,
+        daspeak_codec_error_response,
+    ):
+    return _provide_daspeak_parameters(
+        test_environment, all_environments, mock_option, "daspeak/v1/models/fake-model/credential/wav", \
+        daspeak_codec_error_response, 400, UnsupportedAudioCodecError,
+    )
+
+
+@pytest.fixture(scope="session")
+def daspeak_generate_credential_insufficient_quality_error_response_parameters(
+        mock_option,
+        test_environment,
+        all_environments,
+        daspeak_quality_error_response,
+    ):
+    return _provide_daspeak_parameters(
+        test_environment, all_environments, mock_option, "daspeak/v1/models/fake-model/credential/wav", \
+        daspeak_quality_error_response, 400, InsufficientQualityError,
+    )
+
+
+@pytest.fixture(scope="session")
+def daspeak_generate_credential_invalid_specified_channel_error_response_parameters(
+        mock_option,
+        test_environment,
+        all_environments,
+        daspeak_invalid_specified_channel_error_response,
+    ):
+    return _provide_daspeak_parameters(
+        test_environment, all_environments, mock_option, "daspeak/v1/models/fake-model/credential/wav", \
+        daspeak_invalid_specified_channel_error_response, 400, InvalidSpecifiedChannelError,
+    )
+
+
+@pytest.fixture(scope="session")
+def daspeak_generate_credential_calibration_not_available_error_response_parameters(
+        mock_option,
+        test_environment,
+        all_environments,
+        daspeak_calibration_not_available_error_response,
+    ):
+    return _provide_daspeak_parameters(
+        test_environment, all_environments, mock_option, "daspeak/v1/models/fake-model/credential/wav", \
+        daspeak_calibration_not_available_error_response, 400, CalibrationNotAvailableError,
+    )
+
+
+@pytest.fixture(scope="session")
+def daspeak_generate_credential_unsupported_media_type_error_response_parameters(
+        mock_option,
+        test_environment,
+        all_environments,
+        daspeak_unsupported_media_type_error_response,
+    ):
+    return _provide_daspeak_parameters(
+        test_environment, all_environments, mock_option, "daspeak/v1/models/fake-model/credential/wav", \
+        daspeak_unsupported_media_type_error_response, 415, UnsupportedMediaTypeError,
+    )
+
+
+######################
+# RESOURCES FIXTURES #
+######################
 
 @pytest.fixture(scope="session")
 def audio_file_path() -> str:
@@ -196,4 +393,34 @@ def audio_bad_snr_file() -> bytes:
 @pytest.fixture(scope="session")
 def audio_insufficient_quality_file() -> bytes:
     with open("tests/daspeak/resources/audio_insufficient_quality.wav", "rb") as f:
+        return f.read()
+
+
+@pytest.fixture(scope="session")
+def audio_too_many_channels_file() -> bytes:
+    with open("tests/daspeak/resources/audio_too_many_channels.wav", "rb") as f:
+        return f.read()
+
+
+@pytest.fixture(scope="session")
+def audio_invalid_sample_rate_file() -> bytes:
+    with open("tests/daspeak/resources/audio_invalid_sample_rate.wav", "rb") as f:
+        return f.read()
+
+
+@pytest.fixture(scope="session")
+def audio_too_long_file() -> bytes:
+    with open("tests/daspeak/resources/audio_too_long.wav", "rb") as f:
+        return f.read()
+
+
+@pytest.fixture(scope="session")
+def audio_codec_error_file() -> bytes:
+    with open("tests/daspeak/resources/audio_codec_error.wav", "rb") as f:
+        return f.read()
+
+
+@pytest.fixture(scope="session")
+def audio_unsupported_file() -> bytes:
+    with open("tests/__init__.py", "rb") as f:
         return f.read()
