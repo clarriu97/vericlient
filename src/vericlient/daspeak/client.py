@@ -31,6 +31,7 @@ from vericlient.daspeak.models import (
     GenerateCredentialOutput,
     ModelsOutput,
 )
+from vericlient.exceptions import InvalidCredentialError, UnsupportedMediaTypeError
 
 
 class DaspeakClient(Client):
@@ -71,13 +72,15 @@ class DaspeakClient(Client):
             headers=headers,
         )
         self._exceptions = [
-            "InputException",
+            "AudioInputException",
             "SignalNoiseRatioException",
             "VoiceDurationIsNotEnoughException",
             "InvalidChannelException",
             "InsufficientQuality",
             "CalibrationNotAvailable",
             "ServerError",
+            "InvalidCredential",
+            "UnsupportedMediaType",
         ]
         self._compare_functions_map = {
             CompareCredential2AudioInput: self._compare_credential2audio,
@@ -97,12 +100,12 @@ class DaspeakClient(Client):
         accepted_status_code = 200
         return response.status_code == accepted_status_code
 
-    def _handle_error_response(self, response: Response) -> None:   # noqa: C901
+    def _handle_error_response(self, response: Response) -> None:   # noqa: C901, PLR0912
         """Handle error responses from the API."""
         response_json = response.json()
         if response_json["exception"] not in self._exceptions:
             self._raise_server_error(response)
-        if response_json["exception"] == "InputException":
+        if response_json["exception"] == "AudioInputException":
             if "more channels than" in response_json["error"]:
                 raise TooManyAudioChannelsError
             if "unsupported codec" in response_json["error"]:
@@ -123,7 +126,13 @@ class DaspeakClient(Client):
         if response_json["exception"] == "InsufficientQuality":
             raise InsufficientQualityError
         if response_json["exception"] == "CalibrationNotAvailable":
-            raise CalibrationNotAvailableError
+            error = response_json["error"]
+            calibration = str(error.split(" ")[2])
+            raise CalibrationNotAvailableError(calibration)
+        if response_json["exception"] == "InvalidCredential":
+            raise InvalidCredentialError
+        if response_json["exception"] == "UnsupportedMediaType":
+            raise UnsupportedMediaTypeError
         raise ValueError(response_json["error"])
 
     def get_models(self) -> ModelsOutput:
@@ -144,6 +153,19 @@ class DaspeakClient(Client):
 
         Returns:
             The response from the service
+
+        Raises:
+            ValueError: If the `data_model` is not an instance of `GenerateCredentialInput`
+            TooManyAudioChannelsError: If the audio has more channels than the service supports
+            UnsupportedAudioCodecError: If the audio has an unsupported codec
+            UnsupportedSampleRateError: If the audio has an unsupported sample rate
+            AudioDurationTooLongError: If the audio duration is longer than the service supports
+            SignalNoiseRatioError: If the signal-to-noise ratio is too low
+            NetSpeechDurationIsNotEnoughError: If the net speech duration is not enough
+            InvalidSpecifiedChannelError: If the specified channel is invalid
+            InsufficientQualityError: If the audio quality is insufficient
+            CalibrationNotAvailableError: If the calibration is not available
+            UnsupportedMediaTypeError: If the media type is not supported
 
         """
         endpoint = DaspeakEndpoints.MODELS_HASH_CREDENTIAL_AUDIO.value.replace("<hash>", data_model.hash)
@@ -184,6 +206,8 @@ class DaspeakClient(Client):
             InvalidSpecifiedChannelError: If the specified channel is invalid
             InsufficientQualityError: If the audio quality is insufficient
             CalibrationNotAvailableError: If the calibration is not available
+            InvalidCredentialError: If the credential is invalid
+            UnsupportedMediaTypeError: If the media type is not supported
 
         """
         try:
