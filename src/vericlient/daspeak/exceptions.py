@@ -1,6 +1,8 @@
 """Module to define the exceptions for the Daspeak API."""
+from vericlient.exceptions import VeriClientError
 
-class DaspeakError(Exception):
+
+class DaspeakError(VeriClientError):
     """Base class for exceptions in the Daspeak API."""
 
     def __init__(self, message: str) -> None:
