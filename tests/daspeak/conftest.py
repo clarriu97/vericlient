@@ -11,7 +11,10 @@ from vericlient.daspeak.exceptions import (
     UnsupportedSampleRateError,
 )
 from vericlient.environments import Environments, Locations, Target
-from vericlient.exceptions import UnsupportedMediaTypeError
+from vericlient.exceptions import (
+    ServerError,
+    UnsupportedMediaTypeError,
+)
 
 from tests.conftest import (
     eu_production_test_env,
@@ -142,6 +145,14 @@ def daspeak_unsupported_media_type_error_response():
     return {
         "error": "415 Unsupported Media Type: The server does not support the media type transmitted in the request",
         "exception": "UnsupportedMediaType",
+    }
+
+
+@pytest.fixture(scope="session")
+def daspeak_server_error_response():
+    return {
+        "error": "An internal server error occured",
+        "exception": "DaspeakInternalException",
     }
 
 
@@ -354,6 +365,19 @@ def daspeak_generate_credential_unsupported_media_type_error_response_parameters
     return _provide_daspeak_parameters(
         test_environment, all_environments, mock_option, "daspeak/v1/models/fake-model/credential/wav", \
         daspeak_unsupported_media_type_error_response, 415, UnsupportedMediaTypeError,
+    )
+
+
+@pytest.fixture(scope="session")
+def daspeak_server_error_response_parameters(
+        mock_option,
+        test_environment,
+        all_environments,
+        daspeak_server_error_response,
+    ):
+    return _provide_daspeak_parameters(
+        test_environment, all_environments, mock_option, "daspeak/v1/models/fake-model/credential/wav", \
+        daspeak_server_error_response, 500, ServerError,
     )
 
 

@@ -233,3 +233,13 @@ def test_daspeak_generate_credential_unsupported_media_type_error(
         daspeak_generate_credential_unsupported_media_type_error_response_parameters,
         audio_unsupported_file,
     )
+
+
+def test_daspeak_server_error(
+    mock_server, daspeak_server_error_response_parameters, audio_file,
+):
+    _test_error(
+        mock_server,
+        daspeak_server_error_response_parameters,
+        audio_file,
+    )
