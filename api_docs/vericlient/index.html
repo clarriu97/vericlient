@@ -638,30 +638,30 @@
 <p>The <code>vericlient</code> library provides a way to interact with the Veridas APIs.</p>
 <p>To know how to configure the library, the following concepts must be understood:</p>
 <ul>
-<li><code>target</code>: the target of the client, which can be <code>cloud</code> or <code>custom</code>.
-  The <code>cloud</code> target is used to interact with the Veridas cloud APIs.
-  The <code>custom</code> target is used to interact with self-hosted or on-premises
-  Veridas APIs.</li>
-</ul>
-<p>If you want to use it with the <code>custom</code> target, don't need to care about the
-  rest of the parameters, but you must provide the <code>url</code>.</p>
-<p>Default: <code>cloud</code>.</p>
-<ul>
 <li>
-<p><code>url</code>: the URL of the API to interact with. It is only used when the <code>target</code>
-  is <code>custom</code>.</p>
+<p><code>target</code>: You can use the library to interact with the Veridas cloud APIs or with a
+  self-hosted API. It will depend on the <code>url</code> parameter. If the <code>url</code> parameter
+  is provided to the client object, the client will interact with the self-hosted
+  API. Otherwise, it will interact with the Veridas cloud APIs.</p>
 </li>
 <li>
-<p><code>apikey</code>: the API key to use for the requests against the Veridas Cloud API.</p>
+<p><code>url</code>: the URL of the API to interact with. If provided, the client will
+  interact with this URL instead of the Veridas cloud APIs.</p>
 </li>
 <li>
-<p><code>environment</code>: the environment to use for the requests. It can be <code>production</code>
+<p><code>apikey</code>: the API key to use for the requests if the client is interacting
+  with the Veridas Cloud API.</p>
+</li>
+<li>
+<p><code>environment</code>: the environment to use for the requests if the client is
+  interacting with the Veridas cloud APIs. It can be <code>production</code>
   or <code>sandbox</code>.</p>
 </li>
 </ul>
 <p>Default: <code>sandbox</code>.</p>
 <ul>
-<li><code>location</code>: the location to use for the requests. It can be <code>eu</code> or <code>us</code>,
+<li><code>location</code>: the location to use for the requests if the client is interacting
+  with the Veridas cloud APIs. It can be <code>eu</code> or <code>us</code>,
   depending if the server is located in Europe or the United States.</li>
 </ul>
 <p>Default: <code>eu</code>.</p>
@@ -686,7 +686,6 @@ variables.</p>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">vericlient</span> <span class="kn">import</span> <span class="n">DaspeakClient</span>
 
 <span class="n">client</span> <span class="o">=</span> <span class="n">DaspeakClient</span><span class="p">(</span>
-    <span class="n">target</span><span class="o">=</span><span class="s2">&quot;cloud&quot;</span><span class="p">,</span>
     <span class="n">apikey</span><span class="o">=</span><span class="s2">&quot;your_api_key&quot;</span><span class="p">,</span>
     <span class="n">environment</span><span class="o">=</span><span class="s2">&quot;sandbox&quot;</span><span class="p">,</span>
     <span class="n">location</span><span class="o">=</span><span class="s2">&quot;eu&quot;</span><span class="p">,</span>
@@ -705,7 +704,6 @@ client like this:</p>
 <p>The following environment variables are supported and will override the
 programmatic configuration:</p>
 <ul>
-<li><code>VERICLIENT_TARGET</code>: The target API to use.</li>
 <li><code>VERICLIENT_ENVIRONMENT</code>: The environment to use for the requests.</li>
 <li><code>VERICLIENT_APIKEY</code>: The API key to use for the requests against the Veridas Cloud API.</li>
 <li><code>VERICLIENT_LOCATION</code>: The location to use for the requests.</li>
