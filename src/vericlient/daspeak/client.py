@@ -41,7 +41,6 @@ class DaspeakClient(Client):
             self,
             api: str = APIs.DASPEAK.value,
             apikey: str | None = None,
-            target: str | None = None,
             timeout: int | None = None,
             environment: str | None = None,
             location: str | None = None,
@@ -53,7 +52,6 @@ class DaspeakClient(Client):
         Args:
             api: The API to use
             apikey: The API key to use
-            target: The target to use
             timeout: The timeout to use in the requests
             environment: The environment to use
             location: The location to use
@@ -64,7 +62,6 @@ class DaspeakClient(Client):
         super().__init__(
             api=api,
             apikey=apikey,
-            target=target,
             timeout=timeout,
             environment=environment,
             location=location,

@@ -6,7 +6,7 @@ import structlog
 
 from vericlient.apis import APIs
 from vericlient.config.config import settings
-from vericlient.environments import Environments, Locations, Target, cloud_env2url
+from vericlient.environments import Environments, Locations, cloud_env2url
 from vericlient.exceptions import AuthorizationError, ServerError
 
 logger = structlog.get_logger(__name__)
@@ -19,7 +19,6 @@ class Client(ABC):
             self,
             api: str,
             apikey: str | None = None,
-            target: str | None = None,
             timeout: int | None = None,
             environment: str | None = None,
             location: str | None = None,
@@ -30,15 +29,6 @@ class Client(ABC):
         self._headers = headers or {}
         self._session = requests.Session()
 
-        if not target and not settings.target:
-            logger.warning("No target provided. Defaulting to cloud")
-            target = Target.CLOUD.value
-        else:
-            target = settings.target or target
-        if not any(target == target_.value for target_ in Target):
-            error = f"Invalid target: {target}. Valid options are: {', '.join(target.value for target in Target)}"
-            raise ValueError(error)
-
         if not timeout and not settings.timeout:
             seconds = 10
             logging_message = f"No timeout provided. Defaulting to {seconds} seconds"
@@ -47,15 +37,15 @@ class Client(ABC):
         else:
             self._timeout = settings.timeout or timeout
 
-        if target == Target.CLOUD.value:
+        if url:
+            self._configure_custom_url(url)
+        else:
             self._configure_cloud_url(api, environment, location)
             if not apikey and not settings.apikey:
                 error = "If target is cloud, apikey must be provided"
                 raise ValueError(error)
             apikey = settings.apikey or apikey
             self._headers.update({"apikey": apikey})
-        elif target == Target.CUSTOM:
-            self._configure_custom_url(url)
 
         self._session.headers.update(self._headers)
 
@@ -84,9 +74,7 @@ class Client(ABC):
         self._url = cloud_env2url[environment][location] + f"/{api}"
 
     def _configure_custom_url(self, url: str) -> None:
-        if not url and not settings.url:
-            error = "If target is custom, url must be provided"
-            raise ValueError(error)
+        url = settings.url or url
         self._url = url
 
     @property

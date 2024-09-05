@@ -3,13 +3,6 @@
 from enum import Enum
 
 
-class Target(Enum):
-    """Represents the target the client is going to make requests to."""
-
-    CLOUD = "cloud"
-    CUSTOM = "custom"
-
-
 class Environments(Enum):
     """Represents the environments that the client can make requests to, if the target is the cloud."""
 

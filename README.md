@@ -146,7 +146,6 @@ print(client.alive())
 The library can be configured using environment variables.
 The following variables are supported:
 
-- `VERICLIENT_TARGET`: The target API to use (default: `cloud`).
 - `VERICLIENT_ENVIRONMENT`: The environment to use for the requests (default: `production`).
 - `VERICLIENT_APIKEY`: The API key to use for the requests against the Veridas Cloud API.
 - `VERICLIENT_LOCATION`: The location to use for the requests (default: `eu`).

@@ -1,5 +1,4 @@
 apikey:      # your api key
-target:      # from env
 environment: # from env
 location:    # from env
 url:         # from env

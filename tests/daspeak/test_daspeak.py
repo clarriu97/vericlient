@@ -8,13 +8,12 @@ from vericlient.daspeak.models import (
 
 def test_daspeak_alive(mock_server, daspeak_alive_parameters):
     for param in daspeak_alive_parameters:
-        endpoint, mock_response, mock_status_code, url, target, environment, location, _ = param
+        endpoint, mock_response, mock_status_code, url, environment, location, _ = param
         if mock_server:
             mock_server.get(endpoint, json=mock_response, status_code=mock_status_code)
 
         daspeak_client = DaspeakClient(
             apikey="fake-apikey",
-            target=target,
             environment=environment,
             location=location,
             url=url,
@@ -26,13 +25,12 @@ def test_daspeak_alive(mock_server, daspeak_alive_parameters):
 
 def test_daspeak_get_models(mock_server, daspeak_get_models_parameters):
     for param in daspeak_get_models_parameters:
-        endpoint, mock_response, mock_status_code, url, target, environment, location, _ = param
+        endpoint, mock_response, mock_status_code, url, environment, location, _ = param
         if mock_server:
             mock_server.get(endpoint, json=mock_response, status_code=mock_status_code)
 
         daspeak_client = DaspeakClient(
             apikey="fake-apikey",
-            target=target,
             environment=environment,
             location=location,
             url=url,
@@ -47,10 +45,9 @@ def test_daspeak_get_models(mock_server, daspeak_get_models_parameters):
 
 def test_daspeak_generate_credential(mock_server, daspeak_generate_credential_parameters, audio_file_path, audio_file):
     for param in daspeak_generate_credential_parameters:
-        endpoint, mock_response, mock_status_code, url, target, environment, location, _ = param
+        endpoint, mock_response, mock_status_code, url, environment, location, _ = param
         daspeak_client = DaspeakClient(
             apikey="fake-apikey",
-            target=target,
             environment=environment,
             location=location,
             url=url,
@@ -80,10 +77,9 @@ def _test_error(        # noqa: ANN202
     mock_server, daspeak_generate_credential_error_response_parameters, audio_file,
 ):
     for param in daspeak_generate_credential_error_response_parameters:
-        endpoint, mock_response, mock_status_code, url, target, environment, location, exception = param
+        endpoint, mock_response, mock_status_code, url, environment, location, exception = param
         daspeak_client = DaspeakClient(
             apikey="fake-apikey",
-            target=target,
             environment=environment,
             location=location,
             url=url,
@@ -175,10 +171,9 @@ def test_daspeak_generate_credential_invalid_specified_channel_error(
     mock_server, daspeak_generate_credential_invalid_specified_channel_error_response_parameters, audio_file,
 ):
     for param in daspeak_generate_credential_invalid_specified_channel_error_response_parameters:
-        endpoint, mock_response, mock_status_code, url, target, environment, location, exception = param
+        endpoint, mock_response, mock_status_code, url, environment, location, exception = param
         daspeak_client = DaspeakClient(
             apikey="fake-apikey",
-            target=target,
             environment=environment,
             location=location,
             url=url,
@@ -202,10 +197,9 @@ def test_daspeak_generate_credential_calibration_not_available_error(
     mock_server, daspeak_generate_credential_calibration_not_available_error_response_parameters, audio_file,
 ):
     for param in daspeak_generate_credential_calibration_not_available_error_response_parameters:
-        endpoint, mock_response, mock_status_code, url, target, environment, location, exception = param
+        endpoint, mock_response, mock_status_code, url, environment, location, exception = param
         daspeak_client = DaspeakClient(
             apikey="fake-apikey",
-            target=target,
             environment=environment,
             location=location,
             url=url,
@@ -238,8 +232,21 @@ def test_daspeak_generate_credential_unsupported_media_type_error(
 def test_daspeak_server_error(
     mock_server, daspeak_server_error_response_parameters, audio_file,
 ):
-    _test_error(
-        mock_server,
-        daspeak_server_error_response_parameters,
-        audio_file,
-    )
+    for param in daspeak_server_error_response_parameters:
+        endpoint, mock_response, mock_status_code, url, environment, location, exception = param
+        daspeak_client = DaspeakClient(
+            apikey="fake-apikey",
+            environment=environment,
+            location=location,
+            url=url,
+        )
+        if mock_server:
+            mock_server.post(endpoint, json=mock_response, status_code=mock_status_code)
+            model = "fake-model"
+
+            input_model = GenerateCredentialInput(
+                audio=audio_file,
+                hash=model,
+            )
+            with pytest.raises(exception):
+                daspeak_client.generate_credential(input_model)

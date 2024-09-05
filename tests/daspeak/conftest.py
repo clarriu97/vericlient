@@ -10,7 +10,7 @@ from vericlient.daspeak.exceptions import (
     UnsupportedAudioCodecError,
     UnsupportedSampleRateError,
 )
-from vericlient.environments import Environments, Locations, Target
+from vericlient.environments import Environments, Locations
 from vericlient.exceptions import (
     ServerError,
     UnsupportedMediaTypeError,
@@ -170,13 +170,13 @@ def _provide_daspeak_parameters(
         exception: Exception,
     ) -> list:
     ue_sandbox = (f"{eu_sandbox_url}/{endpoint}", response, status_code, None, \
-        Target.CLOUD.value, Environments.SANDBOX.value, Locations.EU.value, exception)
+        Environments.SANDBOX.value, Locations.EU.value, exception)
     ue_production = (f"{ue_production_url}/{endpoint}", response, status_code, None, \
-        Target.CLOUD.value, Environments.PRODUCTION.value, Locations.EU.value, exception)
+        Environments.PRODUCTION.value, Locations.EU.value, exception)
     us_sandbox = (f"{us_sandbox_url}/{endpoint}", response, status_code, None, \
-        Target.CLOUD.value, Environments.SANDBOX.value, Locations.US.value, exception)
+        Environments.SANDBOX.value, Locations.US.value, exception)
     us_production = (f"{us_production_url}/{endpoint}", response, status_code, None, \
-        Target.CLOUD.value, Environments.PRODUCTION.value, Locations.US.value, exception)
+        Environments.PRODUCTION.value, Locations.US.value, exception)
     if mock_option:
         parameters = [
             ue_sandbox,
@@ -184,7 +184,7 @@ def _provide_daspeak_parameters(
             us_sandbox,
             us_production,
             (f"https://custom-daspeak-url.com/{endpoint}", response, status_code, \
-                "https://custom-daspeak-url.com", None, None, None, exception),
+                "https://custom-daspeak-url.com/daspeak/v1", None, None, exception),
         ]
     elif test_environment not in all_environments:
         pytest.fail(f"Invalid environment specified. Use one of {all_environments}")
