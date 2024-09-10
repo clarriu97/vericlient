@@ -39,7 +39,6 @@ class DaspeakClient(Client):
 
     def __init__(
             self,
-            api: str = APIs.DASPEAK.value,
             apikey: str | None = None,
             timeout: int | None = None,
             environment: str | None = None,
@@ -50,7 +49,6 @@ class DaspeakClient(Client):
         """Create the DaspeakClient class.
 
         Args:
-            api: The API to use
             apikey: The API key to use
             timeout: The timeout to use in the requests
             environment: The environment to use
@@ -59,6 +57,7 @@ class DaspeakClient(Client):
             headers: The headers to be used in the requests
 
         """
+        api = APIs.DASPEAK.value
         super().__init__(
             api=api,
             apikey=apikey,
