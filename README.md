@@ -21,8 +21,8 @@ handling responses efficiently.
 - 🔴: not yet supported.
 
 | **API**  | **Status** | **Docs Link** |
-|----------|:-------------:|
-| [das-Peak](https://docs.veridas.com/das-peak/cloud/latest) | 🟠 | https://clarriu97.github.io/vericlient/api_docs/daspeak/client/ |
+|----------|:-------------:|---|
+| [das-Peak](https://docs.veridas.com/das-peak/cloud/latest) | 🟢 | https://clarriu97.github.io/vericlient/api_docs/daspeak/client/ |
 | [VCSP](https://docs.veridas.com/vcsp/cloud/latest)         | 🔴 | None |
 | [das-Face](https://docs.veridas.com/das-face/cloud/latest) | 🔴 | None |
 
