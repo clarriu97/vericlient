@@ -87,7 +87,7 @@ def daspeak_compare_audio2audio_response():
         "input_audio_duration_to_evaluate": 5.00,
         "input_audio_duration_reference": 5.00,
         "net_speech_duration_to_evaluate": 4.50,
-        "net_speech_duration_reference": 4.50
+        "net_speech_duration_reference": 4.50,
     }
 
 
@@ -100,7 +100,7 @@ def daspeak_compare_credential2credential_response():
             "hash": "fake-hash",
             "mode": "fake-mode",
         },
-        "calibration": "fake-calibration"
+        "calibration": "fake-calibration",
     }
 
 
@@ -151,7 +151,7 @@ def daspeak_compare_credential2credentials_response():
         "result": {
             "id": "fake-id1",
             "score": 0.99,
-        }
+        },
     }
 
 
@@ -269,6 +269,7 @@ def _provide_daspeak_parameters(
         exception: Exception,
     ) -> list:
     """Provide the parameters necessary for Daspekea testing depending on the test environment.
+
     Those parameters are:
     - endpoint: the endpoint to test
     - response: the response to return
@@ -276,6 +277,7 @@ def _provide_daspeak_parameters(
     - exception: the exception to raise if any
 
     The parameters are returned as a list of tuples, each tuple containing the parameters for a specific environment.
+
     """
     ue_sandbox = (f"{eu_sandbox_url}/{endpoint}", response, status_code, None, \
         Environments.SANDBOX.value, Locations.EU.value, exception)

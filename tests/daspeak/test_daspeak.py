@@ -1,18 +1,18 @@
 import pytest
 from vericlient import DaspeakClient
 from vericlient.daspeak.models import (
-    GenerateCredentialInput,
-    GenerateCredentialOutput,
-    CompareCredential2AudioInput,
-    CompareCredential2AudioOutput,
     CompareAudio2AudioInput,
     CompareAudio2AudioOutput,
-    CompareCredential2CredentialInput,
-    CompareCredential2CredentialOutput,
     CompareAudio2CredentialsInput,
     CompareAudio2CredentialsOutput,
+    CompareCredential2AudioInput,
+    CompareCredential2AudioOutput,
+    CompareCredential2CredentialInput,
+    CompareCredential2CredentialOutput,
     CompareCredential2CredentialsInput,
     CompareCredential2CredentialsOutput,
+    GenerateCredentialInput,
+    GenerateCredentialOutput,
 )
 
 
@@ -279,7 +279,9 @@ def test_daspeak_compare_credential2audio(
             credential_reference = "fake-credential"
         else:
             model = daspeak_client.get_models().models[-1]
-            credential_reference = daspeak_client.generate_credential(GenerateCredentialInput(audio=audio_file_path, hash=model)).credential
+            credential_reference = daspeak_client.generate_credential(
+                GenerateCredentialInput(audio=audio_file_path, hash=model),
+            ).credential
 
         input_model = CompareCredential2AudioInput(
             audio_to_evaluate=audio_file_path,
@@ -339,7 +341,9 @@ def test_daspeak_compare_credential2credential(
             credential_reference = "fake-credential"
         else:
             model = daspeak_client.get_models().models[-1]
-            credential_reference = daspeak_client.generate_credential(GenerateCredentialInput(audio=audio_file, hash=model)).credential
+            credential_reference = daspeak_client.generate_credential(
+                GenerateCredentialInput(audio=audio_file, hash=model),
+            ).credential
 
         input_model = CompareCredential2CredentialInput(
             credential_to_evaluate=credential_reference,
@@ -407,9 +411,8 @@ def test_daspeak_client_compare_credential2credentials(
 
 def test_daspeak_client_compare_with_invalid_object_type():
     daspeak_client = DaspeakClient(apikey="fake-apikey")
-    with pytest.raises(TypeError) as excinfo:
+    with pytest.raises(TypeError):
         daspeak_client.compare(data_model="invalid-object-type")
-        assert "data_model must be an instance of" in str(excinfo.value)
 
 
 def test_daspeak_client_invalid_file_path():
@@ -417,4 +420,4 @@ def test_daspeak_client_invalid_file_path():
     daspeak_client = DaspeakClient(apikey="fake-apikey")
     with pytest.raises(FileNotFoundError) as excinfo:
         daspeak_client.generate_credential(GenerateCredentialInput(audio="invalid-file-path", hash="fake-hash"))
-        assert f"File {invalid_audio_file_path} not found" in str(excinfo.value)
+    assert f"File {invalid_audio_file_path} not found" in str(excinfo.value)

@@ -179,21 +179,21 @@ class DaspeakClient(Client):
         response = self._post(endpoint=endpoint, data=data, files=files)
         return GenerateCredentialOutput(status_code=response.status_code, **response.json())
 
-    def compare(
+    def compare(    # noqa: D417
             self,
             data_model: CompareInput,
         ) -> CompareCredential2AudioOutput | CompareAudio2AudioOutput | \
              CompareCredential2CredentialOutput | CompareAudio2CredentialsOutput | \
              CompareCredential2CredentialsOutput:
-        """Compare audio files or credentials.
+        """Compare two sets of data based on the provided input.
 
         Args:
-            data_model (CompareCredential2AudioInput | CompareAudio2AudioInput):
+            data_model (CompareCredential2AudioInput | CompareAudio2AudioInput | CompareCredential2CredentialInput | \
+                        CompareAudio2CredentialsInput | CompareCredential2CredentialsInput):
                 The data required to compare the audio files or credentials
 
         Returns:
-            (CompareCredential2AudioOutput | CompareAudio2AudioOutput): The response from the service,
-                depending on the input type.
+            The response from the service, depending on the input type.
 
         Raises:
             ValueError: If the `data_model` is not an instance of `CompareInput`
