@@ -56,6 +56,105 @@ def daspeak_generate_credential_response():
     }
 
 
+@pytest.fixture(scope="session")
+def daspeak_compare_credential2audio_response():
+    return {
+        "version": "1",
+        "score": 0.99,
+        "model": {
+            "hash": "fake-hash",
+            "mode": "fake-mode",
+        },
+        "calibration": "fake-calibration",
+        "authenticity_to_evaluate": 0.99,
+        "input_audio_duration_to_evaluate": 5.00,
+        "net_speech_duration_to_evaluate": 4.50,
+    }
+
+
+@pytest.fixture(scope="session")
+def daspeak_compare_audio2audio_response():
+    return {
+        "version": "1",
+        "score": 0.99,
+        "model": {
+            "hash": "fake-hash",
+            "mode": "fake-mode",
+        },
+        "calibration": "fake-calibration",
+        "authenticity_to_evaluate": 0.99,
+        "authenticity_reference": 0.99,
+        "input_audio_duration_to_evaluate": 5.00,
+        "input_audio_duration_reference": 5.00,
+        "net_speech_duration_to_evaluate": 4.50,
+        "net_speech_duration_reference": 4.50
+    }
+
+
+@pytest.fixture(scope="session")
+def daspeak_compare_credential2credential_response():
+    return {
+        "version": "1",
+        "score": 0.99,
+        "model": {
+            "hash": "fake-hash",
+            "mode": "fake-mode",
+        },
+        "calibration": "fake-calibration"
+    }
+
+
+@pytest.fixture(scope="session")
+def daspeak_compare_audio2credentials_response():
+    return {
+        "version": "1",
+        "model": {
+            "hash": "fake-hash",
+            "mode": "fake-mode",
+        },
+        "calibration": "fake-calibration",
+        "authenticity_reference": 0.99,
+        "scores": [
+            {
+                "id": "fake-id1",
+                "score": 0.99,
+            },
+            {
+                "id": "fake-id2",
+                "score": 0.97,
+            },
+        ],
+        "result": {
+            "id": "fake-id1",
+            "score": 0.99,
+        },
+        "input_audio_duration_reference": 5.00,
+        "net_speech_duration_reference": 4.50,
+    }
+
+
+@pytest.fixture(scope="session")
+def daspeak_compare_credential2credentials_response():
+    return {
+        "version": "1",
+        "calibration": "fake-calibration",
+        "scores": [
+            {
+                "id": "fake-id1",
+                "score": 0.99,
+            },
+            {
+                "id": "fake-id2",
+                "score": 0.97,
+            },
+        ],
+        "result": {
+            "id": "fake-id1",
+            "score": 0.99,
+        }
+    }
+
+
 #################
 # SERVER ERRORS #
 #################
@@ -169,6 +268,15 @@ def _provide_daspeak_parameters(
         status_code: int,
         exception: Exception,
     ) -> list:
+    """Provide the parameters necessary for Daspekea testing depending on the test environment.
+    Those parameters are:
+    - endpoint: the endpoint to test
+    - response: the response to return
+    - status_code: the status code to return
+    - exception: the exception to raise if any
+
+    The parameters are returned as a list of tuples, each tuple containing the parameters for a specific environment.
+    """
     ue_sandbox = (f"{eu_sandbox_url}/{endpoint}", response, status_code, None, \
         Environments.SANDBOX.value, Locations.EU.value, exception)
     ue_production = (f"{ue_production_url}/{endpoint}", response, status_code, None, \
@@ -378,6 +486,71 @@ def daspeak_server_error_response_parameters(
     return _provide_daspeak_parameters(
         test_environment, all_environments, mock_option, "daspeak/v1/models/fake-model/credential/wav", \
         daspeak_server_error_response, 500, ServerError,
+    )
+
+
+@pytest.fixture(scope="session")
+def daspeak_compare_credential2audio_parameters(
+        mock_option,
+        test_environment,
+        all_environments,
+        daspeak_compare_credential2audio_response,
+    ) -> list:
+    return _provide_daspeak_parameters(
+        test_environment, all_environments, mock_option, "daspeak/v1/similarity/credential2wav", \
+        daspeak_compare_credential2audio_response, 200, None,
+    )
+
+
+@pytest.fixture(scope="session")
+def daspeak_compare_audio2audio_parameters(
+        mock_option,
+        test_environment,
+        all_environments,
+        daspeak_compare_audio2audio_response,
+    ) -> list:
+    return _provide_daspeak_parameters(
+        test_environment, all_environments, mock_option, "daspeak/v1/similarity/wav2wav", \
+        daspeak_compare_audio2audio_response, 200, None,
+    )
+
+
+@pytest.fixture(scope="session")
+def daspeak_compare_credential2credential_parameters(
+        mock_option,
+        test_environment,
+        all_environments,
+        daspeak_compare_credential2credential_response,
+    ) -> list:
+    return _provide_daspeak_parameters(
+        test_environment, all_environments, mock_option, "daspeak/v1/similarity/credential2credential", \
+        daspeak_compare_credential2credential_response, 200, None,
+    )
+
+
+@pytest.fixture(scope="session")
+def daspeak_compare_audio2credentials_parameters(
+        mock_option,
+        test_environment,
+        all_environments,
+        daspeak_compare_audio2credentials_response,
+    ) -> list:
+    return _provide_daspeak_parameters(
+        test_environment, all_environments, mock_option, "daspeak/v1/identification/wav2credentials", \
+        daspeak_compare_audio2credentials_response, 200, None,
+    )
+
+
+@pytest.fixture(scope="session")
+def daspeak_compare_credential2credentials_parameters(
+        mock_option,
+        test_environment,
+        all_environments,
+        daspeak_compare_credential2credentials_response,
+    ) -> list:
+    return _provide_daspeak_parameters(
+        test_environment, all_environments, mock_option, "daspeak/v1/identification/credential2credentials", \
+        daspeak_compare_credential2credentials_response, 200, None,
     )
 
 

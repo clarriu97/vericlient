@@ -3,6 +3,16 @@ from vericlient import DaspeakClient
 from vericlient.daspeak.models import (
     GenerateCredentialInput,
     GenerateCredentialOutput,
+    CompareCredential2AudioInput,
+    CompareCredential2AudioOutput,
+    CompareAudio2AudioInput,
+    CompareAudio2AudioOutput,
+    CompareCredential2CredentialInput,
+    CompareCredential2CredentialOutput,
+    CompareAudio2CredentialsInput,
+    CompareAudio2CredentialsOutput,
+    CompareCredential2CredentialsInput,
+    CompareCredential2CredentialsOutput,
 )
 
 
@@ -250,3 +260,161 @@ def test_daspeak_server_error(
             )
             with pytest.raises(exception):
                 daspeak_client.generate_credential(input_model)
+
+
+def test_daspeak_compare_credential2audio(
+    mock_server, daspeak_compare_credential2audio_parameters, audio_file_path, audio_file,
+):
+    for param in daspeak_compare_credential2audio_parameters:
+        endpoint, mock_response, mock_status_code, url, environment, location, _ = param
+        daspeak_client = DaspeakClient(
+            apikey="fake-apikey",
+            environment=environment,
+            location=location,
+            url=url,
+        )
+        if mock_server:
+            mock_server.post(endpoint, json=mock_response, status_code=mock_status_code)
+            model = "fake-model"
+            credential_reference = "fake-credential"
+        else:
+            model = daspeak_client.get_models().models[-1]
+            credential_reference = daspeak_client.generate_credential(GenerateCredentialInput(audio=audio_file_path, hash=model)).credential
+
+        input_model = CompareCredential2AudioInput(
+            audio_to_evaluate=audio_file_path,
+            credential_reference=credential_reference,
+        )
+        response = daspeak_client.compare(input_model)
+        assert isinstance(response, CompareCredential2AudioOutput)
+
+        input_model = CompareCredential2AudioInput(
+            audio_to_evaluate=audio_file,
+            credential_reference=credential_reference,
+        )
+        response = daspeak_client.compare(input_model)
+        assert isinstance(response, CompareCredential2AudioOutput)
+
+
+def test_daspeak_compare_audio2audio(
+    mock_server, daspeak_compare_audio2audio_parameters, audio_file,
+):
+    for param in daspeak_compare_audio2audio_parameters:
+        endpoint, mock_response, mock_status_code, url, environment, location, _ = param
+        daspeak_client = DaspeakClient(
+            apikey="fake-apikey",
+            environment=environment,
+            location=location,
+            url=url,
+        )
+        if mock_server:
+            mock_server.post(endpoint, json=mock_response, status_code=mock_status_code)
+            model = "fake-model"
+        else:
+            model = daspeak_client.get_models().models[-1]
+
+        input_model = CompareAudio2AudioInput(
+            audio_to_evaluate=audio_file,
+            audio_reference=audio_file,
+            hash=model,
+        )
+        response = daspeak_client.compare(input_model)
+        assert isinstance(response, CompareAudio2AudioOutput)
+
+
+def test_daspeak_compare_credential2credential(
+    mock_server, daspeak_compare_credential2credential_parameters, audio_file,
+):
+    for param in daspeak_compare_credential2credential_parameters:
+        endpoint, mock_response, mock_status_code, url, environment, location, _ = param
+        daspeak_client = DaspeakClient(
+            apikey="fake-apikey",
+            environment=environment,
+            location=location,
+            url=url,
+        )
+        if mock_server:
+            mock_server.post(endpoint, json=mock_response, status_code=mock_status_code)
+            model = "fake-model"
+            credential_reference = "fake-credential"
+        else:
+            model = daspeak_client.get_models().models[-1]
+            credential_reference = daspeak_client.generate_credential(GenerateCredentialInput(audio=audio_file, hash=model)).credential
+
+        input_model = CompareCredential2CredentialInput(
+            credential_to_evaluate=credential_reference,
+            credential_reference=credential_reference,
+        )
+        response = daspeak_client.compare(input_model)
+        assert isinstance(response, CompareCredential2CredentialOutput)
+
+
+def test_daspeak_compare_audio2credentials(
+    mock_server, daspeak_compare_audio2credentials_parameters, audio_file,
+):
+    for param in daspeak_compare_audio2credentials_parameters:
+        endpoint, mock_response, mock_status_code, url, environment, location, _ = param
+        daspeak_client = DaspeakClient(
+            apikey="fake-apikey",
+            environment=environment,
+            location=location,
+            url=url,
+        )
+        if mock_server:
+            mock_server.post(endpoint, json=mock_response, status_code=mock_status_code)
+            model = "fake-model"
+            credential_list = [("id1", "fake-credential1"), ("id2", "fake-credential2")]
+        else:
+            model = daspeak_client.get_models().models[-1]
+            credential = daspeak_client.generate_credential(GenerateCredentialInput(audio=audio_file, hash=model)).credential
+            credential_list = [("id1", credential), ("id2", credential)]
+
+        input_model = CompareAudio2CredentialsInput(
+            audio_reference=audio_file,
+            credential_list=credential_list,
+        )
+        response = daspeak_client.compare(input_model)
+        assert isinstance(response, CompareAudio2CredentialsOutput)
+
+
+def test_daspeak_client_compare_credential2credentials(
+    mock_server, daspeak_compare_credential2credentials_parameters, audio_file,
+):
+    for param in daspeak_compare_credential2credentials_parameters:
+        endpoint, mock_response, mock_status_code, url, environment, location, _ = param
+        daspeak_client = DaspeakClient(
+            apikey="fake-apikey",
+            environment=environment,
+            location=location,
+            url=url,
+        )
+        if mock_server:
+            mock_server.post(endpoint, json=mock_response, status_code=mock_status_code)
+            model = "fake-model"
+            credential = "fake-credential"
+            credential_list = [("id1", "fake-credential1"), ("id2", "fake-credential2")]
+        else:
+            model = daspeak_client.get_models().models[-1]
+            credential = daspeak_client.generate_credential(GenerateCredentialInput(audio=audio_file, hash=model)).credential
+            credential_list = [("id1", credential), ("id2", credential)]
+
+        response = daspeak_client.compare(CompareCredential2CredentialsInput(
+            credential_reference=credential,
+            credential_list=credential_list,
+        ))
+        assert isinstance(response, CompareCredential2CredentialsOutput)
+
+
+def test_daspeak_client_compare_with_invalid_object_type():
+    daspeak_client = DaspeakClient(apikey="fake-apikey")
+    with pytest.raises(TypeError) as excinfo:
+        daspeak_client.compare(data_model="invalid-object-type")
+        assert "data_model must be an instance of" in str(excinfo.value)
+
+
+def test_daspeak_client_invalid_file_path():
+    invalid_audio_file_path = "invalid-file-path"
+    daspeak_client = DaspeakClient(apikey="fake-apikey")
+    with pytest.raises(FileNotFoundError) as excinfo:
+        daspeak_client.generate_credential(GenerateCredentialInput(audio="invalid-file-path", hash="fake-hash"))
+        assert f"File {invalid_audio_file_path} not found" in str(excinfo.value)
