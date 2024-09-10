@@ -1680,21 +1680,21 @@
         <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_post</span><span class="p">(</span><span class="n">endpoint</span><span class="o">=</span><span class="n">endpoint</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">files</span><span class="o">=</span><span class="n">files</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">GenerateCredentialOutput</span><span class="p">(</span><span class="n">status_code</span><span class="o">=</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">,</span> <span class="o">**</span><span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">())</span>
 
-    <span class="k">def</span> <span class="nf">compare</span><span class="p">(</span>
+    <span class="k">def</span> <span class="nf">compare</span><span class="p">(</span>    <span class="c1"># noqa: D417</span>
             <span class="bp">self</span><span class="p">,</span>
             <span class="n">data_model</span><span class="p">:</span> <span class="n">CompareInput</span><span class="p">,</span>
         <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CompareCredential2AudioOutput</span> <span class="o">|</span> <span class="n">CompareAudio2AudioOutput</span> <span class="o">|</span> \
              <span class="n">CompareCredential2CredentialOutput</span> <span class="o">|</span> <span class="n">CompareAudio2CredentialsOutput</span> <span class="o">|</span> \
              <span class="n">CompareCredential2CredentialsOutput</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Compare audio files or credentials.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Compare two sets of data based on the provided input.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            data_model (CompareCredential2AudioInput | CompareAudio2AudioInput):</span>
+<span class="sd">            data_model (CompareCredential2AudioInput | CompareAudio2AudioInput | CompareCredential2CredentialInput | \</span>
+<span class="sd">                        CompareAudio2CredentialsInput | CompareCredential2CredentialsInput):</span>
 <span class="sd">                The data required to compare the audio files or credentials</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            (CompareCredential2AudioOutput | CompareAudio2AudioOutput): The response from the service,</span>
-<span class="sd">                depending on the input type.</span>
+<span class="sd">            The response from the service, depending on the input type.</span>
 
 <span class="sd">        Raises:</span>
 <span class="sd">            ValueError: If the `data_model` is not an instance of `CompareInput`</span>
@@ -2129,7 +2129,7 @@
 
     <div class="doc doc-contents ">
 
-      <p>Compare audio files or credentials.</p>
+      <p>Compare two sets of data based on the provided input.</p>
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
@@ -2146,7 +2146,7 @@
           <tr class="doc-section-item">
             <td><code>data_model</code></td>
             <td>
-                  <code><a class="autorefs autorefs-internal" title="vericlient.daspeak.models.CompareCredential2AudioInput" href="#vericlient.daspeak.models.CompareCredential2AudioInput">CompareCredential2AudioInput</a> | <a class="autorefs autorefs-internal" title="vericlient.daspeak.models.CompareAudio2AudioInput" href="#vericlient.daspeak.models.CompareAudio2AudioInput">CompareAudio2AudioInput</a></code>
+                  <code><a class="autorefs autorefs-internal" title="vericlient.daspeak.models.CompareCredential2AudioInput" href="#vericlient.daspeak.models.CompareCredential2AudioInput">CompareCredential2AudioInput</a> | <a class="autorefs autorefs-internal" title="vericlient.daspeak.models.CompareAudio2AudioInput" href="#vericlient.daspeak.models.CompareAudio2AudioInput">CompareAudio2AudioInput</a> | <a class="autorefs autorefs-internal" title="vericlient.daspeak.models.CompareCredential2CredentialInput" href="#vericlient.daspeak.models.CompareCredential2CredentialInput">CompareCredential2CredentialInput</a> | <a class="autorefs autorefs-internal" title="vericlient.daspeak.models.CompareAudio2CredentialsInput" href="#vericlient.daspeak.models.CompareAudio2CredentialsInput">CompareAudio2CredentialsInput</a> | <a class="autorefs autorefs-internal" title="vericlient.daspeak.models.CompareCredential2CredentialsInput" href="#vericlient.daspeak.models.CompareCredential2CredentialsInput">CompareCredential2CredentialsInput</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -2172,12 +2172,11 @@
       <tbody>
           <tr class="doc-section-item">
             <td>
-                  <code><a class="autorefs autorefs-internal" title="vericlient.daspeak.models.CompareCredential2AudioOutput" href="#vericlient.daspeak.models.CompareCredential2AudioOutput">CompareCredential2AudioOutput</a> | <a class="autorefs autorefs-internal" title="vericlient.daspeak.models.CompareAudio2AudioOutput" href="#vericlient.daspeak.models.CompareAudio2AudioOutput">CompareAudio2AudioOutput</a></code>
+                  <code><a class="autorefs autorefs-internal" title="vericlient.daspeak.models.CompareCredential2AudioOutput" href="#vericlient.daspeak.models.CompareCredential2AudioOutput">CompareCredential2AudioOutput</a> | <a class="autorefs autorefs-internal" title="vericlient.daspeak.models.CompareAudio2AudioOutput" href="#vericlient.daspeak.models.CompareAudio2AudioOutput">CompareAudio2AudioOutput</a> | <a class="autorefs autorefs-internal" title="vericlient.daspeak.models.CompareCredential2CredentialOutput" href="#vericlient.daspeak.models.CompareCredential2CredentialOutput">CompareCredential2CredentialOutput</a> | <a class="autorefs autorefs-internal" title="vericlient.daspeak.models.CompareAudio2CredentialsOutput" href="#vericlient.daspeak.models.CompareAudio2CredentialsOutput">CompareAudio2CredentialsOutput</a> | <a class="autorefs autorefs-internal" title="vericlient.daspeak.models.CompareCredential2CredentialsOutput" href="#vericlient.daspeak.models.CompareCredential2CredentialsOutput">CompareCredential2CredentialsOutput</a></code>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>The response from the service,
-depending on the input type.</p>
+                <p>The response from the service, depending on the input type.</p>
               </div>
             </td>
           </tr>
@@ -2355,21 +2354,21 @@ depending on the input type.</p>
 <span class="normal">215</span>
 <span class="normal">216</span>
 <span class="normal">217</span>
-<span class="normal">218</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">compare</span><span class="p">(</span>
+<span class="normal">218</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">compare</span><span class="p">(</span>    <span class="c1"># noqa: D417</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">data_model</span><span class="p">:</span> <span class="n">CompareInput</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CompareCredential2AudioOutput</span> <span class="o">|</span> <span class="n">CompareAudio2AudioOutput</span> <span class="o">|</span> \
          <span class="n">CompareCredential2CredentialOutput</span> <span class="o">|</span> <span class="n">CompareAudio2CredentialsOutput</span> <span class="o">|</span> \
          <span class="n">CompareCredential2CredentialsOutput</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compare audio files or credentials.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compare two sets of data based on the provided input.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        data_model (CompareCredential2AudioInput | CompareAudio2AudioInput):</span>
+<span class="sd">        data_model (CompareCredential2AudioInput | CompareAudio2AudioInput | CompareCredential2CredentialInput | \</span>
+<span class="sd">                    CompareAudio2CredentialsInput | CompareCredential2CredentialsInput):</span>
 <span class="sd">            The data required to compare the audio files or credentials</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        (CompareCredential2AudioOutput | CompareAudio2AudioOutput): The response from the service,</span>
-<span class="sd">            depending on the input type.</span>
+<span class="sd">        The response from the service, depending on the input type.</span>
 
 <span class="sd">    Raises:</span>
 <span class="sd">        ValueError: If the `data_model` is not an instance of `CompareInput`</span>
