@@ -587,6 +587,24 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#vericlient.daspeak.models.CompareCredential2CredentialsInput" class="md-nav__link">
+    <span class="md-ellipsis">
+      CompareCredential2CredentialsInput
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#vericlient.daspeak.models.CompareCredential2CredentialsOutput" class="md-nav__link">
+    <span class="md-ellipsis">
+      CompareCredential2CredentialsOutput
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#vericlient.daspeak.models.CompareInput" class="md-nav__link">
     <span class="md-ellipsis">
       CompareInput
@@ -972,6 +990,24 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#vericlient.daspeak.models.CompareCredential2CredentialsInput" class="md-nav__link">
+    <span class="md-ellipsis">
+      CompareCredential2CredentialsInput
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#vericlient.daspeak.models.CompareCredential2CredentialsOutput" class="md-nav__link">
+    <span class="md-ellipsis">
+      CompareCredential2CredentialsOutput
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#vericlient.daspeak.models.CompareInput" class="md-nav__link">
     <span class="md-ellipsis">
       CompareInput
@@ -1193,9 +1229,7 @@
 
               <details class="quote">
                 <summary>Source code in <code>src/vericlient/daspeak/client.py</code></summary>
-                <div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 37</span>
-<span class="normal"> 38</span>
-<span class="normal"> 39</span>
+                <div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 39</span>
 <span class="normal"> 40</span>
 <span class="normal"> 41</span>
 <span class="normal"> 42</span>
@@ -1485,7 +1519,25 @@
 <span class="normal">326</span>
 <span class="normal">327</span>
 <span class="normal">328</span>
-<span class="normal">329</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">DaspeakClient</span><span class="p">(</span><span class="n">Client</span><span class="p">):</span>
+<span class="normal">329</span>
+<span class="normal">330</span>
+<span class="normal">331</span>
+<span class="normal">332</span>
+<span class="normal">333</span>
+<span class="normal">334</span>
+<span class="normal">335</span>
+<span class="normal">336</span>
+<span class="normal">337</span>
+<span class="normal">338</span>
+<span class="normal">339</span>
+<span class="normal">340</span>
+<span class="normal">341</span>
+<span class="normal">342</span>
+<span class="normal">343</span>
+<span class="normal">344</span>
+<span class="normal">345</span>
+<span class="normal">346</span>
+<span class="normal">347</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">DaspeakClient</span><span class="p">(</span><span class="n">Client</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Class to interact with the Daspeak API.&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
@@ -1534,6 +1586,7 @@
             <span class="n">CompareAudio2AudioInput</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compare_audio2audio</span><span class="p">,</span>
             <span class="n">CompareCredential2CredentialInput</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compare_credential2credential</span><span class="p">,</span>
             <span class="n">CompareAudio2CredentialsInput</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compare_audio2credentials</span><span class="p">,</span>
+            <span class="n">CompareCredential2CredentialsInput</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compare_credential2credentials</span><span class="p">,</span>
         <span class="p">}</span>
 
     <span class="k">def</span> <span class="nf">alive</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
@@ -1631,7 +1684,8 @@
             <span class="bp">self</span><span class="p">,</span>
             <span class="n">data_model</span><span class="p">:</span> <span class="n">CompareInput</span><span class="p">,</span>
         <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CompareCredential2AudioOutput</span> <span class="o">|</span> <span class="n">CompareAudio2AudioOutput</span> <span class="o">|</span> \
-             <span class="n">CompareCredential2CredentialOutput</span> <span class="o">|</span> <span class="n">CompareAudio2CredentialsOutput</span> <span class="p">:</span>
+             <span class="n">CompareCredential2CredentialOutput</span> <span class="o">|</span> <span class="n">CompareAudio2CredentialsOutput</span> <span class="o">|</span> \
+             <span class="n">CompareCredential2CredentialsOutput</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Compare audio files or credentials.</span>
 
 <span class="sd">        Args:</span>
@@ -1660,9 +1714,9 @@
         <span class="k">try</span><span class="p">:</span>
             <span class="n">func</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compare_functions_map</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">data_model</span><span class="p">))</span>
             <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="n">data_model</span><span class="p">)</span>
-        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="n">error</span> <span class="o">=</span> <span class="s2">&quot;data_model must be an instance of CompareInput&quot;</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">error</span><span class="p">)</span> <span class="kn">from</span> <span class="kc">None</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">error</span><span class="p">)</span> <span class="kn">from</span> <span class="nn">e</span>
 
     <span class="k">def</span> <span class="nf">_compare_credential2audio</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span>
@@ -1763,6 +1817,20 @@
         <span class="p">}</span>
         <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_post</span><span class="p">(</span><span class="n">endpoint</span><span class="o">=</span><span class="n">endpoint</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">files</span><span class="o">=</span><span class="n">files</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">CompareAudio2CredentialsOutput</span><span class="p">(</span><span class="n">status_code</span><span class="o">=</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">,</span> <span class="o">**</span><span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">())</span>
+
+    <span class="k">def</span> <span class="nf">_compare_credential2credentials</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">data_model</span><span class="p">:</span> <span class="n">CompareCredential2CredentialsInput</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CompareCredential2CredentialsOutput</span><span class="p">:</span>
+        <span class="n">endpoint</span> <span class="o">=</span> <span class="n">DaspeakEndpoints</span><span class="o">.</span><span class="n">IDENTIFICATION_CREDENTIAL2CREDENTIALS</span><span class="o">.</span><span class="n">value</span>
+        <span class="n">credential_list</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">data_model</span><span class="o">.</span><span class="n">credential_list</span><span class="p">)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;credential_reference&quot;</span><span class="p">:</span> <span class="n">data_model</span><span class="o">.</span><span class="n">credential_reference</span><span class="p">,</span>
+            <span class="s2">&quot;credential_list&quot;</span><span class="p">:</span> <span class="n">credential_list</span><span class="p">,</span>
+            <span class="s2">&quot;calibration&quot;</span><span class="p">:</span> <span class="n">data_model</span><span class="o">.</span><span class="n">calibration</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_post</span><span class="p">(</span><span class="n">endpoint</span><span class="o">=</span><span class="n">endpoint</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">CompareCredential2CredentialsOutput</span><span class="p">(</span><span class="n">status_code</span><span class="o">=</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">,</span> <span class="o">**</span><span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">())</span>
 
     <span class="k">def</span> <span class="nf">_get_virtual_audio_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">audio_input</span><span class="p">:</span> <span class="nb">object</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bytes</span><span class="p">:</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">audio_input</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
@@ -1907,9 +1975,7 @@
 
             <details class="quote">
               <summary>Source code in <code>src/vericlient/daspeak/client.py</code></summary>
-              <div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">40</span>
-<span class="normal">41</span>
-<span class="normal">42</span>
+              <div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">42</span>
 <span class="normal">43</span>
 <span class="normal">44</span>
 <span class="normal">45</span>
@@ -1953,7 +2019,10 @@
 <span class="normal">83</span>
 <span class="normal">84</span>
 <span class="normal">85</span>
-<span class="normal">86</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+<span class="normal">86</span>
+<span class="normal">87</span>
+<span class="normal">88</span>
+<span class="normal">89</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">apikey</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">timeout</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -1999,6 +2068,7 @@
         <span class="n">CompareAudio2AudioInput</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compare_audio2audio</span><span class="p">,</span>
         <span class="n">CompareCredential2CredentialInput</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compare_credential2credential</span><span class="p">,</span>
         <span class="n">CompareAudio2CredentialsInput</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compare_audio2credentials</span><span class="p">,</span>
+        <span class="n">CompareCredential2CredentialsInput</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compare_credential2credentials</span><span class="p">,</span>
     <span class="p">}</span>
 </code></pre></div></td></tr></table></div>
             </details>
@@ -2023,16 +2093,16 @@
 
             <details class="quote">
               <summary>Source code in <code>src/vericlient/daspeak/client.py</code></summary>
-              <div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">88</span>
-<span class="normal">89</span>
-<span class="normal">90</span>
-<span class="normal">91</span>
-<span class="normal">92</span>
-<span class="normal">93</span>
-<span class="normal">94</span>
-<span class="normal">95</span>
-<span class="normal">96</span>
-<span class="normal">97</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">alive</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+              <div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 91</span>
+<span class="normal"> 92</span>
+<span class="normal"> 93</span>
+<span class="normal"> 94</span>
+<span class="normal"> 95</span>
+<span class="normal"> 96</span>
+<span class="normal"> 97</span>
+<span class="normal"> 98</span>
+<span class="normal"> 99</span>
+<span class="normal">100</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">alive</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Check if the service is alive.</span>
 
 <span class="sd">    Returns</span>
@@ -2249,10 +2319,7 @@ depending on the input type.</p>
 
             <details class="quote">
               <summary>Source code in <code>src/vericlient/daspeak/client.py</code></summary>
-              <div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">179</span>
-<span class="normal">180</span>
-<span class="normal">181</span>
-<span class="normal">182</span>
+              <div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">182</span>
 <span class="normal">183</span>
 <span class="normal">184</span>
 <span class="normal">185</span>
@@ -2284,11 +2351,16 @@ depending on the input type.</p>
 <span class="normal">211</span>
 <span class="normal">212</span>
 <span class="normal">213</span>
-<span class="normal">214</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">compare</span><span class="p">(</span>
+<span class="normal">214</span>
+<span class="normal">215</span>
+<span class="normal">216</span>
+<span class="normal">217</span>
+<span class="normal">218</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">compare</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">data_model</span><span class="p">:</span> <span class="n">CompareInput</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CompareCredential2AudioOutput</span> <span class="o">|</span> <span class="n">CompareAudio2AudioOutput</span> <span class="o">|</span> \
-         <span class="n">CompareCredential2CredentialOutput</span> <span class="o">|</span> <span class="n">CompareAudio2CredentialsOutput</span> <span class="p">:</span>
+         <span class="n">CompareCredential2CredentialOutput</span> <span class="o">|</span> <span class="n">CompareAudio2CredentialsOutput</span> <span class="o">|</span> \
+         <span class="n">CompareCredential2CredentialsOutput</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Compare audio files or credentials.</span>
 
 <span class="sd">    Args:</span>
@@ -2317,9 +2389,9 @@ depending on the input type.</p>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">func</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compare_functions_map</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">data_model</span><span class="p">))</span>
         <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="n">data_model</span><span class="p">)</span>
-    <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+    <span class="k">except</span> <span class="ne">AttributeError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
         <span class="n">error</span> <span class="o">=</span> <span class="s2">&quot;data_model must be an instance of CompareInput&quot;</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">error</span><span class="p">)</span> <span class="kn">from</span> <span class="kc">None</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">error</span><span class="p">)</span> <span class="kn">from</span> <span class="nn">e</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -2516,10 +2588,7 @@ depending on the input type.</p>
 
             <details class="quote">
               <summary>Source code in <code>src/vericlient/daspeak/client.py</code></summary>
-              <div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">144</span>
-<span class="normal">145</span>
-<span class="normal">146</span>
-<span class="normal">147</span>
+              <div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">147</span>
 <span class="normal">148</span>
 <span class="normal">149</span>
 <span class="normal">150</span>
@@ -2549,7 +2618,10 @@ depending on the input type.</p>
 <span class="normal">174</span>
 <span class="normal">175</span>
 <span class="normal">176</span>
-<span class="normal">177</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">generate_credential</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_model</span><span class="p">:</span> <span class="n">GenerateCredentialInput</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">GenerateCredentialOutput</span><span class="p">:</span>
+<span class="normal">177</span>
+<span class="normal">178</span>
+<span class="normal">179</span>
+<span class="normal">180</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">generate_credential</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_model</span><span class="p">:</span> <span class="n">GenerateCredentialInput</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">GenerateCredentialOutput</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate a credential from a WAV file.</span>
 
 <span class="sd">    Args:</span>
@@ -2627,15 +2699,15 @@ depending on the input type.</p>
 
             <details class="quote">
               <summary>Source code in <code>src/vericlient/daspeak/client.py</code></summary>
-              <div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">134</span>
-<span class="normal">135</span>
-<span class="normal">136</span>
-<span class="normal">137</span>
+              <div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">137</span>
 <span class="normal">138</span>
 <span class="normal">139</span>
 <span class="normal">140</span>
 <span class="normal">141</span>
-<span class="normal">142</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_models</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ModelsOutput</span><span class="p">:</span>
+<span class="normal">142</span>
+<span class="normal">143</span>
+<span class="normal">144</span>
+<span class="normal">145</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_models</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ModelsOutput</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Get the models available biometrics models in the service.</span>
 
 <span class="sd">    Returns:</span>
@@ -3872,6 +3944,271 @@ with the audio content</p>
 
 <span class="sd">    &quot;&quot;&quot;</span>
 
+    <span class="n">calibration</span><span class="p">:</span> <span class="nb">str</span>
+</code></pre></div></td></tr></table></div>
+              </details>
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="vericlient.daspeak.models.CompareCredential2CredentialsInput" class="doc doc-heading">
+            <code>CompareCredential2CredentialsInput</code>
+
+
+<a href="#vericlient.daspeak.models.CompareCredential2CredentialsInput" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="vericlient.daspeak.models.CompareInput" href="#vericlient.daspeak.models.CompareInput">CompareInput</a></code></p>
+
+
+      <p>Input class for the identification credential to credentials endpoint.</p>
+
+
+<p><span class="doc-section-title">Attributes:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code><span title="vericlient.daspeak.models.CompareCredential2CredentialsInput.credential_reference">credential_reference</span></code></td>
+            <td>
+                  <code>str</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The reference credential</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="vericlient.daspeak.models.CompareCredential2CredentialsInput.credential_list">credential_list</span></code></td>
+            <td>
+                  <code>list[tuple[str, str]]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The credentials to compare the audio with.
+The list contains touples with two strings: the id and the credential</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+              <details class="quote">
+                <summary>Source code in <code>src/vericlient/daspeak/models.py</code></summary>
+                <div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">328</span>
+<span class="normal">329</span>
+<span class="normal">330</span>
+<span class="normal">331</span>
+<span class="normal">332</span>
+<span class="normal">333</span>
+<span class="normal">334</span>
+<span class="normal">335</span>
+<span class="normal">336</span>
+<span class="normal">337</span>
+<span class="normal">338</span>
+<span class="normal">339</span>
+<span class="normal">340</span>
+<span class="normal">341</span>
+<span class="normal">342</span>
+<span class="normal">343</span>
+<span class="normal">344</span>
+<span class="normal">345</span>
+<span class="normal">346</span>
+<span class="normal">347</span>
+<span class="normal">348</span>
+<span class="normal">349</span>
+<span class="normal">350</span>
+<span class="normal">351</span>
+<span class="normal">352</span>
+<span class="normal">353</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">CompareCredential2CredentialsInput</span><span class="p">(</span><span class="n">CompareInput</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Input class for the identification credential to credentials endpoint.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        credential_reference: The reference credential</span>
+<span class="sd">        credential_list: The credentials to compare the audio with.</span>
+<span class="sd">            The list contains touples with two strings: the id and the credential</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">credential_reference</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">credential_list</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span>
+
+    <span class="nd">@field_validator</span><span class="p">(</span><span class="s2">&quot;credential_list&quot;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">validate_and_build_list_format</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">list</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">value</span><span class="p">:</span>
+            <span class="n">error</span> <span class="o">=</span> <span class="s2">&quot;credential_list must not be empty&quot;</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">error</span><span class="p">)</span>
+        <span class="n">error</span> <span class="o">=</span> <span class="s2">&quot;credential_list must contain touples with two strings&quot;</span>
+        <span class="n">n_items</span> <span class="o">=</span> <span class="mi">2</span>
+        <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">value</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">item</span><span class="p">)</span> <span class="o">!=</span> <span class="n">n_items</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">error</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">item</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">error</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">[{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s2">&quot;credential&quot;</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="mi">1</span><span class="p">]}</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">value</span><span class="p">]</span>
+</code></pre></div></td></tr></table></div>
+              </details>
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="vericlient.daspeak.models.CompareCredential2CredentialsOutput" class="doc doc-heading">
+            <code>CompareCredential2CredentialsOutput</code>
+
+
+<a href="#vericlient.daspeak.models.CompareCredential2CredentialsOutput" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="vericlient.daspeak.models.DaspeakResponse" href="#vericlient.daspeak.models.DaspeakResponse">DaspeakResponse</a></code></p>
+
+
+      <p>Output class for the identification credential to credentials endpoint.</p>
+
+
+<p><span class="doc-section-title">Attributes:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code><span title="vericlient.daspeak.models.CompareCredential2CredentialsOutput.result">result</span></code></td>
+            <td>
+                  <code>dict</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The result of the identification, a dictionary with the "id" and the "score"
+of the best match</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="vericlient.daspeak.models.CompareCredential2CredentialsOutput.scores">scores</span></code></td>
+            <td>
+                  <code>list[dict]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The whole list of scores for each credential.
+The list contains dictionaries with two keys (and values): "id" and "score"</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="vericlient.daspeak.models.CompareCredential2CredentialsOutput.calibration">calibration</span></code></td>
+            <td>
+                  <code>str</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The calibration used</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="vericlient.daspeak.models.CompareCredential2CredentialsOutput.model">model</span></code></td>
+            <td>
+                  <code>str</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The model used to generate the credential</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+              <details class="quote">
+                <summary>Source code in <code>src/vericlient/daspeak/models.py</code></summary>
+                <div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">356</span>
+<span class="normal">357</span>
+<span class="normal">358</span>
+<span class="normal">359</span>
+<span class="normal">360</span>
+<span class="normal">361</span>
+<span class="normal">362</span>
+<span class="normal">363</span>
+<span class="normal">364</span>
+<span class="normal">365</span>
+<span class="normal">366</span>
+<span class="normal">367</span>
+<span class="normal">368</span>
+<span class="normal">369</span>
+<span class="normal">370</span>
+<span class="normal">371</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">CompareCredential2CredentialsOutput</span><span class="p">(</span><span class="n">DaspeakResponse</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Output class for the identification credential to credentials endpoint.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        result: The result of the identification, a dictionary with the &quot;id&quot; and the &quot;score&quot;</span>
+<span class="sd">            of the best match</span>
+<span class="sd">        scores: The whole list of scores for each credential.</span>
+<span class="sd">            The list contains dictionaries with two keys (and values): &quot;id&quot; and &quot;score&quot;</span>
+<span class="sd">        calibration: The calibration used</span>
+<span class="sd">        model: The model used to generate the credential</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">result</span><span class="p">:</span> <span class="nb">dict</span>
+    <span class="n">scores</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span>
     <span class="n">calibration</span><span class="p">:</span> <span class="nb">str</span>
 </code></pre></div></td></tr></table></div>
               </details>
