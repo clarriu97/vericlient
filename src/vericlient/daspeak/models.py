@@ -323,3 +323,49 @@ class CompareAudio2CredentialsOutput(DaspeakResponse):
     @field_validator("authenticity_reference")
     def round_value(cls, value: float) -> float:
         return round(value, 3)
+
+
+class CompareCredential2CredentialsInput(CompareInput):
+    """Input class for the identification credential to credentials endpoint.
+
+    Attributes:
+        credential_reference: The reference credential
+        credential_list: The credentials to compare the audio with.
+            The list contains touples with two strings: the id and the credential
+
+    """
+
+    credential_reference: str
+    credential_list: list[tuple[str, str]]
+
+    @field_validator("credential_list")
+    def validate_and_build_list_format(cls, value: list):
+        if not value:
+            error = "credential_list must not be empty"
+            raise ValueError(error)
+        error = "credential_list must contain touples with two strings"
+        n_items = 2
+        for item in value:
+            if not isinstance(item, tuple) or len(item) != n_items:
+                raise ValueError(error)
+            if not all(isinstance(i, str) for i in item):
+                raise ValueError(error)
+        return [{"id": item[0], "credential": item[1]} for item in value]
+
+
+class CompareCredential2CredentialsOutput(DaspeakResponse):
+    """Output class for the identification credential to credentials endpoint.
+
+    Attributes:
+        result: The result of the identification, a dictionary with the "id" and the "score"
+            of the best match
+        scores: The whole list of scores for each credential.
+            The list contains dictionaries with two keys (and values): "id" and "score"
+        calibration: The calibration used
+        model: The model used to generate the credential
+
+    """
+
+    result: dict
+    scores: list[dict]
+    calibration: str
