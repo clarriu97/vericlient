@@ -24,8 +24,8 @@ classifiers = [
 ]
 
 [project.urls]
-Homepage = "https://clarriu97.github.io/verimodels/"
-Documentation = "https://clarriu97.github.io/verimodels/"
+Homepage = "https://clarriu97.github.io/vericlient/"
+Documentation = "https://clarriu97.github.io/vericlient/api_docs/vericlient/"
 Repository = "https://github.com/clarriu97/vericlient"
 Issues = "https://github.com/clarriu97/vericlient/issues"
 Changelog = "https://github.com/clarriu97/vericlient/blob/master/CHANGELOG.md"
@@ -43,6 +43,7 @@ dev = [
     "pytest-cov>=5.0.0",
     "pytest-html>=4.1.1",
     "requests-mock>=1.12.1",
+    "build>=1.2.2",
 ]
 
 [tool.pdm.scripts]
@@ -92,6 +93,7 @@ test-us-production = """pytest tests --env US_PRODUCTION \
     --html=docs/_build/test-reports/index.html \
     --junitxml=docs/_build/test-reports/junit.xml \
     -o junit_suite_name=test"""
+build = "python -m build"
 
 [tool.ruff]
 line-length = 130
@@ -158,3 +160,7 @@ unfixable = []
 
 [tool.ruff.format]
 quote-style = "double"
+
+[build-system]
+requires = ["pdm-backend"]
+build-backend = "pdm.backend"
