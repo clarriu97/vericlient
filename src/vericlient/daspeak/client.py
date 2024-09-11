@@ -16,6 +16,7 @@ from vericlient.daspeak.exceptions import (
     TooManyAudioChannelsError,
     UnsupportedAudioCodecError,
     UnsupportedSampleRateError,
+    VeriClientError,
 )
 from vericlient.daspeak.models import (
     CompareAudio2AudioInput,
@@ -87,6 +88,21 @@ class DaspeakClient(Client):
             CompareAudio2CredentialsInput: self._compare_audio2credentials,
             CompareCredential2CredentialsInput: self._compare_credential2credentials,
         }
+        self._exception_map = {
+            "SignalNoiseRatioException": SignalNoiseRatioError,
+            "VoiceDurationIsNotEnoughException": self._handle_voice_duration_error,
+            "InvalidChannelException": InvalidSpecifiedChannelError,
+            "InsufficientQuality": InsufficientQualityError,
+            "CalibrationNotAvailable": self._handle_calibration_error,
+            "InvalidCredential": InvalidCredentialError,
+            "UnsupportedMediaType": UnsupportedMediaTypeError,
+        }
+        self._audio_input_errors = {
+            "more channels than": TooManyAudioChannelsError,
+            "unsupported codec": UnsupportedAudioCodecError,
+            "sample rate": UnsupportedSampleRateError,
+            "duration is longer": AudioDurationTooLongError,
+        }
 
     def alive(self) -> bool:
         """Check if the service is alive.
@@ -99,40 +115,38 @@ class DaspeakClient(Client):
         accepted_status_code = 200
         return response.status_code == accepted_status_code
 
-    def _handle_error_response(self, response: Response) -> None:   # noqa: C901, PLR0912
+    def _handle_error_response(self, response: Response) -> None:
         """Handle error responses from the API."""
         response_json = response.json()
-        if response_json["exception"] not in self._exceptions:
+
+        exception = response_json.get("exception")
+        if not exception or exception not in self._exceptions:
             self._raise_server_error(response)
-        if response_json["exception"] == "AudioInputException":
-            if "more channels than" in response_json["error"]:
-                raise TooManyAudioChannelsError
-            if "unsupported codec" in response_json["error"]:
-                raise UnsupportedAudioCodecError
-            if "sample rate" in response_json["error"]:
-                raise UnsupportedSampleRateError
-            if "duration is longer" in response_json["error"]:
-                raise AudioDurationTooLongError
-            raise ValueError(response_json["error"])
-        if response_json["exception"] == "SignalNoiseRatioException":
-            raise SignalNoiseRatioError
-        if response_json["exception"] == "VoiceDurationIsNotEnoughException":
-            error = response_json["error"]
-            net_speech_detected = float(error.split(" ")[-3].replace("s", ""))
-            raise NetSpeechDurationIsNotEnoughError(net_speech_detected)
-        if response_json["exception"] == "InvalidChannelException":
-            raise InvalidSpecifiedChannelError
-        if response_json["exception"] == "InsufficientQuality":
-            raise InsufficientQualityError
-        if response_json["exception"] == "CalibrationNotAvailable":
-            error = response_json["error"]
-            calibration = str(error.split(" ")[2])
-            raise CalibrationNotAvailableError(calibration)
-        if response_json["exception"] == "InvalidCredential":
-            raise InvalidCredentialError
-        if response_json["exception"] == "UnsupportedMediaType":
-            raise UnsupportedMediaTypeError
-        raise ValueError(response_json["error"])
+
+        if exception == "AudioInputException":
+            error_message = response_json.get("error", "")
+            for error_text, error_class in self._audio_input_errors.items():
+                if error_text in error_message:
+                    raise error_class
+            raise ValueError(error_message)
+
+        handler = self._exception_map.get(exception)
+        if handler:
+            if isinstance(handler, type) and issubclass(handler, VeriClientError):
+                raise handler
+            handler(response_json)
+
+        raise ValueError(response_json.get("error", "Unknown error"))
+
+    def _handle_voice_duration_error(self, response_json: dict) -> None:
+        error_message = response_json.get("error", "")
+        net_speech_detected = float(error_message.split(" ")[-3].replace("s", ""))
+        raise NetSpeechDurationIsNotEnoughError(net_speech_detected)
+
+    def _handle_calibration_error(self, response_json: dict) -> None:
+        error_message = response_json.get("error", "")
+        calibration = str(error_message.split(" ")[2])
+        raise CalibrationNotAvailableError(calibration)
 
     def get_models(self) -> ModelsOutput:
         """Get the models available biometrics models in the service.
