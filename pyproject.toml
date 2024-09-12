@@ -44,6 +44,7 @@ dev = [
     "pytest-html>=4.1.1",
     "requests-mock>=1.12.1",
     "build>=1.2.2",
+    "twine>=5.1.1",
 ]
 
 [tool.pdm.scripts]
@@ -94,6 +95,7 @@ test-us-production = """pytest tests --env US_PRODUCTION \
     --junitxml=docs/_build/test-reports/junit.xml \
     -o junit_suite_name=test"""
 build = "python -m build"
+publish = "twine upload dist/*"
 
 [tool.ruff]
 line-length = 130
