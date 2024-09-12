@@ -185,7 +185,7 @@ jobs:
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
         asset_path: ./dist/*.whl
-        asset_name: vericlient-${{ github.ref }}.whl
+        asset_name: $(ls dist/*.whl | xargs -n 1 basename)
         asset_content_type: application/octet-stream
 
     - name: Upload Source Tarball to Release
@@ -193,5 +193,5 @@ jobs:
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
         asset_path: ./dist/*.tar.gz
-        asset_name: vericlient-${{ github.ref }}.tar.gz
+        asset_name: $(ls dist/*.tar.gz | xargs -n 1 basename)
         asset_content_type: application/gzip
