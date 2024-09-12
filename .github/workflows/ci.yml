@@ -180,21 +180,26 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
 
-    - name: Verify dist folder contents
-      run: ls -l dist/
+    - name: Set .whl artifact name
+      id: artifact_whl
+      run: echo "ARTIFACT_WHL=$(ls dist/*.whl)" >> $GITHUB_ENV
 
-    - name: Upload Artifact to Release
+    - name: Set .tar.gz artifact name
+      id: artifact_targz
+      run: echo "ARTIFACT_TARGZ=$(ls dist/*.tar.gz)" >> $GITHUB_ENV
+
+    - name: Upload .whl Artifact to Release
       uses: actions/upload-release-asset@v1
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: dist/*.whl
-        asset_name: $(ls dist/*.whl | xargs -n 1 basename)
+        asset_path: ${{ env.ARTIFACT_WHL }}
+        asset_name: $(basename ${{ env.ARTIFACT_WHL }})
         asset_content_type: application/octet-stream
 
-    - name: Upload Source Tarball to Release
+    - name: Upload .tar.gz Artifact to Release
       uses: actions/upload-release-asset@v1
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: dist/*.tar.gz
-        asset_name: $(ls dist/*.tar.gz | xargs -n 1 basename)
+        asset_path: ${{ env.ARTIFACT_TARGZ }}
+        asset_name: $(basename ${{ env.ARTIFACT_TARGZ }})
         asset_content_type: application/gzip
