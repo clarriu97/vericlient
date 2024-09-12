@@ -3,13 +3,9 @@ name: CI Pipeline
 on:
   push:
     branches:
-      - master
       - '**'
     tags:
       - 'v*'
-  pull_request:
-    branches:
-      - master
 
 jobs:
   test:
@@ -182,7 +178,7 @@ jobs:
         draft: false
         prerelease: false
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
 
     - name: Upload Artifact to Release
       uses: actions/upload-release-asset@v1
