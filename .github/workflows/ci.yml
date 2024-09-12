@@ -3,12 +3,13 @@ name: CI Pipeline
 on:
   push:
     branches:
+      - master
       - '**'
     tags:
       - 'v*'
   pull_request:
     branches:
-      - '**'
+      - master
 
 jobs:
   test:
@@ -195,6 +196,6 @@ jobs:
       uses: actions/upload-release-asset@v1
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./dist/*.tar.gz  # La ruta al archivo `.tar.gz`
+        asset_path: ./dist/*.tar.gz
         asset_name: vericlient-${{ github.ref }}.tar.gz
         asset_content_type: application/gzip
