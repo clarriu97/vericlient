@@ -195,6 +195,8 @@ jobs:
         asset_path: ${{ env.ARTIFACT_WHL }}
         asset_name: $(basename ${{ env.ARTIFACT_WHL }})
         asset_content_type: application/octet-stream
+      env:
+        GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
 
     - name: Upload .tar.gz Artifact to Release
       uses: actions/upload-release-asset@v1
@@ -203,3 +205,5 @@ jobs:
         asset_path: ${{ env.ARTIFACT_TARGZ }}
         asset_name: $(basename ${{ env.ARTIFACT_TARGZ }})
         asset_content_type: application/gzip
+      env:
+        GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
