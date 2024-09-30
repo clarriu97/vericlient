@@ -6,3 +6,4 @@ class APIs(Enum):
     """Enum with the available APIs."""
 
     DASPEAK = "daspeak/v1"
+    VCSP = "vcsp/v1"
