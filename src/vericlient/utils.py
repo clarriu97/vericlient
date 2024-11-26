@@ -3,10 +3,12 @@
 
 def get_virtual_file(input_file: object) -> bytes:
     """Get the content of a file as bytes. The input can be a path to a file or a bytes object.
+
     Args:
         input_file: The file to read the content from
     Returns:
         The content of the file as bytes
+
     """
     if isinstance(input_file, str):
         try:

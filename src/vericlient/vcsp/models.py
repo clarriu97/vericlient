@@ -199,13 +199,3 @@ class GetAccountOutput(VcspResponse):
     updated_at: str
     created_at: str
     subject_id: str
-
-
-class GetCredentialInput(SubjectInput, CredentialInput):
-    """Input class for the get a specific credential endpoint.
-
-    Attributes:
-        subject_id: The subject_id to get the credential from
-        credential_id: The credential_id to get
-
-    """

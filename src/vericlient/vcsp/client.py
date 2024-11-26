@@ -3,38 +3,38 @@ from requests.models import Response
 
 from vericlient.apis import APIs
 from vericlient.client import Client
+from vericlient.utils import get_virtual_file
 from vericlient.vcsp.endpoints import VcspEndpoints
+from vericlient.vcsp.exceptions import (
+    AccountNotFoundError,
+    AssuranceValidationError,
+    CredentialConfigurationUrnAlreadyAssignedError,
+    CredentialNotFoundError,
+    EmptyFileError,
+    FaceAlignmentError,
+    FaceNotFoundError,
+    FaceTooSmallError,
+    InsufficientQualityError,
+    InvalidAssuranceError,
+    InvalidAssuranceMethodUrnError,
+    InvalidAudioFormatError,
+    InvalidClaimsError,
+    InvalidCredentialConfigurationUrnError,
+    InvalidSnrError,
+    InvalidTagsError,
+    MoreThanOneFaceError,
+    VoiceDurationIsNotEnoughError,
+)
 from vericlient.vcsp.models import (
+    DeleteCredentialInput,
+    DeleteSubjectInput,
     EnrollmentInput,
     EnrollmentOutput,
-    DeleteSubjectInput,
-    DeleteCredentialInput,
     GetAccountInput,
     GetAccountOutput,
     GetCredentialInput,
     GetCredentialOutput,
 )
-from vericlient.vcsp.exceptions import (
-    EmptyFileError,
-    InvalidClaimsError,
-    InvalidAssuranceError,
-    InvalidTagsError,
-    InvalidCredentialConfigurationUrnError,
-    InvalidAssuranceMethodUrnError,
-    InsufficientQualityError,
-    InvalidAudioFormatError,
-    InvalidSnrError,
-    CredentialConfigurationUrnAlreadyAssignedError,
-    VoiceDurationIsNotEnoughError,
-    FaceAlignmentError,
-    FaceNotFoundError,
-    FaceTooSmallError,
-    MoreThanOneFaceError,
-    AssuranceValidationError,
-    AccountNotFoundError,
-    CredentialNotFoundError,
-)
-from vericlient.utils import get_virtual_file
 
 
 class VcspClient(Client):
@@ -108,7 +108,7 @@ class VcspClient(Client):
         response_json = response.json()
 
         exception = response_json.get("error")
-        if not exception or exception not in self._exceptions.keys():
+        if not exception or exception not in self._exceptions:
             self._raise_server_error(response)
 
         handler = self._exceptions[exception]
@@ -140,6 +140,7 @@ class VcspClient(Client):
             FaceTooSmallError: If the face is too small
             MoreThanOneFaceError: If there is more than one face
             AssuranceValidationError: If the assurance is invalid
+
         """
         endpoint = VcspEndpoints.ENROLLMENTS.value
         sample = get_virtual_file(data_model.sample)
