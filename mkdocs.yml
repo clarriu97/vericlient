@@ -7,9 +7,9 @@ nav:
   - Changelog: CHANGELOG.md
   - API Documentation:
     - Vericlient: api_docs/vericlient.md
-    - Daspeak client: api_docs/daspeak/client.md
+    - Daspeak client docs: api_docs/daspeak/client.md
     - Daspeak client usage: api_docs/daspeak/client_usage.md
-    - VCSP client: api_docs/vcsp/client.md
+    - VCSP client docs: api_docs/vcsp/client.md
     - VCSP client usage: api_docs/vcsp/client_usage.md
 
 plugins:
