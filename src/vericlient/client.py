@@ -127,6 +127,13 @@ class Client(ABC):
             self._handle_error_response(response)
         return response
 
+    def _delete(self, endpoint: str) -> requests.Response:
+        """Make a DELETE request to the API."""
+        response = self._session.delete(f"{self._url}/{endpoint}", timeout=self._timeout)
+        if not response.ok:
+            self._handle_authorization_error(response)
+            self._handle_error_response(response)
+
     def _raise_server_error(self, response: requests.Response) -> None:
         """Raise a ServerError exception."""
         raise ServerError(response)
