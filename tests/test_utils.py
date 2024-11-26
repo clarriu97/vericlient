@@ -1,5 +1,4 @@
 import pytest
-
 from vericlient.utils import get_virtual_file
 
 
