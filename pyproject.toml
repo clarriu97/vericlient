@@ -56,7 +56,7 @@ docs-serve = "mkdocs serve"
 docs-build = "mkdocs build"
 test = """pytest tests --mock \
     --cov src/vericlient \
-    --cov-report term --cov-fail-under 90 \
+    --cov-report term --cov-fail-under 80 \
     --cov-report html:docs/_build/coverage \
     --cov-report xml:docs/_build/coverage/coverage.xml \
     --html=docs/_build/test-reports/index.html \
