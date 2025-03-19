@@ -25,7 +25,7 @@ model_input = GenerateCredentialInput(
 generate_credential_output = client.generate_credential(model_input)
 print(f"Credential generated with an audio file: {generate_credential_output.credential}")
 
-# generate a credential from a BytesIO object using the last model
+# generate a credential from a bytes object using the last model
 with open("/home/audio.wav", "rb") as f:
     model_input = GenerateCredentialInput(
         audio=f.read(),
@@ -44,7 +44,7 @@ print(f"Similarity between the credential and the audio file: {compare_output.sc
 print(f"Authenticity of the audio file: {compare_output.authenticity_to_evaluate}")
 print(f"Net speech duration of the audio file: {compare_output.net_speech_duration_to_evaluate}")
 
-# compare a credential with a BytesIO object
+# compare a credential with a bytes object
 with open("/home/audio.wav", "rb") as f:
     compare_input = CompareCredential2AudioInput(
         audio_to_evaluate=f.read(),

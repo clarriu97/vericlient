@@ -46,7 +46,7 @@ print(f"Duration of the audio file: {generate_credential_output.duration}")
 print(f"Net speech duration of the audio file: {generate_credential_output.net_speech_duration}")
 ```
 
-## Generate a credential from a BytesIO object
+## Generate a credential from a bytes object
 
 ```python
 from vericlient import DaspeakClient
@@ -87,7 +87,7 @@ print(f"Durations of the audio file: {compare_output.duration_to_evaluate}")
 print(f"Net speech duration of the audio file: {compare_output.net_speech_duration_to_evaluate}")
 ```
 
-## Compare a credential with a BytesIO object
+## Compare a credential with a bytes object
 
 ```python
 from vericlient import DaspeakClient

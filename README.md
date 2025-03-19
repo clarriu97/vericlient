@@ -48,7 +48,7 @@ client = DaspeakClient(apikey="your_api_key")
 # check if the server is alive
 print(f"Alive: {client.alive()}")
 
-# generate a credential from a BytesIO object using the last model
+# generate a credential from a bytes object using the last model
 with open("/home/audio.wav", "rb") as f:
     model_input = GenerateCredentialInput(
         audio=f.read(),
@@ -65,7 +65,7 @@ compare_input = CompareCredential2AudioInput(
 compare_output = client.compare(compare_input)
 print(f"Similarity between the credential and the audio file: {compare_output.score}")
 
-# compare a credential with a BytesIO object
+# compare a credential with a bytes object
 with open("/home/audio.wav", "rb") as f:
     compare_input = CompareCredential2AudioInput(
         audio_to_evaluate=f.read(),
