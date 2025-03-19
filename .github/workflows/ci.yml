@@ -27,7 +27,7 @@ jobs:
 
     - name: Cache PDM
       id: cache-pdm
-      uses: actions/cache@v2
+      uses: actions/cache@v4
       with:
         path: |
           ~/.cache/pdm
@@ -67,7 +67,7 @@ jobs:
 
     - name: Cache PDM
       id: cache-pdm
-      uses: actions/cache@v2
+      uses: actions/cache@v4
       with:
         path: |
           ~/.cache/pdm
@@ -103,7 +103,7 @@ jobs:
 
     - name: Cache PDM
       id: cache-pdm
-      uses: actions/cache@v2
+      uses: actions/cache@v4
       with:
         path: |
           ~/.cache/pdm
@@ -145,7 +145,7 @@ jobs:
 
     - name: Cache PDM
       id: cache-pdm
-      uses: actions/cache@v2
+      uses: actions/cache@v4
       with:
         path: |
           ~/.cache/pdm
