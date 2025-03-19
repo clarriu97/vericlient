@@ -1,7 +1,7 @@
 """Module to define the models for the VCSP API."""
 # ruff: noqa: N805, D102, ANN201
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field
 
 
 class VcspResponse(BaseModel):

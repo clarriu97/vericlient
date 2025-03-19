@@ -3,7 +3,6 @@ from requests.models import Response
 
 from vericlient.apis import APIs
 from vericlient.client import Client
-from vericlient.utils import get_virtual_file
 from vericlient.vcsp.endpoints import VcspEndpoints
 from vericlient.vcsp.exceptions import (
     AccountNotFoundError,
