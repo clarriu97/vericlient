@@ -26,14 +26,10 @@ from vericlient.vcsp.exceptions import (
     VoiceDurationIsNotEnoughError,
 )
 from vericlient.vcsp.models import (
-    DeleteCredentialInput,
-    DeleteSubjectInput,
-    EnrollmentInput,
-    EnrollmentOutput,
-    GetAccountInput,
-    GetAccountOutput,
-    GetCredentialInput,
-    GetCredentialOutput,
+    AssuranceMethodInput,
+    AssuranceMethodOutput,
+    AssuranceMethodsOutput,
+    CredentialConfigurationsOutput,
 )
 
 
@@ -114,100 +110,44 @@ class VcspClient(Client):
         handler = self._exceptions[exception]
         raise handler()
 
-    def enroll_subject(self, data_model: EnrollmentInput) -> EnrollmentOutput:
-        """Enroll a subject.
-
-        Args:
-            data_model: The input to enroll the subject
+    def get_credential_configurations(self) -> CredentialConfigurationsOutput:
+        """Get all credential configurations.
 
         Returns:
-            EnrollmentOutput: The output of the enrollment
-
-        Raises:
-            EmptyFileError: If the file is empty
-            InvalidClaimsError: If the claims are invalid
-            InvalidAssuranceError: If the assurance is invalid
-            InvalidTagsError: If the tags are invalid
-            InvalidCredentialConfigurationUrnError: If the credential configuration urn is invalid
-            InvalidAssuranceMethodUrnError: If the assurance method urn is invalid
-            CredentialConfigurationUrnAlreadyAssignedError: If the credential configuration urn is already assigned
-            InvalidAudioFormatError: If the audio format is invalid
-            InvalidSnrError: If the signal noise ratio is invalid
-            VoiceDurationIsNotEnoughError: If the voice duration is not enough
-            InsufficientQualityError: If the quality is insufficient
-            FaceAlignmentError: If the face is not aligned
-            FaceNotFoundError: If the face is not found
-            FaceTooSmallError: If the face is too small
-            MoreThanOneFaceError: If there is more than one face
-            AssuranceValidationError: If the assurance is invalid
+            CredentialConfigurationsOutput: The output of the credential configurations
 
         """
-        endpoint = VcspEndpoints.ENROLLMENTS.value
-        sample = get_virtual_file(data_model.sample)
-        files = {"sample": sample}
-        applicant = data_model.applicant.model_dump()
-        applicant = {k: v for k, v in applicant.items() if v is not None}
-        data = {"applicant": applicant}
-        response = self._post(
-            endpoint=endpoint,
-            files=files,
-            data=data,
+        endpoint = VcspEndpoints.CREDENTIAL_CONFIGURATIONS.value
+        response = self._get(endpoint=endpoint)
+        return CredentialConfigurationsOutput(
+            status_code=response.status_code,
+            credential_configurations=response.json(),
         )
-        return EnrollmentOutput(status_code=response.status_code, **response.json())
 
-    def delete_subject(self, data_model: DeleteSubjectInput) -> None:
-        """Delete a subject.
-
-        Args:
-            data_model: The input to delete the subject
-
-        """
-        endpoint = VcspEndpoints.ACCOUNTS.value.replace("<subject_id>", data_model.subject_id)
-        self._delete(endpoint=endpoint)
-
-    def delete_credential(self, data_model: DeleteCredentialInput) -> None:
-        """Delete a credential.
-
-        Args:
-            data_model: The input to delete the credential
-
-        """
-        endpoint = VcspEndpoints.CREDENTIAL_ID.value.replace("<subject_id>", data_model.subject_id)
-        endpoint = endpoint.replace("<credential_id>", data_model.credential_id)
-        self._delete(endpoint=endpoint)
-
-    def get_account(self, data_model: GetAccountInput) -> GetAccountOutput:
-        """Get an account.
-
-        Args:
-            data_model: The input to get the account
+    def get_assurance_methods(self) -> AssuranceMethodsOutput:
+        """Get all assurance methods.
 
         Returns:
-            GetAccountOutput: The output of the account
-
-        Raises:
-            AccountNotFoundError: If the account is not found
+            AssuranceMethodsOutput: The output of the assurance methods
 
         """
-        endpoint = VcspEndpoints.ACCOUNTS.value.replace("<subject_id>", data_model.subject_id)
+        endpoint = VcspEndpoints.ASSURANCE_METHODS.value
         response = self._get(endpoint=endpoint)
-        return GetAccountOutput(status_code=response.status_code, **response.json())
+        return AssuranceMethodsOutput(
+            status_code=response.status_code,
+            assurance_methods=response.json(),
+        )
 
-    def get_credential(self, data_model: GetCredentialInput) -> GetCredentialOutput:
-        """Get a credential.
+    def get_assurance_method(self, data_model: AssuranceMethodInput) -> AssuranceMethodOutput:
+        """Get an assurance method.
 
         Args:
-            data_model: The input to get the credential
+            data_model: The input to get the assurance method
 
         Returns:
-            GetCredentialOutput: The output of the credential
-
-        Raises:
-            CredentialNotFoundError: If the credential is not found
-            AccountNotFoundError: If the account is not found
+            AssuranceMethodOutput: The output of the assurance method
 
         """
-        endpoint = VcspEndpoints.CREDENTIAL_ID.value.replace("<subject_id>", data_model.subject_id)
-        endpoint = endpoint.replace("<credential_id>", data_model.credential_id)
+        endpoint = VcspEndpoints.ASSURANCE_METHOD_URN.value.replace("<urn>", data_model.urn)
         response = self._get(endpoint=endpoint)
-        return GetCredentialOutput(status_code=response.status_code, **response.json())
+        return AssuranceMethodOutput(status_code=response.status_code, **response.json())
