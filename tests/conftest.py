@@ -1,3 +1,5 @@
+import tempfile
+
 import pytest
 import requests_mock
 from vericlient.environments import Environments, Locations
@@ -110,6 +112,12 @@ def provide_testing_parameters(
     elif test_environment == us_production_test_env:
         parameters = [us_production]
     return parameters
+
+
+@pytest.fixture(scope="session")
+def temp_dir():
+    with tempfile.TemporaryDirectory() as temp_dir:
+        yield temp_dir
 
 
 ######################

@@ -35,6 +35,7 @@ from vericlient.daspeak.models import (
     ModelsOutput,
 )
 from vericlient.exceptions import InvalidCredentialError, UnsupportedMediaTypeError
+from vericlient.utils import get_virtual_file
 
 
 class DaspeakClient(Client):
@@ -182,7 +183,7 @@ class DaspeakClient(Client):
 
         """
         endpoint = DaspeakEndpoints.MODELS_HASH_CREDENTIAL_AUDIO.value.replace("<hash>", data_model.hash)
-        audio = self._get_virtual_audio_file(data_model.audio)
+        audio = get_virtual_file(data_model.audio)
         files = {
             "audio": ("audio", audio, "audio/wav"),
         }
@@ -245,7 +246,7 @@ class DaspeakClient(Client):
 
         """
         endpoint = DaspeakEndpoints.SIMILARITY_CREDENTIAL2AUDIO.value
-        audio = self._get_virtual_audio_file(data_model.audio_to_evaluate)
+        audio = get_virtual_file(data_model.audio_to_evaluate)
         files = {
             "audio_to_evaluate": ("audio", audio, "audio/wav"),
         }
@@ -268,8 +269,8 @@ class DaspeakClient(Client):
 
         """
         endpoint = DaspeakEndpoints.SIMILARITY_AUDIO2AUDIO.value
-        audio_reference = self._get_virtual_audio_file(data_model.audio_reference)
-        audio_to_evaluate = self._get_virtual_audio_file(data_model.audio_to_evaluate)
+        audio_reference = get_virtual_file(data_model.audio_reference)
+        audio_to_evaluate = get_virtual_file(data_model.audio_to_evaluate)
         files = {
             "audio_reference": ("audio", audio_reference, "audio/wav"),
             "audio_to_evaluate": ("audio", audio_to_evaluate, "audio/wav"),
@@ -318,7 +319,7 @@ class DaspeakClient(Client):
 
         """
         endpoint = DaspeakEndpoints.IDENTIFICATION_AUDIO2CREDENTIALS.value
-        audio = self._get_virtual_audio_file(data_model.audio_reference)
+        audio = get_virtual_file(data_model.audio_reference)
         files = {
             "audio_reference": ("audio_reference", audio, "audio/wav"),
         }
@@ -344,18 +345,3 @@ class DaspeakClient(Client):
         }
         response = self._post(endpoint=endpoint, data=data)
         return CompareCredential2CredentialsOutput(status_code=response.status_code, **response.json())
-
-    def _get_virtual_audio_file(self, audio_input: object) -> bytes:
-        if isinstance(audio_input, str):
-            try:
-                with open(audio_input, "rb") as f:
-                    audio = f.read()
-            except FileNotFoundError as e:
-                error = f"File {audio_input} not found"
-                raise FileNotFoundError(error) from e
-        elif isinstance(audio_input, bytes):
-            audio = audio_input
-        else:
-            error = "audio must be a string or a bytes object"
-            raise TypeError(error)
-        return audio
