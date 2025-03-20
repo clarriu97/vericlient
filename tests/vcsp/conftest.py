@@ -1,7 +1,6 @@
 from unittest.mock import MagicMock
 
 import pytest
-
 from vericlient import VcspClient
 from vericlient.vcsp.exceptions import (
     AssuranceMethodNotFoundError,
@@ -84,12 +83,12 @@ def vcsp_assurance_method_response(valid_assurance_method_urn):
             "type": "object",
             "properties": {
                 "authenticity_threshold": {
-                    "type": "number"
-                }
+                    "type": "number",
+                },
             },
             "required": ["authenticity_threshold"],
-            "additionalProperties": False
-        }
+            "additionalProperties": False,
+        },
     }
 
 
@@ -100,8 +99,8 @@ def vcsp_assurance_method_not_found_error_response():
         "title": "Assurance method not found",
         "reason": "Assurance method not found for specified 'assurance_method_urn'",
         "details": {
-            "assurance_method_urn": "urn:vcsp:assurance_methods:invalid:method:v1"
-        }
+            "assurance_method_urn": "urn:vcsp:assurance_methods:invalid:method:v1",
+        },
     }
 
 #######################
@@ -174,7 +173,7 @@ def vcsp_assurance_method_info_parameters(
         all_environments,
         service_name,
         vcsp_assurance_method_response,
-        valid_assurance_method_urn
+        valid_assurance_method_urn,
 ) -> list:
     return provide_testing_parameters(
         test_environment=test_environment,

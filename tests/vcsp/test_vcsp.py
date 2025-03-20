@@ -1,10 +1,10 @@
-from vericlient.vcsp.models import (
-    AssuranceMethodInput,
-)
+import pytest
 from vericlient.vcsp.exceptions import (
     AssuranceMethodNotFoundError,
 )
-import pytest
+from vericlient.vcsp.models import (
+    AssuranceMethodInput,
+)
 
 
 def test_vcsp_alive(vcsp_client, mock_server, vcsp_alive_parameters):
@@ -70,7 +70,7 @@ def test_get_assurance_method_info_success(
         valid_assurance_method_urn = vcsp_client.get_assurance_methods().assurance_methods[0]
 
     response = vcsp_client.get_assurance_method_info(
-        data_model=AssuranceMethodInput(urn=valid_assurance_method_urn)
+        data_model=AssuranceMethodInput(urn=valid_assurance_method_urn),
     )
 
     assert response.urn == valid_assurance_method_urn
@@ -100,5 +100,5 @@ def test_get_assurance_method_info_not_found(
 
     with pytest.raises(AssuranceMethodNotFoundError):
         vcsp_client.get_assurance_method_info(
-            data_model=AssuranceMethodInput(urn=invalid_urn)
+            data_model=AssuranceMethodInput(urn=invalid_urn),
         )
