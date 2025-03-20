@@ -1,4 +1,8 @@
 """Implementation of the client for the VCSP service."""
+import json
+import mimetypes
+import os
+
 from requests.models import Response
 
 from vericlient.apis import APIs
@@ -23,6 +27,7 @@ from vericlient.vcsp.exceptions import (
     InvalidSnrError,
     InvalidTagsError,
     MoreThanOneFaceError,
+    RequestValidationError,
     VoiceDurationIsNotEnoughError,
 )
 from vericlient.vcsp.models import (
@@ -30,6 +35,15 @@ from vericlient.vcsp.models import (
     AssuranceMethodOutput,
     AssuranceMethodsOutput,
     CredentialConfigurationsOutput,
+    DeleteCredentialInput,
+    EnrollmentInput,
+    EnrollmentOutput,
+    GetAccountInput,
+    GetAccountOutput,
+    GetCredentialInput,
+    GetCredentialOutput,
+    GetCredentialsInput,
+    GetCredentialsOutput,
 )
 
 
@@ -87,6 +101,7 @@ class VcspClient(Client):
             "assurance_method_not_found": AssuranceMethodNotFoundError,
             "account_not_found": AccountNotFoundError,
             "credential_not_found": CredentialNotFoundError,
+            "request_validation_error": RequestValidationError,
         }
 
     def alive(self) -> bool:
@@ -152,3 +167,133 @@ class VcspClient(Client):
         endpoint = VcspEndpoints.ASSURANCE_METHOD_URN.value.replace("<urn>", data_model.urn)
         response = self._get(endpoint=endpoint)
         return AssuranceMethodOutput(status_code=response.status_code, **response.json())
+
+    def enroll_subject(self, data_model: EnrollmentInput) -> EnrollmentOutput:
+        """Enroll a subject.
+
+        Args:
+            data_model: The input to enroll the subject
+
+        Returns:
+            EnrollmentOutput: The output of the enrollment
+
+        Raises:
+            EmptyFileError: If the file is empty
+            InvalidClaimsError: If the claims are invalid
+            InvalidAssuranceError: If the assurance is invalid
+            InvalidTagsError: If the tags are invalid
+            InvalidCredentialConfigurationUrnError: If the credential configuration urn is invalid
+            InvalidAssuranceMethodUrnError: If the assurance method urn is invalid
+            CredentialConfigurationUrnAlreadyAssignedError: If the credential configuration urn is already assigned
+            InvalidAudioFormatError: If the audio format is invalid
+            InvalidSnrError: If the signal noise ratio is invalid
+            VoiceDurationIsNotEnoughError: If the voice duration is not enough
+            InsufficientQualityError: If the quality is insufficient
+            FaceAlignmentError: If the face is not aligned
+            FaceNotFoundError: If the face is not found
+            FaceTooSmallError: If the face is too small
+            MoreThanOneFaceError: If there is more than one face
+            AssuranceValidationError: If the assurance is invalid
+            RequestValidationError: If the request is invalid
+
+        """
+        endpoint = VcspEndpoints.ENROLLMENTS.value
+        sample = self._get_sample(data_model.sample)
+        files = {"sample": sample}
+        data = {"applicant": json.dumps(data_model.applicant.model_dump(exclude_none=True))}
+        response = self._post(
+            endpoint=endpoint,
+            files=files,
+            data=data,
+        )
+        return EnrollmentOutput(status_code=response.status_code, **response.json())
+
+    def _get_sample(self, sample: str | bytes) -> tuple[str, bytes, str]:
+        """Given a sample, return the filename, the file and the content type."""
+        if isinstance(sample, str):
+            filename = os.path.basename(sample)
+            with open(sample, "rb") as f:
+                file = f.read()
+            content_type = mimetypes.guess_type(sample)[0]
+        if isinstance(sample, bytes):
+            filename = "sample"
+            file = sample
+            content_type = mimetypes.guess_type(sample)[0]
+        return filename, file, content_type
+
+    def get_account(self, data_model: GetAccountInput) -> GetAccountOutput:
+        """Get an account.
+
+        Args:
+            data_model: The input to get the account
+
+        Returns:
+            GetAccountOutput: The output of the account
+
+        Raises:
+            AccountNotFoundError: If the account is not found
+
+        """
+        endpoint = VcspEndpoints.ACCOUNTS.value.replace("<subject_id>", data_model.subject_id)
+        response = self._get(endpoint=endpoint)
+        return GetAccountOutput(status_code=response.status_code, **response.json())
+
+    def delete_account(self, data_model: GetAccountInput) -> None:
+        """Delete an account.
+
+        Args:
+            data_model: The input to delete the account
+
+        Raises:
+            AccountNotFoundError: If the account is not found
+
+        """
+        endpoint = VcspEndpoints.ACCOUNTS.value.replace("<subject_id>", data_model.subject_id)
+        self._delete(endpoint=endpoint)
+
+    def get_all_subject_credentials(self, data_model: GetCredentialsInput) -> GetCredentialsOutput:
+        """Get all credentials for a subject.
+
+        Args:
+            data_model: The input to get all credentials for the subject
+
+        Returns:
+            GetCredentialsOutput: The output of the credentials
+
+        Raises:
+            AccountNotFoundError: If the account is not found
+
+        """
+        endpoint = VcspEndpoints.CREDENTIALS.value.replace("<subject_id>", data_model.subject_id)
+        response = self._get(endpoint=endpoint)
+        return GetCredentialsOutput(credentials=response.json(), status_code=response.status_code)
+
+    def get_credential(self, data_model: GetCredentialInput) -> GetCredentialOutput:
+        """Get a credential.
+
+        Args:
+            data_model: The input to get the credential
+
+        Returns:
+            GetCredentialOutput: The output of the credential
+
+        Raises:
+            CredentialNotFoundError: If the credential is not found
+            AccountNotFoundError: If the account is not found
+
+        """
+        endpoint = VcspEndpoints.CREDENTIAL_ID.value.replace("<subject_id>", data_model.subject_id)
+        endpoint = endpoint.replace("<credential_id>", data_model.credential_id)
+        response = self._get(endpoint=endpoint)
+        return GetCredentialOutput(status_code=response.status_code, **response.json())
+
+    def delete_credential(self, data_model: DeleteCredentialInput) -> None:
+        """Delete a credential.
+
+        Args:
+            data_model: The input to delete the credential
+
+        """
+        endpoint = VcspEndpoints.CREDENTIAL_ID.value.replace("<subject_id>", data_model.subject_id)
+        endpoint = endpoint.replace("<credential_id>", data_model.credential_id)
+        self._delete(endpoint=endpoint)

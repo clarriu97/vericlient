@@ -157,6 +157,7 @@ ignore = [
     "UP038",    # Use `X | Y` in `isinstance` call instead of `(X, Y)`
     "D406",     # Section name should end with a newline
     "D407",     # Missing dashed underline after section
+    "PTH119",   # `os.path.basename()` should be replaced by `Path.name`
 ]
 unfixable = []
 
