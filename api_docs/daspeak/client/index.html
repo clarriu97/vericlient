@@ -22,7 +22,7 @@
     
     
       
-        <title>Daspeak client - vericlient</title>
+        <title>Daspeak client docs - vericlient</title>
       
     
     
@@ -110,7 +110,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Daspeak client
+              Daspeak client docs
             
           </span>
         </div>
@@ -414,7 +414,7 @@
           
   
   <span class="md-ellipsis">
-    Daspeak client
+    Daspeak client docs
   </span>
   
 
@@ -425,7 +425,7 @@
         
   
   <span class="md-ellipsis">
-    Daspeak client
+    Daspeak client docs
   </span>
   
 
@@ -827,7 +827,7 @@
         
   
   <span class="md-ellipsis">
-    VCSP client
+    VCSP client docs
   </span>
   
 
@@ -1249,7 +1249,7 @@
   
 
 
-  <h1>Daspeak client</h1>
+  <h1>Daspeak client docs</h1>
 
 <div class="doc doc-object doc-class">
 
@@ -1271,8 +1271,7 @@
 
               <details class="quote">
                 <summary>Source code in <code>src/vericlient/daspeak/client.py</code></summary>
-                <div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 40</span>
-<span class="normal"> 41</span>
+                <div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 41</span>
 <span class="normal"> 42</span>
 <span class="normal"> 43</span>
 <span class="normal"> 44</span>
@@ -1578,21 +1577,7 @@
 <span class="normal">344</span>
 <span class="normal">345</span>
 <span class="normal">346</span>
-<span class="normal">347</span>
-<span class="normal">348</span>
-<span class="normal">349</span>
-<span class="normal">350</span>
-<span class="normal">351</span>
-<span class="normal">352</span>
-<span class="normal">353</span>
-<span class="normal">354</span>
-<span class="normal">355</span>
-<span class="normal">356</span>
-<span class="normal">357</span>
-<span class="normal">358</span>
-<span class="normal">359</span>
-<span class="normal">360</span>
-<span class="normal">361</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">DaspeakClient</span><span class="p">(</span><span class="n">Client</span><span class="p">):</span>
+<span class="normal">347</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">DaspeakClient</span><span class="p">(</span><span class="n">Client</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Class to interact with the Daspeak API.&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
@@ -1737,7 +1722,7 @@
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">endpoint</span> <span class="o">=</span> <span class="n">DaspeakEndpoints</span><span class="o">.</span><span class="n">MODELS_HASH_CREDENTIAL_AUDIO</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;&lt;hash&gt;&quot;</span><span class="p">,</span> <span class="n">data_model</span><span class="o">.</span><span class="n">hash</span><span class="p">)</span>
-        <span class="n">audio</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_virtual_audio_file</span><span class="p">(</span><span class="n">data_model</span><span class="o">.</span><span class="n">audio</span><span class="p">)</span>
+        <span class="n">audio</span> <span class="o">=</span> <span class="n">get_virtual_file</span><span class="p">(</span><span class="n">data_model</span><span class="o">.</span><span class="n">audio</span><span class="p">)</span>
         <span class="n">files</span> <span class="o">=</span> <span class="p">{</span>
             <span class="s2">&quot;audio&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;audio&quot;</span><span class="p">,</span> <span class="n">audio</span><span class="p">,</span> <span class="s2">&quot;audio/wav&quot;</span><span class="p">),</span>
         <span class="p">}</span>
@@ -1800,7 +1785,7 @@
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">endpoint</span> <span class="o">=</span> <span class="n">DaspeakEndpoints</span><span class="o">.</span><span class="n">SIMILARITY_CREDENTIAL2AUDIO</span><span class="o">.</span><span class="n">value</span>
-        <span class="n">audio</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_virtual_audio_file</span><span class="p">(</span><span class="n">data_model</span><span class="o">.</span><span class="n">audio_to_evaluate</span><span class="p">)</span>
+        <span class="n">audio</span> <span class="o">=</span> <span class="n">get_virtual_file</span><span class="p">(</span><span class="n">data_model</span><span class="o">.</span><span class="n">audio_to_evaluate</span><span class="p">)</span>
         <span class="n">files</span> <span class="o">=</span> <span class="p">{</span>
             <span class="s2">&quot;audio_to_evaluate&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;audio&quot;</span><span class="p">,</span> <span class="n">audio</span><span class="p">,</span> <span class="s2">&quot;audio/wav&quot;</span><span class="p">),</span>
         <span class="p">}</span>
@@ -1823,8 +1808,8 @@
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">endpoint</span> <span class="o">=</span> <span class="n">DaspeakEndpoints</span><span class="o">.</span><span class="n">SIMILARITY_AUDIO2AUDIO</span><span class="o">.</span><span class="n">value</span>
-        <span class="n">audio_reference</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_virtual_audio_file</span><span class="p">(</span><span class="n">data_model</span><span class="o">.</span><span class="n">audio_reference</span><span class="p">)</span>
-        <span class="n">audio_to_evaluate</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_virtual_audio_file</span><span class="p">(</span><span class="n">data_model</span><span class="o">.</span><span class="n">audio_to_evaluate</span><span class="p">)</span>
+        <span class="n">audio_reference</span> <span class="o">=</span> <span class="n">get_virtual_file</span><span class="p">(</span><span class="n">data_model</span><span class="o">.</span><span class="n">audio_reference</span><span class="p">)</span>
+        <span class="n">audio_to_evaluate</span> <span class="o">=</span> <span class="n">get_virtual_file</span><span class="p">(</span><span class="n">data_model</span><span class="o">.</span><span class="n">audio_to_evaluate</span><span class="p">)</span>
         <span class="n">files</span> <span class="o">=</span> <span class="p">{</span>
             <span class="s2">&quot;audio_reference&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;audio&quot;</span><span class="p">,</span> <span class="n">audio_reference</span><span class="p">,</span> <span class="s2">&quot;audio/wav&quot;</span><span class="p">),</span>
             <span class="s2">&quot;audio_to_evaluate&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;audio&quot;</span><span class="p">,</span> <span class="n">audio_to_evaluate</span><span class="p">,</span> <span class="s2">&quot;audio/wav&quot;</span><span class="p">),</span>
@@ -1873,7 +1858,7 @@
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">endpoint</span> <span class="o">=</span> <span class="n">DaspeakEndpoints</span><span class="o">.</span><span class="n">IDENTIFICATION_AUDIO2CREDENTIALS</span><span class="o">.</span><span class="n">value</span>
-        <span class="n">audio</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_virtual_audio_file</span><span class="p">(</span><span class="n">data_model</span><span class="o">.</span><span class="n">audio_reference</span><span class="p">)</span>
+        <span class="n">audio</span> <span class="o">=</span> <span class="n">get_virtual_file</span><span class="p">(</span><span class="n">data_model</span><span class="o">.</span><span class="n">audio_reference</span><span class="p">)</span>
         <span class="n">files</span> <span class="o">=</span> <span class="p">{</span>
             <span class="s2">&quot;audio_reference&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;audio_reference&quot;</span><span class="p">,</span> <span class="n">audio</span><span class="p">,</span> <span class="s2">&quot;audio/wav&quot;</span><span class="p">),</span>
         <span class="p">}</span>
@@ -1899,21 +1884,6 @@
         <span class="p">}</span>
         <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_post</span><span class="p">(</span><span class="n">endpoint</span><span class="o">=</span><span class="n">endpoint</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">CompareCredential2CredentialsOutput</span><span class="p">(</span><span class="n">status_code</span><span class="o">=</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">,</span> <span class="o">**</span><span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">())</span>
-
-    <span class="k">def</span> <span class="nf">_get_virtual_audio_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">audio_input</span><span class="p">:</span> <span class="nb">object</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bytes</span><span class="p">:</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">audio_input</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-            <span class="k">try</span><span class="p">:</span>
-                <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">audio_input</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-                    <span class="n">audio</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
-            <span class="k">except</span> <span class="ne">FileNotFoundError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-                <span class="n">error</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;File </span><span class="si">{</span><span class="n">audio_input</span><span class="si">}</span><span class="s2"> not found&quot;</span>
-                <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="n">error</span><span class="p">)</span> <span class="kn">from</span> <span class="nn">e</span>
-        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">audio_input</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">):</span>
-            <span class="n">audio</span> <span class="o">=</span> <span class="n">audio_input</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">error</span> <span class="o">=</span> <span class="s2">&quot;audio must be a string or a bytes object&quot;</span>
-            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">error</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">audio</span>
 </code></pre></div></td></tr></table></div>
               </details>
 
@@ -2043,8 +2013,7 @@
 
             <details class="quote">
               <summary>Source code in <code>src/vericlient/daspeak/client.py</code></summary>
-              <div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 43</span>
-<span class="normal"> 44</span>
+              <div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 44</span>
 <span class="normal"> 45</span>
 <span class="normal"> 46</span>
 <span class="normal"> 47</span>
@@ -2105,7 +2074,8 @@
 <span class="normal">102</span>
 <span class="normal">103</span>
 <span class="normal">104</span>
-<span class="normal">105</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+<span class="normal">105</span>
+<span class="normal">106</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">apikey</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">timeout</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -2191,8 +2161,7 @@
 
             <details class="quote">
               <summary>Source code in <code>src/vericlient/daspeak/client.py</code></summary>
-              <div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">107</span>
-<span class="normal">108</span>
+              <div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">108</span>
 <span class="normal">109</span>
 <span class="normal">110</span>
 <span class="normal">111</span>
@@ -2200,7 +2169,8 @@
 <span class="normal">113</span>
 <span class="normal">114</span>
 <span class="normal">115</span>
-<span class="normal">116</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">alive</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="normal">116</span>
+<span class="normal">117</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">alive</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Check if the service is alive.</span>
 
 <span class="sd">    Returns</span>
@@ -2416,8 +2386,7 @@
 
             <details class="quote">
               <summary>Source code in <code>src/vericlient/daspeak/client.py</code></summary>
-              <div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">196</span>
-<span class="normal">197</span>
+              <div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">197</span>
 <span class="normal">198</span>
 <span class="normal">199</span>
 <span class="normal">200</span>
@@ -2452,7 +2421,8 @@
 <span class="normal">229</span>
 <span class="normal">230</span>
 <span class="normal">231</span>
-<span class="normal">232</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">compare</span><span class="p">(</span>    <span class="c1"># noqa: D417</span>
+<span class="normal">232</span>
+<span class="normal">233</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">compare</span><span class="p">(</span>    <span class="c1"># noqa: D417</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">data_model</span><span class="p">:</span> <span class="n">CompareInput</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CompareCredential2AudioOutput</span> <span class="o">|</span> <span class="n">CompareAudio2AudioOutput</span> <span class="o">|</span> \
@@ -2685,8 +2655,7 @@
 
             <details class="quote">
               <summary>Source code in <code>src/vericlient/daspeak/client.py</code></summary>
-              <div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">161</span>
-<span class="normal">162</span>
+              <div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">162</span>
 <span class="normal">163</span>
 <span class="normal">164</span>
 <span class="normal">165</span>
@@ -2718,7 +2687,8 @@
 <span class="normal">191</span>
 <span class="normal">192</span>
 <span class="normal">193</span>
-<span class="normal">194</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">generate_credential</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_model</span><span class="p">:</span> <span class="n">GenerateCredentialInput</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">GenerateCredentialOutput</span><span class="p">:</span>
+<span class="normal">194</span>
+<span class="normal">195</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">generate_credential</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_model</span><span class="p">:</span> <span class="n">GenerateCredentialInput</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">GenerateCredentialOutput</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate a credential from a WAV file.</span>
 
 <span class="sd">    Args:</span>
@@ -2742,7 +2712,7 @@
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">endpoint</span> <span class="o">=</span> <span class="n">DaspeakEndpoints</span><span class="o">.</span><span class="n">MODELS_HASH_CREDENTIAL_AUDIO</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;&lt;hash&gt;&quot;</span><span class="p">,</span> <span class="n">data_model</span><span class="o">.</span><span class="n">hash</span><span class="p">)</span>
-    <span class="n">audio</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_virtual_audio_file</span><span class="p">(</span><span class="n">data_model</span><span class="o">.</span><span class="n">audio</span><span class="p">)</span>
+    <span class="n">audio</span> <span class="o">=</span> <span class="n">get_virtual_file</span><span class="p">(</span><span class="n">data_model</span><span class="o">.</span><span class="n">audio</span><span class="p">)</span>
     <span class="n">files</span> <span class="o">=</span> <span class="p">{</span>
         <span class="s2">&quot;audio&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;audio&quot;</span><span class="p">,</span> <span class="n">audio</span><span class="p">,</span> <span class="s2">&quot;audio/wav&quot;</span><span class="p">),</span>
     <span class="p">}</span>
@@ -2796,15 +2766,15 @@
 
             <details class="quote">
               <summary>Source code in <code>src/vericlient/daspeak/client.py</code></summary>
-              <div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">151</span>
-<span class="normal">152</span>
+              <div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">152</span>
 <span class="normal">153</span>
 <span class="normal">154</span>
 <span class="normal">155</span>
 <span class="normal">156</span>
 <span class="normal">157</span>
 <span class="normal">158</span>
-<span class="normal">159</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_models</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ModelsOutput</span><span class="p">:</span>
+<span class="normal">159</span>
+<span class="normal">160</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_models</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ModelsOutput</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Get the models available biometrics models in the service.</span>
 
 <span class="sd">    Returns:</span>
