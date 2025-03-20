@@ -8,6 +8,7 @@ from vericlient.vcsp.models import (
     DeleteAccountInput,
     GetCredentialsInput,
     GetCredentialInput,
+    DeleteCredentialInput,
     Applicant,
 )
 
@@ -104,6 +105,16 @@ credential = client.get_credential(
 )
 print()
 print(f"First credential for user1: {credential}")
+
+# delete a credential
+client.delete_credential(
+    data_model=DeleteCredentialInput(
+        subject_id="user1",
+        credential_id=credentials.credentials[0].id
+    )
+)
+print()
+print(f"Credential deleted for user1: {credentials.credentials[0].id}")
 
 # delete the account
 client.delete_account(
