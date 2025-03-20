@@ -187,4 +187,3 @@ def audio_codec_error_file() -> bytes:
 def audio_unsupported_file() -> bytes:
     with open("tests/__init__.py", "rb") as f:
         return f.read()
-

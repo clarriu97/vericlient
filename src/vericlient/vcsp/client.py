@@ -6,6 +6,7 @@ from vericlient.client import Client
 from vericlient.vcsp.endpoints import VcspEndpoints
 from vericlient.vcsp.exceptions import (
     AccountNotFoundError,
+    AssuranceMethodNotFoundError,
     AssuranceValidationError,
     CredentialConfigurationUrnAlreadyAssignedError,
     CredentialNotFoundError,
@@ -83,6 +84,7 @@ class VcspClient(Client):
             "face_too_small_for_ias": FaceTooSmallError,
             "face_alignment": FaceAlignmentError,
             "assurance_validation_error": AssuranceValidationError,
+            "assurance_method_not_found": AssuranceMethodNotFoundError,
             "account_not_found": AccountNotFoundError,
             "credential_not_found": CredentialNotFoundError,
         }
@@ -137,7 +139,7 @@ class VcspClient(Client):
             assurance_methods=response.json(),
         )
 
-    def get_assurance_method(self, data_model: AssuranceMethodInput) -> AssuranceMethodOutput:
+    def get_assurance_method_info(self, data_model: AssuranceMethodInput) -> AssuranceMethodOutput:
         """Get an assurance method.
 
         Args:

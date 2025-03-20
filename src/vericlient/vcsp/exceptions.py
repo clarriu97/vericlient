@@ -129,6 +129,14 @@ class FaceAlignmentError(VcspError):
         super().__init__(message)
 
 
+class AssuranceMethodNotFoundError(VcspError):
+    """Exception raised for assurance method not found."""
+
+    def __init__(self) -> None:
+        message = "Assurance method not found"
+        super().__init__(message)
+
+
 class AssuranceValidationError(VcspError):
     """Exception raised for assurance validation error."""
 
