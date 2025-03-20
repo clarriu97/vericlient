@@ -50,13 +50,13 @@ dev = [
 [tool.pdm.scripts]
 lint = "ruff check ."
 lint-fix = "ruff check . --fix"
-lint-tests = "ruff check tests"
-lint-tests-fix = "ruff check tests --fix"
+lint-test = "ruff check tests"
+lint-test-fix = "ruff check tests --fix"
 docs-serve = "mkdocs serve"
 docs-build = "mkdocs build"
 test = """pytest tests --mock \
     --cov src/vericlient \
-    --cov-report term --cov-fail-under 50 \
+    --cov-report term --cov-fail-under 80 \
     --cov-report html:docs/_build/coverage \
     --cov-report xml:docs/_build/coverage/coverage.xml \
     --html=docs/_build/test-reports/index.html \
@@ -64,7 +64,7 @@ test = """pytest tests --mock \
     -o junit_suite_name=test"""
 test-eu-sandbox = """pytest tests --env EU_SANDBOX \
     --cov src/vericlient \
-    --cov-report term --cov-fail-under 50 \
+    --cov-report term \
     --cov-report html:docs/_build/coverage \
     --cov-report xml:docs/_build/coverage/coverage.xml \
     --html=docs/_build/test-reports/index.html \
@@ -72,7 +72,7 @@ test-eu-sandbox = """pytest tests --env EU_SANDBOX \
     -o junit_suite_name=test"""
 test-us-sandbox = """pytest tests --env US_SANDBOX \
     --cov src/vericlient \
-    --cov-report term --cov-fail-under 50 \
+    --cov-report term \
     --cov-report html:docs/_build/coverage \
     --cov-report xml:docs/_build/coverage/coverage.xml \
     --html=docs/_build/test-reports/index.html \
@@ -80,7 +80,7 @@ test-us-sandbox = """pytest tests --env US_SANDBOX \
     -o junit_suite_name=test"""
 test-eu-production = """pytest tests --env EU_PRODUCTION \
     --cov src/vericlient \
-    --cov-report term --cov-fail-under 50 \
+    --cov-report term \
     --cov-report html:docs/_build/coverage \
     --cov-report xml:docs/_build/coverage/coverage.xml \
     --html=docs/_build/test-reports/index.html \
@@ -88,7 +88,7 @@ test-eu-production = """pytest tests --env EU_PRODUCTION \
     -o junit_suite_name=test"""
 test-us-production = """pytest tests --env US_PRODUCTION \
     --cov src/vericlient \
-    --cov-report term --cov-fail-under 50 \
+    --cov-report term \
     --cov-report html:docs/_build/coverage \
     --cov-report xml:docs/_build/coverage/coverage.xml \
     --html=docs/_build/test-reports/index.html \
