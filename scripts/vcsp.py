@@ -13,7 +13,7 @@ from vericlient.vcsp.models import (
 )
 
 
-client = VcspClient(apikey="your_api_key")
+client = VcspClient()
 
 # check if the server is alive
 print()

@@ -9,7 +9,7 @@ from vericlient.daspeak.models import (
     CompareAudio2CredentialsInput
 )
 
-client = DaspeakClient(apikey="your_api_key")
+client = DaspeakClient()
 
 # check if the server is alive
 print(f"Alive: {client.alive()}")
