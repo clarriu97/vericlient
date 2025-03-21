@@ -100,9 +100,26 @@ class Client(ABC):
     def _handle_error_response(self, response: requests.Response) -> None:
         """Handle error responses from the API."""
 
-    def _get(self, endpoint: str) -> requests.Response:
-        """Make a GET request to the API."""
-        response = self._session.get(f"{self._url}/{endpoint}", timeout=self._timeout)
+    def _get(self, endpoint: str, headers: dict | None = None) -> requests.Response:
+        """Make a GET request to the API.
+        
+        Args:
+            endpoint: The endpoint to make the request to
+            headers: Optional additional headers for the request
+            
+        Returns:
+            requests.Response: The response from the server
+        """
+        # Merge headers with session headers if provided
+        request_headers = self._session.headers.copy()
+        if headers:
+            request_headers.update(headers)
+            
+        response = self._session.get(
+            f"{self._url}/{endpoint}",
+            headers=request_headers,
+            timeout=self._timeout
+        )
         if not response.ok:
             self._handle_authorization_error(response)
             self._handle_error_response(response)
@@ -116,6 +133,25 @@ class Client(ABC):
     ) -> requests.Response:
         """Make a POST request to the API."""
         response = self._session.post(
+            f"{self._url}/{endpoint}",
+            data=data,
+            json=json_,
+            files=files,
+            timeout=self._timeout,
+        )
+        if not response.ok:
+            self._handle_authorization_error(response)
+            self._handle_error_response(response)
+        return response
+    
+    def _put(
+        self, endpoint: str,
+        data: dict | None = None,
+        json_: dict | None = None,
+        files: dict | None = None,
+    ) -> requests.Response:
+        """Make a PUT request to the API."""
+        response = self._session.put(
             f"{self._url}/{endpoint}",
             data=data,
             json=json_,

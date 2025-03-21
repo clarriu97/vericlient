@@ -7,3 +7,4 @@ class APIs(Enum):
 
     DASPEAK = "daspeak/v1"
     VCSP = "vcsp/v1"
+    VALIDAS = "validas/v1"
