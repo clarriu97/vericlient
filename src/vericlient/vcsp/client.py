@@ -101,7 +101,7 @@ class VcspClient(Client):
             "assurance_method_not_found": AssuranceMethodNotFoundError,
             "account_not_found": AccountNotFoundError,
             "credential_not_found": CredentialNotFoundError,
-            "request_validation_error": RequestValidationError,
+            "request_validation": RequestValidationError,
         }
 
     def alive(self) -> bool:

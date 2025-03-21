@@ -5,6 +5,21 @@ from vericlient.vcsp.exceptions import (
 from vericlient.vcsp.models import (
     AssuranceMethodInput,
 )
+from vericlient import VcspClient
+from vericlient.vcsp.models import (
+    Applicant,
+    EnrollmentInput,
+    EnrollmentOutput,
+    GetAccountInput,
+    GetCredentialInput,
+    DeleteSubjectInput,
+    AssuranceMethodInput,
+)
+from vericlient.vcsp.exceptions import (
+    AssuranceMethodNotFoundError,
+)
+import pytest
+import uuid
 
 
 def test_vcsp_alive(vcsp_client, mock_server, vcsp_alive_parameters):
@@ -102,3 +117,53 @@ def test_get_assurance_method_info_not_found(
         vcsp_client.get_assurance_method_info(
             data_model=AssuranceMethodInput(urn=invalid_urn),
         )
+
+
+def test_mock_vcsp_enroll_subject(vcsp_client, mock_server, vcsp_enrollment_parameters, audio_file_path):
+    if not mock_server:
+        pytest.skip("This test only runs in mock mode")
+
+    for param in vcsp_enrollment_parameters:
+        endpoint, mock_response, mock_status_code, _, _, _, _ = param
+        mock_server.post(endpoint, json=mock_response, status_code=mock_status_code)
+
+        input_model = EnrollmentInput(
+            sample=audio_file_path,
+            applicant=Applicant(
+                credential_configuration_urn="fake-credential_configuration_urn",
+                assurance_method_urn="fake-assurance_method_urn",
+                assurance={},
+            ),
+        )
+
+        response = vcsp_client.enroll_subject(data_model=input_model)
+
+        assert response.credential_id == "fake-credential_id"
+        assert response.subject_id == "fake-subject_id"
+
+
+def test_vcsp_enrollment_exception(mock_server, vcsp_enrollment_exception_parameters, audio_file_path):
+    if not mock_server:
+        pytest.skip("This test only runs in mock mode")
+
+    for exception_parameters in vcsp_enrollment_exception_parameters:
+        for param in exception_parameters:
+            endpoint, mock_response, mock_status_code, _, environment, location, exception = param
+            mock_server.post(endpoint, json=mock_response, status_code=mock_status_code)
+
+            vcsp_client = VcspClient(
+                apikey="fake-apikey",
+                environment=environment,
+                location=location,
+            )
+
+            with pytest.raises(exception):
+                input_model = EnrollmentInput(
+                    sample=audio_file_path,
+                    applicant=Applicant(
+                        credential_configuration_urn="fake-credential_configuration_urn",
+                        assurance_method_urn="fake-assurance_method_urn",
+                        assurance={},
+                    ),
+                )
+                vcsp_client.enroll_subject(data_model=input_model)
