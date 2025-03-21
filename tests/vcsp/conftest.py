@@ -4,13 +4,29 @@ from unittest.mock import MagicMock
 
 import pytest
 from structlog import get_logger
+
 from vericlient import VcspClient
+from vericlient.exceptions import ServerError
 from vericlient.vcsp.exceptions import (
     AssuranceMethodNotFoundError,
     EmptyFileError,
     InvalidAssuranceError,
     InvalidClaimsError,
+    InvalidCredentialConfigurationUrnError,
+    InvalidTagsError,
+    InvalidAssuranceMethodUrnError,
+    CredentialConfigurationUrnAlreadyAssignedError,
+    InvalidAudioFormatError,
+    InvalidSnrError,
+    VoiceDurationIsNotEnoughError,
+    InsufficientQualityError,
+    FaceNotFoundError,
+    MoreThanOneFaceError,
+    FaceTooSmallError,
+    FaceAlignmentError,
+    AssuranceValidationError,
     RequestValidationError,
+    UnsupportedMediaTypeError,
 )
 from vericlient.vcsp.models import (
     DeleteSubjectInput,
@@ -281,16 +297,172 @@ def vcsp_invalid_assurance_error_response():
 
 # ### 415 UNSUPPORTED MEDIA TYPE ###
 
+@pytest.fixture(scope="session")
+def vcsp_unsupported_media_type_error_response():
+    return {
+        "error": "unsupported_media_type",
+        "title": "Unsupported media type",
+        "reason": "Provided file media type is not supported",
+        "details": {
+            "media_type": "text/plain",
+            "allowed_media_types": [
+                "image/jpg",
+                "image/jpeg",
+                "image/png"
+            ]
+        }
+    }
 
 
 # ### 422 UNPROCESSABLE ENTITY ###
 
+@pytest.fixture(scope="session")
+def vcsp_invalid_tags_error_response():
+    return {
+        "error": "invalid_tags",
+        "title": "Invalid tags",
+        "reason": "Specified tags don't exist",
+        "details": {
+            "tag": [
+                "invalid_tag"
+            ]
+        }
+    }
 
+
+@pytest.fixture(scope="session")
+def vcsp_invalid_credential_configuration_urn_error_response():
+    return {
+        "error": "invalid_credential_configuration_urn",
+        "title": "Invalid credential configuration URN",
+        "reason": "Specified credential configuration URN does not exist",
+        "details": {
+            "credential_configuration_urn": "invalid_credential_configuration_urn"
+        }
+    }
+
+
+@pytest.fixture(scope="session")
+def vcsp_invalid_assurance_method_urn_error_response():
+    return {
+        "error": "invalid_assurance_method_urn",
+        "title": "Invalid assurance method URN",
+        "reason": "Specified assurance method URN does not exist",
+        "details": {
+            "assurance_method_urn": "invalid_assurance_method_urn"
+        }
+    }
+
+
+@pytest.fixture(scope="session")
+def vcsp_credential_configuration_already_assigned_error_response():
+    return {
+        "error": "credential_configuration_urn_already_assigned",
+        "title": "Credential configuration URN already assigned",
+        "reason": "A credential with specified with specified 'credential_configuration_urn' is already assigned to specified 'subject_id'",
+        "details": {
+            "subject_id": "John Doe",
+            "credential_configuration_urn": "urn:vcsp:credential_configurations:face:selfie"
+        }
+    }
+
+
+@pytest.fixture(scope="session")
+def vcsp_invalid_audio_format_error_response():
+    return {
+        "error": "invalid_audio_format",
+        "title": "Invalid audio format",
+        "reason": "Provided audio contains an unsupported format",
+        "details": {
+            "msg": "The wav has more channels than are accepted by the system"
+        }
+    }
+
+
+@pytest.fixture(scope="session")
+def vcsp_invalid_signal_noise_ratio_error_response():
+    return {
+        "error": "invalid_signal_noise_ratio",
+        "title": "Invalid SNR",
+        "reason": "Noise level exceeded"
+    }
+
+
+@pytest.fixture(scope="session")
+def vcsp_voice_duration_not_enough_error_response():
+    return {
+        "error": "voice_duration_is_not_enough",
+        "title": "Voice duration is not enough",
+        "reason": "Voice duration is less than 3 seconds"
+    }
+
+
+@pytest.fixture(scope="session")
+def vcsp_insufficient_quality_error_response():
+    return {
+        "error": "insufficient_quality",
+        "title": "Insufficient quality",
+        "reason": "The audio quality is not good enough"
+    }
+
+
+@pytest.fixture(scope="session")
+def vcsp_face_not_found_error_response():
+    return {
+        "error": "face_not_found",
+        "title": "Face not found",
+        "reason": "Face not found in the image"
+    }
+
+
+@pytest.fixture(scope="session")
+def vcsp_more_than_one_face_error_response():
+    return {
+        "error": "more_than_one_face",
+        "title": "More than one face",
+        "reason": "More than one face detected in the image"
+    }
+
+
+@pytest.fixture(scope="session")
+def vcsp_face_too_small_error_response():
+    return {
+        "error": "face_too_small_for_ias",
+        "title": "Face too small for IAS",
+        "reason": "Face is too small for IAS"
+    }
+
+
+@pytest.fixture(scope="session")
+def vcsp_face_alignment_error_response():
+    return {
+        "error": "face_alignment",
+        "title": "Face alignment",
+        "reason": "Face alignment failed"
+    }
+
+
+@pytest.fixture(scope="session")
+def vcsp_assurance_validation_error_response():
+    return {
+        "error": "assurance_validation_error",
+        "title": "Assurance validation error",
+        "reason": "One or more parameters failed during assurance validation",
+        "details": {
+            "msg": "Sample authenticity score (0.5) is less than specified authenticity threshold (0.9)"
+        }
+    }
 
 
 # ### 500 INTERNAL SERVER ERROR ###
 
-
+@pytest.fixture(scope="session")
+def vcsp_server_error_response():
+    return {
+        "error": "internal_server_error",
+        "title": "Internal server error",
+        "reason": "An internal server error occured. Please, contact with your administrator for help"
+    }
 
 #######################
 # PARAMETERS FIXTURES #
@@ -427,14 +599,29 @@ def vcsp_enrollment_exception_parameters(
         vcsp_request_validation_error_response,
         vcsp_invalid_claims_error_response,
         vcsp_invalid_assurance_error_response,
+        vcsp_unsupported_media_type_error_response,
+        vcsp_invalid_tags_error_response,
+        vcsp_invalid_credential_configuration_urn_error_response,
+        vcsp_invalid_assurance_method_urn_error_response,
+        vcsp_credential_configuration_already_assigned_error_response,
+        vcsp_invalid_audio_format_error_response,
+        vcsp_invalid_signal_noise_ratio_error_response,
+        vcsp_voice_duration_not_enough_error_response,
+        vcsp_insufficient_quality_error_response,
+        vcsp_face_not_found_error_response,
+        vcsp_more_than_one_face_error_response,
+        vcsp_face_too_small_error_response,
+        vcsp_face_alignment_error_response,
+        vcsp_assurance_validation_error_response,
+        vcsp_server_error_response,
 ) -> list[list]:
-    response_exceptions = [
+    four_hundred_responses = [
         (vcsp_empty_file_error_response, EmptyFileError),
         (vcsp_request_validation_error_response, RequestValidationError),
         (vcsp_invalid_claims_error_response, InvalidClaimsError),
         (vcsp_invalid_assurance_error_response, InvalidAssuranceError),
     ]
-    return [
+    four_hundred_responses = [
         provide_testing_parameters(
             test_environment=test_environment,
             all_environments=all_environments,
@@ -445,5 +632,54 @@ def vcsp_enrollment_exception_parameters(
             exception=exception,
             service_name=service_name,
         )
-        for response, exception in response_exceptions
+        for response, exception in four_hundred_responses
     ]
+    unsupported_media_type_response = [provide_testing_parameters(
+        test_environment=test_environment,
+        all_environments=all_environments,
+        mock_option=mock_option,
+        endpoint="vcsp/v1/enrollments",
+        response=vcsp_unsupported_media_type_error_response,
+        status_code=415,
+        exception=UnsupportedMediaTypeError,
+        service_name=service_name,
+    )]
+    four_hundred_twenty_two_responses = [
+        (vcsp_invalid_tags_error_response, InvalidTagsError),
+        (vcsp_invalid_credential_configuration_urn_error_response, InvalidCredentialConfigurationUrnError),
+        (vcsp_invalid_assurance_method_urn_error_response, InvalidAssuranceMethodUrnError),
+        (vcsp_credential_configuration_already_assigned_error_response, CredentialConfigurationUrnAlreadyAssignedError),
+        (vcsp_invalid_audio_format_error_response, InvalidAudioFormatError),
+        (vcsp_invalid_signal_noise_ratio_error_response, InvalidSnrError),
+        (vcsp_voice_duration_not_enough_error_response, VoiceDurationIsNotEnoughError),
+        (vcsp_insufficient_quality_error_response, InsufficientQualityError),
+        (vcsp_face_not_found_error_response, FaceNotFoundError),
+        (vcsp_more_than_one_face_error_response, MoreThanOneFaceError),
+        (vcsp_face_too_small_error_response, FaceTooSmallError),
+        (vcsp_face_alignment_error_response, FaceAlignmentError),
+        (vcsp_assurance_validation_error_response, AssuranceValidationError),
+    ]
+    four_hundred_twenty_two_responses = [
+        provide_testing_parameters(
+            test_environment=test_environment,
+            all_environments=all_environments,
+            mock_option=mock_option,
+            endpoint="vcsp/v1/enrollments",
+            response=response,
+            status_code=422,
+            exception=exception,
+            service_name=service_name,
+        )
+        for response, exception in four_hundred_twenty_two_responses
+    ]
+    server_error_response = [provide_testing_parameters(
+        test_environment=test_environment,
+        all_environments=all_environments,
+        mock_option=mock_option,
+        endpoint="vcsp/v1/enrollments",
+        response=vcsp_server_error_response,
+        status_code=500,
+        exception=ServerError,
+        service_name=service_name,
+    )]
+    return four_hundred_responses + unsupported_media_type_response + four_hundred_twenty_two_responses + server_error_response

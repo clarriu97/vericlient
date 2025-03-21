@@ -28,6 +28,7 @@ from vericlient.vcsp.exceptions import (
     InvalidTagsError,
     MoreThanOneFaceError,
     RequestValidationError,
+    UnsupportedMediaTypeError,
     VoiceDurationIsNotEnoughError,
 )
 from vericlient.vcsp.models import (
@@ -90,7 +91,7 @@ class VcspClient(Client):
             "invalid_assurance_method_urn": InvalidAssuranceMethodUrnError,
             "credential_configuration_urn_already_assigned": CredentialConfigurationUrnAlreadyAssignedError,
             "invalid_audio_format": InvalidAudioFormatError,
-            "invalid_signal_to_noise_ratio": InvalidSnrError,
+            "invalid_signal_noise_ratio": InvalidSnrError,
             "voice_duration_is_not_enough": VoiceDurationIsNotEnoughError,
             "insufficient_quality": InsufficientQualityError,
             "face_not_found": FaceNotFoundError,
@@ -102,6 +103,7 @@ class VcspClient(Client):
             "account_not_found": AccountNotFoundError,
             "credential_not_found": CredentialNotFoundError,
             "request_validation": RequestValidationError,
+            "unsupported_media_type": UnsupportedMediaTypeError,
         }
 
     def alive(self) -> bool:
@@ -195,6 +197,7 @@ class VcspClient(Client):
             MoreThanOneFaceError: If there is more than one face
             AssuranceValidationError: If the assurance is invalid
             RequestValidationError: If the request is invalid
+            UnsupportedMediaTypeError: If the media type is not supported
 
         """
         endpoint = VcspEndpoints.ENROLLMENTS.value
