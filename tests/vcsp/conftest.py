@@ -4,29 +4,28 @@ from unittest.mock import MagicMock
 
 import pytest
 from structlog import get_logger
-
 from vericlient import VcspClient
 from vericlient.exceptions import ServerError
 from vericlient.vcsp.exceptions import (
     AssuranceMethodNotFoundError,
+    AssuranceValidationError,
+    CredentialConfigurationUrnAlreadyAssignedError,
     EmptyFileError,
+    FaceAlignmentError,
+    FaceNotFoundError,
+    FaceTooSmallError,
+    InsufficientQualityError,
     InvalidAssuranceError,
+    InvalidAssuranceMethodUrnError,
+    InvalidAudioFormatError,
     InvalidClaimsError,
     InvalidCredentialConfigurationUrnError,
-    InvalidTagsError,
-    InvalidAssuranceMethodUrnError,
-    CredentialConfigurationUrnAlreadyAssignedError,
-    InvalidAudioFormatError,
     InvalidSnrError,
-    VoiceDurationIsNotEnoughError,
-    InsufficientQualityError,
-    FaceNotFoundError,
+    InvalidTagsError,
     MoreThanOneFaceError,
-    FaceTooSmallError,
-    FaceAlignmentError,
-    AssuranceValidationError,
     RequestValidationError,
     UnsupportedMediaTypeError,
+    VoiceDurationIsNotEnoughError,
 )
 from vericlient.vcsp.models import (
     DeleteSubjectInput,
@@ -308,9 +307,9 @@ def vcsp_unsupported_media_type_error_response():
             "allowed_media_types": [
                 "image/jpg",
                 "image/jpeg",
-                "image/png"
-            ]
-        }
+                "image/png",
+            ],
+        },
     }
 
 
@@ -324,9 +323,9 @@ def vcsp_invalid_tags_error_response():
         "reason": "Specified tags don't exist",
         "details": {
             "tag": [
-                "invalid_tag"
-            ]
-        }
+                "invalid_tag",
+            ],
+        },
     }
 
 
@@ -337,8 +336,8 @@ def vcsp_invalid_credential_configuration_urn_error_response():
         "title": "Invalid credential configuration URN",
         "reason": "Specified credential configuration URN does not exist",
         "details": {
-            "credential_configuration_urn": "invalid_credential_configuration_urn"
-        }
+            "credential_configuration_urn": "invalid_credential_configuration_urn",
+        },
     }
 
 
@@ -349,8 +348,8 @@ def vcsp_invalid_assurance_method_urn_error_response():
         "title": "Invalid assurance method URN",
         "reason": "Specified assurance method URN does not exist",
         "details": {
-            "assurance_method_urn": "invalid_assurance_method_urn"
-        }
+            "assurance_method_urn": "invalid_assurance_method_urn",
+        },
     }
 
 
@@ -359,11 +358,11 @@ def vcsp_credential_configuration_already_assigned_error_response():
     return {
         "error": "credential_configuration_urn_already_assigned",
         "title": "Credential configuration URN already assigned",
-        "reason": "A credential with specified with specified 'credential_configuration_urn' is already assigned to specified 'subject_id'",
+        "reason": "A credential with specified with specified 'credential_configuration_urn'...",
         "details": {
             "subject_id": "John Doe",
-            "credential_configuration_urn": "urn:vcsp:credential_configurations:face:selfie"
-        }
+            "credential_configuration_urn": "urn:vcsp:credential_configurations:face:selfie",
+        },
     }
 
 
@@ -374,8 +373,8 @@ def vcsp_invalid_audio_format_error_response():
         "title": "Invalid audio format",
         "reason": "Provided audio contains an unsupported format",
         "details": {
-            "msg": "The wav has more channels than are accepted by the system"
-        }
+            "msg": "The wav has more channels than are accepted by the system",
+        },
     }
 
 
@@ -384,7 +383,7 @@ def vcsp_invalid_signal_noise_ratio_error_response():
     return {
         "error": "invalid_signal_noise_ratio",
         "title": "Invalid SNR",
-        "reason": "Noise level exceeded"
+        "reason": "Noise level exceeded",
     }
 
 
@@ -393,7 +392,7 @@ def vcsp_voice_duration_not_enough_error_response():
     return {
         "error": "voice_duration_is_not_enough",
         "title": "Voice duration is not enough",
-        "reason": "Voice duration is less than 3 seconds"
+        "reason": "Voice duration is less than 3 seconds",
     }
 
 
@@ -402,7 +401,7 @@ def vcsp_insufficient_quality_error_response():
     return {
         "error": "insufficient_quality",
         "title": "Insufficient quality",
-        "reason": "The audio quality is not good enough"
+        "reason": "The audio quality is not good enough",
     }
 
 
@@ -411,7 +410,7 @@ def vcsp_face_not_found_error_response():
     return {
         "error": "face_not_found",
         "title": "Face not found",
-        "reason": "Face not found in the image"
+        "reason": "Face not found in the image",
     }
 
 
@@ -420,7 +419,7 @@ def vcsp_more_than_one_face_error_response():
     return {
         "error": "more_than_one_face",
         "title": "More than one face",
-        "reason": "More than one face detected in the image"
+        "reason": "More than one face detected in the image",
     }
 
 
@@ -429,7 +428,7 @@ def vcsp_face_too_small_error_response():
     return {
         "error": "face_too_small_for_ias",
         "title": "Face too small for IAS",
-        "reason": "Face is too small for IAS"
+        "reason": "Face is too small for IAS",
     }
 
 
@@ -438,7 +437,7 @@ def vcsp_face_alignment_error_response():
     return {
         "error": "face_alignment",
         "title": "Face alignment",
-        "reason": "Face alignment failed"
+        "reason": "Face alignment failed",
     }
 
 
@@ -449,8 +448,8 @@ def vcsp_assurance_validation_error_response():
         "title": "Assurance validation error",
         "reason": "One or more parameters failed during assurance validation",
         "details": {
-            "msg": "Sample authenticity score (0.5) is less than specified authenticity threshold (0.9)"
-        }
+            "msg": "Sample authenticity score (0.5) is less than specified authenticity threshold (0.9)",
+        },
     }
 
 
@@ -461,7 +460,7 @@ def vcsp_server_error_response():
     return {
         "error": "internal_server_error",
         "title": "Internal server error",
-        "reason": "An internal server error occured. Please, contact with your administrator for help"
+        "reason": "An internal server error occured. Please, contact with your administrator for help",
     }
 
 #######################
