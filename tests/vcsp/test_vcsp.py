@@ -1,25 +1,14 @@
+
 import pytest
+from vericlient import VcspClient
 from vericlient.vcsp.exceptions import (
     AssuranceMethodNotFoundError,
 )
-from vericlient.vcsp.models import (
-    AssuranceMethodInput,
-)
-from vericlient import VcspClient
 from vericlient.vcsp.models import (
     Applicant,
-    EnrollmentInput,
-    EnrollmentOutput,
-    GetAccountInput,
-    GetCredentialInput,
-    DeleteSubjectInput,
     AssuranceMethodInput,
+    EnrollmentInput,
 )
-from vericlient.vcsp.exceptions import (
-    AssuranceMethodNotFoundError,
-)
-import pytest
-import uuid
 
 
 def test_vcsp_alive(vcsp_client, mock_server, vcsp_alive_parameters):
@@ -156,14 +145,13 @@ def test_vcsp_enrollment_exception(mock_server, vcsp_enrollment_exception_parame
                 environment=environment,
                 location=location,
             )
-
+            input_model = EnrollmentInput(
+                sample=audio_file_path,
+                applicant=Applicant(
+                    credential_configuration_urn="fake-credential_configuration_urn",
+                    assurance_method_urn="fake-assurance_method_urn",
+                    assurance={},
+                ),
+            )
             with pytest.raises(exception):
-                input_model = EnrollmentInput(
-                    sample=audio_file_path,
-                    applicant=Applicant(
-                        credential_configuration_urn="fake-credential_configuration_urn",
-                        assurance_method_urn="fake-assurance_method_urn",
-                        assurance={},
-                    ),
-                )
                 vcsp_client.enroll_subject(data_model=input_model)

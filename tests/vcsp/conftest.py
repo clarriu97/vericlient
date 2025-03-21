@@ -1,24 +1,26 @@
+import uuid
+from collections.abc import Generator
 from unittest.mock import MagicMock
 
 import pytest
-import uuid
-from typing import Generator, Tuple
-
+from structlog import get_logger
 from vericlient import VcspClient
-from vericlient.vcsp.models import (
-    EnrollmentInput,
-    EnrollmentOutput,
-    DeleteSubjectInput,
-)
 from vericlient.vcsp.exceptions import (
     AssuranceMethodNotFoundError,
     EmptyFileError,
-    RequestValidationError,
-    InvalidClaimsError,
     InvalidAssuranceError,
+    InvalidClaimsError,
+    RequestValidationError,
+)
+from vericlient.vcsp.models import (
+    DeleteSubjectInput,
+    EnrollmentInput,
+    EnrollmentOutput,
 )
 
 from tests.conftest import provide_testing_parameters
+
+logger = get_logger(__name__)
 
 
 @pytest.fixture(scope="session")
@@ -56,7 +58,7 @@ def vcsp_client(mock_server, test_environment, all_environments) -> VcspClient:
 class ResourceTracker:
     """Class to track resources created during tests for cleanup."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.subject_ids = []
 
     def add_subject_id(self, subject_id: str) -> None:
@@ -75,12 +77,13 @@ def resource_tracker() -> ResourceTracker:
     return ResourceTracker()
 
 
-@pytest.fixture
-def temp_subject(vcsp_client, mock_server, resource_tracker, audio_file_path) -> Generator[Tuple[str, str], None, None]:
+@pytest.fixture()
+def temp_subject(vcsp_client, mock_server, resource_tracker, audio_file_path) -> Generator[tuple[str, str], None, None]:
     """Create a temporary subject for testing and clean it up after.
 
     Returns:
         Generator with a tuple of (subject_id, credential_id)
+
     """
     if mock_server:
         yield ("mock-subject-id", "mock-credential-id")
@@ -108,22 +111,22 @@ def temp_subject(vcsp_client, mock_server, resource_tracker, audio_file_path) ->
 
 
 @pytest.fixture(scope="session", autouse=True)
-def cleanup_resources(vcsp_client, mock_server, resource_tracker) -> Generator[None, None, None]:
+def cleanup_resources(vcsp_client, mock_server, resource_tracker) -> Generator[None, None, None]:   # noqa: PT004
     """Clean up all resources created during tests.
 
     This fixture runs automatically at the end of the session to clean up all created resources.
     """
     yield
-    
+
     if mock_server:
         return
-    
+
     for subject_id in resource_tracker.subject_ids:
         try:
             vcsp_client.delete_account(data_model=DeleteSubjectInput(subject_id=subject_id))
-            print(f"Cleaned up subject: {subject_id}")
-        except Exception as e:
-            print(f"Failed to clean up subject {subject_id}: {e}")
+            logger.info("cleaned_up_subject", subject_id=subject_id)
+        except Exception as e:   # noqa: PERF203
+            logger.exception("failed_to_clean_up_subject", subject_id=subject_id, error=e)
 
     resource_tracker.clear()
 
@@ -195,7 +198,7 @@ def vcsp_assurance_method_not_found_error_response():
 def vcsp_enrollment_response():
     return {
         "subject_id": "fake-subject_id",
-        "credential_id": "fake-credential_id"
+        "credential_id": "fake-credential_id",
     }
 
 
@@ -222,13 +225,13 @@ def vcsp_request_validation_error_response():
                     "type": "missing",
                     "loc": [
                         "body",
-                        "applicant"
+                        "applicant",
                     ],
                     "msg": "Field required",
-                    "input": "null"
-                }
-            ]
-        }
+                    "input": "null",
+                },
+            ],
+        },
     }
 
 
@@ -240,8 +243,8 @@ def vcsp_invalid_claims_error_response():
         "reason": "Input claims don't fulfill required schema",
         "details": {
         "input": {},
-        "required_schema": {}
-        }
+        "required_schema": {},
+        },
     }
 
 
@@ -259,15 +262,15 @@ def vcsp_invalid_assurance_error_response():
                 "type": "object",
                 "properties": {
                 "authenticity_threshold": {
-                "type": "number"
-                }
+                "type": "number",
+                },
                 },
                 "required": [
-                "authenticity_threshold"
+                "authenticity_threshold",
                 ],
-                "additionalProperties": False
-            }
-        }
+                "additionalProperties": False,
+            },
+        },
     }
 
 
