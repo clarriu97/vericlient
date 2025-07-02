@@ -167,3 +167,9 @@ quote-style = "double"
 [build-system]
 requires = ["pdm-backend"]
 build-backend = "pdm.backend"
+
+[tool.pytest.ini_options]
+markers = [
+    "vcsp: marks tests as VCSP (deselect with '-m \"not vcsp\"')",
+    "daspeak: marks tests as DASPEAK (deselect with '-m \"not daspeak\"')",
+]

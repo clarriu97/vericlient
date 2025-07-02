@@ -36,6 +36,7 @@ from vericlient.vcsp.models import (
     AssuranceMethodOutput,
     AssuranceMethodsOutput,
     CredentialConfigurationsOutput,
+    DeleteAccountInput,
     DeleteCredentialInput,
     EnrollmentInput,
     EnrollmentOutput,
@@ -241,7 +242,7 @@ class VcspClient(Client):
         response = self._get(endpoint=endpoint)
         return GetAccountOutput(status_code=response.status_code, **response.json())
 
-    def delete_account(self, data_model: GetAccountInput) -> None:
+    def delete_account(self, data_model: DeleteAccountInput) -> None:
         """Delete an account.
 
         Args:

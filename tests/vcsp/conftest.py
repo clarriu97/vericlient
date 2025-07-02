@@ -146,6 +146,16 @@ def cleanup_resources(vcsp_client, mock_server, resource_tracker) -> Generator[N
     resource_tracker.clear()
 
 
+@pytest.fixture(scope="session")
+def test_subject_id():
+    return "test-subject-id"
+
+
+@pytest.fixture(scope="session")
+def test_credential_id():
+    return "test-credential-id"
+
+
 ####################
 # SERVER RESPONSES #
 ####################
@@ -210,10 +220,82 @@ def vcsp_assurance_method_not_found_error_response():
 
 
 @pytest.fixture(scope="session")
-def vcsp_enrollment_response():
+def vcsp_enrollment_response(test_subject_id):
     return {
-        "subject_id": "fake-subject_id",
+        "subject_id": test_subject_id,
         "credential_id": "fake-credential_id",
+    }
+
+
+@pytest.fixture(scope="session")
+def vcsp_get_account_response(test_subject_id):
+    return {
+        "credentials": [
+            "497f6eca-6276-4993-bfeb-53cbbbba6f08"
+        ],
+        "updated_at": "2019-08-24T14:15:22Z",
+        "created_at": "2019-08-24T14:15:22Z",
+        "subject_id": test_subject_id
+    }
+
+
+@pytest.fixture(scope="session")
+def vcsp_get_all_credentials_response():
+    return [
+        {
+            "sample": {
+                "valid_from": "2019-08-24T14:15:22Z",
+                "valid_until": "2019-08-24T14:15:22Z",
+                "type": "face",
+                "content_type": "image/jpg",
+                "analysis": {
+                    "authenticity_score": 0.9
+                }
+            },
+            "groups": [
+                "employees"
+            ],
+            "issuer": "Veridas",
+            "id": "497f6eca-6276-4993-bfeb-53cbbbba6f08",
+            "updated_at": "2019-08-24T14:15:22Z",
+            "created_at": "2019-08-24T14:15:22Z",
+            "valid_from": "2019-08-24T14:15:22Z",
+            "valid_until": "2019-08-24T14:15:22Z",
+            "credential_configuration_urn": "urn:vcsp:credential_configurations:face:selfie:v1",
+            "tags": [
+                "role:employee"
+            ],
+            "claims": {}
+        }
+    ]
+
+
+@pytest.fixture(scope="session")
+def vcsp_get_credential_response():
+    return {
+        "sample": {
+            "valid_from": "2019-08-24T14:15:22Z",
+            "valid_until": "2019-08-24T14:15:22Z",
+            "type": "face",
+            "content_type": "image/jpg",
+            "analysis": {
+            "authenticity_score": 0.9
+            }
+        },
+        "groups": [
+            "employees"
+        ],
+        "issuer": "Veridas",
+        "id": "497f6eca-6276-4993-bfeb-53cbbbba6f08",
+        "updated_at": "2019-08-24T14:15:22Z",
+        "created_at": "2019-08-24T14:15:22Z",
+        "valid_from": "2019-08-24T14:15:22Z",
+        "valid_until": "2019-08-24T14:15:22Z",
+        "credential_configuration_urn": "urn:vcsp:credential_configurations:face:selfie:v1",
+        "tags": [
+            "role:employee"
+        ],
+        "claims": {}
     }
 
 
@@ -291,7 +373,28 @@ def vcsp_invalid_assurance_error_response():
 
 # ### 404 NOT FOUND ###
 
+@pytest.fixture(scope="session")
+def vcsp_account_not_found_error_response():
+    return {
+        "error": "account_not_found",
+        "title": "Account not found",
+        "reason": "Account not found for specified 'subject_id'",
+        "details": {
+            "subject_id": "nonexistent_subject_id"
+        }
+    }
 
+
+@pytest.fixture(scope="session")
+def vcsp_credential_not_found_error_response():
+    return {
+        "error": "credential_not_found",
+        "title": "Credential not found",
+        "reason": "Credential not found for specified 'credential_id'",
+        "details": {
+            "credential_id": "nonexistent_credential_id"
+        }
+    }
 
 
 # ### 415 UNSUPPORTED MEDIA TYPE ###
@@ -682,3 +785,108 @@ def vcsp_enrollment_exception_parameters(
         service_name=service_name,
     )]
     return four_hundred_responses + unsupported_media_type_response + four_hundred_twenty_two_responses + server_error_response
+
+
+@pytest.fixture(scope="session")
+def vcsp_get_account_parameters(
+        mock_option,
+        test_environment,
+        all_environments,
+        service_name,
+        vcsp_get_account_response,
+        test_subject_id
+) -> list:
+    return provide_testing_parameters(
+        test_environment=test_environment,
+        all_environments=all_environments,
+        mock_option=mock_option,
+        endpoint=f"vcsp/v1/accounts/{test_subject_id}",
+        response=vcsp_get_account_response,
+        status_code=200,
+        exception=None,
+        service_name=service_name,
+    )
+
+
+@pytest.fixture(scope="session")
+def vcsp_delete_account_parameters(
+        mock_option,
+        test_environment,
+        all_environments,
+        service_name,
+        test_subject_id
+) -> list:
+    return provide_testing_parameters(
+        test_environment=test_environment,
+        all_environments=all_environments,
+        mock_option=mock_option,
+        endpoint=f"vcsp/v1/accounts/{test_subject_id}",
+        response={},
+        status_code=204,
+        exception=None,
+        service_name=service_name,
+    )
+
+
+@pytest.fixture(scope="session")
+def vcsp_get_all_credentials_parameters(
+        mock_option,
+        test_environment,
+        all_environments,
+        service_name,
+        vcsp_get_all_credentials_response,
+        test_subject_id
+) -> list:
+    return provide_testing_parameters(
+        test_environment=test_environment,
+        all_environments=all_environments,
+        mock_option=mock_option,
+        endpoint=f"vcsp/v1/accounts/{test_subject_id}/credentials",
+        response=vcsp_get_all_credentials_response,
+        status_code=200,
+        exception=None,
+        service_name=service_name,
+    )
+
+
+@pytest.fixture(scope="session")
+def vcsp_get_credential_parameters(
+        mock_option,
+        test_environment,
+        all_environments,
+        service_name,
+        vcsp_get_credential_response,
+        test_subject_id,
+        test_credential_id
+) -> list:
+    return provide_testing_parameters(
+        test_environment=test_environment,
+        all_environments=all_environments,
+        mock_option=mock_option,
+        endpoint=f"vcsp/v1/accounts/{test_subject_id}/credentials/{test_credential_id}",
+        response=vcsp_get_credential_response,
+        status_code=200,
+        exception=None,
+        service_name=service_name,
+    )
+
+
+@pytest.fixture(scope="session")
+def vcsp_delete_credential_parameters(
+        mock_option,
+        test_environment,
+        all_environments,
+        service_name,
+        test_subject_id,
+        test_credential_id
+) -> list:
+    return provide_testing_parameters(
+        test_environment=test_environment,
+        all_environments=all_environments,
+        mock_option=mock_option,
+        endpoint=f"vcsp/v1/accounts/{test_subject_id}/credentials/{test_credential_id}",
+        response={},
+        status_code=204,
+        exception=None,
+        service_name=service_name,
+    )
