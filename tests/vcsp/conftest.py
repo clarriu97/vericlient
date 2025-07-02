@@ -231,11 +231,11 @@ def vcsp_enrollment_response(test_subject_id):
 def vcsp_get_account_response(test_subject_id):
     return {
         "credentials": [
-            "497f6eca-6276-4993-bfeb-53cbbbba6f08"
+            "497f6eca-6276-4993-bfeb-53cbbbba6f08",
         ],
         "updated_at": "2019-08-24T14:15:22Z",
         "created_at": "2019-08-24T14:15:22Z",
-        "subject_id": test_subject_id
+        "subject_id": test_subject_id,
     }
 
 
@@ -249,11 +249,11 @@ def vcsp_get_all_credentials_response():
                 "type": "face",
                 "content_type": "image/jpg",
                 "analysis": {
-                    "authenticity_score": 0.9
-                }
+                    "authenticity_score": 0.9,
+                },
             },
             "groups": [
-                "employees"
+                "employees",
             ],
             "issuer": "Veridas",
             "id": "497f6eca-6276-4993-bfeb-53cbbbba6f08",
@@ -263,10 +263,10 @@ def vcsp_get_all_credentials_response():
             "valid_until": "2019-08-24T14:15:22Z",
             "credential_configuration_urn": "urn:vcsp:credential_configurations:face:selfie:v1",
             "tags": [
-                "role:employee"
+                "role:employee",
             ],
-            "claims": {}
-        }
+            "claims": {},
+        },
     ]
 
 
@@ -279,11 +279,11 @@ def vcsp_get_credential_response():
             "type": "face",
             "content_type": "image/jpg",
             "analysis": {
-            "authenticity_score": 0.9
-            }
+            "authenticity_score": 0.9,
+            },
         },
         "groups": [
-            "employees"
+            "employees",
         ],
         "issuer": "Veridas",
         "id": "497f6eca-6276-4993-bfeb-53cbbbba6f08",
@@ -293,9 +293,9 @@ def vcsp_get_credential_response():
         "valid_until": "2019-08-24T14:15:22Z",
         "credential_configuration_urn": "urn:vcsp:credential_configurations:face:selfie:v1",
         "tags": [
-            "role:employee"
+            "role:employee",
         ],
-        "claims": {}
+        "claims": {},
     }
 
 
@@ -380,8 +380,8 @@ def vcsp_account_not_found_error_response():
         "title": "Account not found",
         "reason": "Account not found for specified 'subject_id'",
         "details": {
-            "subject_id": "nonexistent_subject_id"
-        }
+            "subject_id": "nonexistent_subject_id",
+        },
     }
 
 
@@ -392,8 +392,8 @@ def vcsp_credential_not_found_error_response():
         "title": "Credential not found",
         "reason": "Credential not found for specified 'credential_id'",
         "details": {
-            "credential_id": "nonexistent_credential_id"
-        }
+            "credential_id": "nonexistent_credential_id",
+        },
     }
 
 
@@ -794,7 +794,7 @@ def vcsp_get_account_parameters(
         all_environments,
         service_name,
         vcsp_get_account_response,
-        test_subject_id
+        test_subject_id,
 ) -> list:
     return provide_testing_parameters(
         test_environment=test_environment,
@@ -814,7 +814,7 @@ def vcsp_delete_account_parameters(
         test_environment,
         all_environments,
         service_name,
-        test_subject_id
+        test_subject_id,
 ) -> list:
     return provide_testing_parameters(
         test_environment=test_environment,
@@ -835,7 +835,7 @@ def vcsp_get_all_credentials_parameters(
         all_environments,
         service_name,
         vcsp_get_all_credentials_response,
-        test_subject_id
+        test_subject_id,
 ) -> list:
     return provide_testing_parameters(
         test_environment=test_environment,
@@ -857,7 +857,7 @@ def vcsp_get_credential_parameters(
         service_name,
         vcsp_get_credential_response,
         test_subject_id,
-        test_credential_id
+        test_credential_id,
 ) -> list:
     return provide_testing_parameters(
         test_environment=test_environment,
@@ -878,7 +878,7 @@ def vcsp_delete_credential_parameters(
         all_environments,
         service_name,
         test_subject_id,
-        test_credential_id
+        test_credential_id,
 ) -> list:
     return provide_testing_parameters(
         test_environment=test_environment,
