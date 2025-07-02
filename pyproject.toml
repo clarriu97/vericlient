@@ -157,6 +157,7 @@ ignore = [
     "UP038",    # Use `X | Y` in `isinstance` call instead of `(X, Y)`
     "D406",     # Section name should end with a newline
     "D407",     # Missing dashed underline after section
+    "PTH119",   # `os.path.basename()` should be replaced by `Path.name`
 ]
 unfixable = []
 
@@ -166,3 +167,9 @@ quote-style = "double"
 [build-system]
 requires = ["pdm-backend"]
 build-backend = "pdm.backend"
+
+[tool.pytest.ini_options]
+markers = [
+    "vcsp: marks tests as VCSP (deselect with '-m \"not vcsp\"')",
+    "daspeak: marks tests as DASPEAK (deselect with '-m \"not daspeak\"')",
+]

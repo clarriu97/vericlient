@@ -17,6 +17,22 @@ class EmptyFileError(VcspError):
         super().__init__(message)
 
 
+class RequestValidationError(VcspError):
+    """Exception raised for request validation error."""
+
+    def __init__(self) -> None:
+        message = "The request is invalid"
+        super().__init__(message)
+
+
+class UnsupportedMediaTypeError(VcspError):
+    """Exception raised for unsupported media type."""
+
+    def __init__(self) -> None:
+        message = "The media type is not supported"
+        super().__init__(message)
+
+
 class InvalidClaimsError(VcspError):
     """Exception raised for invalid claims."""
 
