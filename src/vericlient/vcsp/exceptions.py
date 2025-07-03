@@ -175,3 +175,43 @@ class CredentialNotFoundError(VcspError):
     def __init__(self) -> None:
         message = "Credential not found"
         super().__init__(message)
+
+
+class GroupNotFoundError(VcspError):
+    """Exception raised for group not found."""
+
+    def __init__(self) -> None:
+        message = "Group not found"
+        super().__init__(message)
+
+
+class GroupsLimitExceededError(VcspError):
+    """Exception raised for group limit exceeded."""
+
+    def __init__(self) -> None:
+        message = "Group limit exceeded"
+        super().__init__(message)
+
+
+class EnrollmentsLimitExceededError(VcspError):
+    """Exception raised for enrollment limit exceeded."""
+
+    def __init__(self) -> None:
+        message = "Enrollment limit exceeded"
+        super().__init__(message)
+
+
+class GroupAlreadyExistsError(VcspError):
+    """Exception raised for group already exists."""
+
+    def __init__(self) -> None:
+        message = "Group already exists"
+        super().__init__(message)
+
+
+class TagsLimitExceededError(VcspError):
+    """Exception raised for tags limit exceeded."""
+
+    def __init__(self) -> None:
+        message = "Tags limit exceeded"
+        super().__init__(message)
