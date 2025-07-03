@@ -32,6 +32,8 @@ from vericlient.vcsp.exceptions import (
     InvalidTagsError,
     MoreThanOneFaceError,
     RequestValidationError,
+    TagAlreadyExistsError,
+    TagListEmptyError,
     TagsLimitExceededError,
     UnsupportedMediaTypeError,
     VoiceDurationIsNotEnoughError,
@@ -42,10 +44,13 @@ from vericlient.vcsp.models import (
     AssuranceMethodsOutput,
     CreateGroupInput,
     CreateGroupOutput,
+    CreateTagsInput,
+    CreateTagsOutput,
     CredentialConfigurationsOutput,
     DeleteAccountInput,
     DeleteCredentialInput,
     DeleteGroupInput,
+    DeleteTagInput,
     EnrollmentInput,
     EnrollmentOutput,
     GetAccountInput,
@@ -60,6 +65,7 @@ from vericlient.vcsp.models import (
     GetGroupOutput,
     GetGroupsInput,
     GetGroupsOutput,
+    GetTagsOutput,
 )
 
 
@@ -124,6 +130,8 @@ class VcspClient(Client):
             "group_already_exists": GroupAlreadyExistsError,
             "group_not_found": GroupNotFoundError,
             "tags_limit_exceeded": TagsLimitExceededError,
+            "tag_list_empty": TagListEmptyError,
+            "tags_already_exist": TagAlreadyExistsError,
         }
 
     def alive(self) -> bool:
@@ -319,6 +327,52 @@ class VcspClient(Client):
         """
         endpoint = VcspEndpoints.CREDENTIAL_ID.value.replace("<subject_id>", data_model.subject_id)
         endpoint = endpoint.replace("<credential_id>", data_model.credential_id)
+        self._delete(endpoint=endpoint)
+
+    def create_tags(self, data_model: CreateTagsInput) -> CreateTagsOutput:
+        """Create tags.
+
+        Args:
+            data_model: The input to create the tags
+
+        Returns:
+            CreateTagsOutput: The output of the tags creation
+
+        Raises:
+            TagsLimitExceededError: If the tag limit is exceeded
+            TagAlreadyExistsError: If the tag already exists
+            TagListEmptyError: If the tag list is empty
+
+        """
+        endpoint = VcspEndpoints.TAGS.value
+        response = self._post(endpoint=endpoint, json_=data_model.model_dump())
+        return CreateTagsOutput(status_code=response.status_code, **response.json())
+
+    def get_tags(self) -> GetTagsOutput:
+        """Get tags.
+
+        Args:
+            data_model: The input to get the tags
+
+        Returns:
+            GetTagsOutput: The output of the tags
+
+        """
+        endpoint = VcspEndpoints.TAGS.value
+        response = self._get(endpoint=endpoint)
+        return GetTagsOutput(status_code=response.status_code, **response.json())
+
+    def delete_tag(self, data_model: DeleteTagInput) -> None:
+        """Delete a tag.
+
+        Args:
+            data_model: The input to delete the tag
+
+        Raises:
+            InvalidTagsError: If the tag is invalid
+
+        """
+        endpoint = VcspEndpoints.TAGS_NAME.value.replace("<tag_name>", data_model.name)
         self._delete(endpoint=endpoint)
 
     def create_group(self, data_model: CreateGroupInput) -> CreateGroupOutput:

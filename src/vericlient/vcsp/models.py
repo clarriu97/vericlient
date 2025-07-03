@@ -297,6 +297,81 @@ class GetCredentialsOutput(VcspResponse):
     credentials: list[GetCredentialOutput]
 
 
+class TagInput(BaseModel):
+    """Input class for the tag endpoint.
+
+    Attributes:
+        name: The name of the tag
+
+    """
+
+    name: str
+
+
+class TagOutput(TagInput):
+    """Output class for the tag endpoint.
+
+    Attributes:
+        name: The name of the tag
+        created_at: The created_at date
+
+    """
+
+    created_at: str
+
+
+class CreateTagsInput(BaseModel):
+    """Input class for the create tag endpoint.
+
+    Attributes:
+        tags: The tags to create
+
+    """
+
+    tags: list[str]
+
+
+class CreateTagsOutput(VcspResponse):
+    """Output class for the create tag endpoint.
+
+    Attributes:
+        tags: The tags created
+        created_at: The created_at date
+
+    """
+
+    tags: list[str]
+    created_at: str
+
+
+class GetTagsOutput(VcspResponse):
+    """Output class for the get tags endpoint.
+
+    Attributes:
+        items: The tags
+        total: The total number of tags
+        page: The page number
+        size: The size of the tags
+        pages: The total number of pages
+
+    """
+
+    items: list[TagOutput]
+    total: int
+    page: int
+    size: int
+    pages: int
+
+
+class DeleteTagInput(TagInput):
+    """Input class for the delete tag endpoint.
+
+    Attributes:
+        name: The name of the tag
+
+    """
+
+
 class GroupInput(BaseModel):
     """Input class for the group endpoint.
 

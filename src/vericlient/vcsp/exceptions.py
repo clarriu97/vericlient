@@ -215,3 +215,19 @@ class TagsLimitExceededError(VcspError):
     def __init__(self) -> None:
         message = "Tags limit exceeded"
         super().__init__(message)
+
+
+class TagAlreadyExistsError(VcspError):
+    """Exception raised for tag already exists."""
+
+    def __init__(self) -> None:
+        message = "Tag already exists"
+        super().__init__(message)
+
+
+class TagListEmptyError(VcspError):
+    """Exception raised for tag list empty."""
+
+    def __init__(self) -> None:
+        message = "Tag list is empty"
+        super().__init__(message)

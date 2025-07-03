@@ -15,6 +15,8 @@ from vericlient.vcsp.models import (
     DeleteGroupInput,
     GetGroupsInput,
     GetGroupMembersInput,
+    CreateTagsInput,
+    DeleteTagInput,
 )
 
 
@@ -191,3 +193,31 @@ print(f"Total groups: {groups.total}")
 print(f"Page: {groups.page}")
 print(f"Pages: {groups.pages}")
 print(f"Size: {groups.size}")
+
+# create tags
+tags = client.create_tags(
+    data_model=CreateTagsInput(
+        tags=["test:tag1", "test:tag2"]
+    )
+)
+print()
+print(f"Tags created: {tags}")
+
+# get all tags
+all_tags = client.get_tags()
+print()
+print(f"All tags: {all_tags}")
+
+# delete a tag
+client.delete_tag(
+    data_model=DeleteTagInput(
+        name="test:tag1"
+    )
+)
+client.delete_tag(
+    data_model=DeleteTagInput(
+        name="test:tag2"
+    )
+)
+print()
+print(f"Tags deleted: {tags}")
