@@ -123,7 +123,7 @@ class VcspClient(Client):
             "assurance_method_not_found": AssuranceMethodNotFoundError,
             "account_not_found": AccountNotFoundError,
             "credential_not_found": CredentialNotFoundError,
-            "request_validation": RequestValidationError,
+            "request_validation_error": RequestValidationError,
             "unsupported_media_type": UnsupportedMediaTypeError,
             "groups_limit_exceeded": GroupsLimitExceededError,
             "enrollments_limit_exceeded": EnrollmentsLimitExceededError,
@@ -152,6 +152,9 @@ class VcspClient(Client):
         exception = response_json.get("error")
         if not exception or exception not in self._exceptions:
             self._raise_server_error(response)
+
+        if exception == "request_validation_error":
+            raise RequestValidationError(response_json["details"])
 
         handler = self._exceptions[exception]
         raise handler()

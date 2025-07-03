@@ -18,10 +18,10 @@ class EmptyFileError(VcspError):
 
 
 class RequestValidationError(VcspError):
-    """Exception raised for request validation error."""
+    """Exception raised for request validation."""
 
-    def __init__(self) -> None:
-        message = "The request is invalid"
+    def __init__(self, details: list[dict]) -> None:
+        message = f"The request is invalid. Details: {details}"
         super().__init__(message)
 
 
