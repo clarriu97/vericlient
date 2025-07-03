@@ -6,14 +6,19 @@ from vericlient.vcsp.exceptions import (
 from vericlient.vcsp.models import (
     Applicant,
     AssuranceMethodInput,
+    CreateGroupInput,
     CreateTagsInput,
     DeleteAccountInput,
     DeleteCredentialInput,
+    DeleteGroupInput,
     DeleteTagInput,
     EnrollmentInput,
     GetAccountInput,
     GetCredentialInput,
     GetCredentialsInput,
+    GetGroupInput,
+    GetGroupMembersInput,
+    GetGroupsInput,
 )
 
 
@@ -295,3 +300,100 @@ def test_delete_tag(vcsp_client, mock_server, vcsp_delete_tag_parameters, test_t
 
         response = vcsp_client.delete_tag(data_model=DeleteTagInput(name=test_tag_name))
         assert response is None
+
+
+@pytest.mark.vcsp()
+def test_create_group(vcsp_client, mock_server, vcsp_create_group_parameters, test_group_name):
+    if not mock_server:
+        pytest.skip("This test only runs in mock mode")
+
+    for param in vcsp_create_group_parameters:
+        endpoint, mock_response, mock_status_code, _, _, _, _ = param
+        mock_server.post(endpoint, json=mock_response, status_code=mock_status_code)
+
+        response = vcsp_client.create_group(
+            data_model=CreateGroupInput(
+                name=test_group_name,
+                credential_configuration_urn="urn:vcsp:credential_configurations:face:selfie:v1",
+                description="test:group",
+                expired_at="P1Y",
+            ),
+        )
+        assert response.name == test_group_name
+        assert response.credential_configuration_urn == mock_response["credential_configuration_urn"]
+        assert response.size == mock_response["size"]
+        assert response.description == mock_response["description"]
+        assert response.expired_at == mock_response["expired_at"]
+        assert response.created_at == mock_response["created_at"]
+        assert response.updated_at == mock_response["updated_at"]
+
+
+@pytest.mark.vcsp()
+def test_get_groups(vcsp_client, mock_server, vcsp_get_groups_parameters, test_group_name, test_group_name_2):
+    if not mock_server:
+        pytest.skip("This test only runs in mock mode")
+
+    for param in vcsp_get_groups_parameters:
+        endpoint, mock_response, mock_status_code, _, _, _, _ = param
+        mock_server.get(endpoint, json=mock_response, status_code=mock_status_code)
+
+        response = vcsp_client.get_groups(data_model=GetGroupsInput(name=test_group_name))
+        assert response.items[0].name == test_group_name
+        assert response.items[1].name == test_group_name_2
+        assert response.total == 2   # noqa: PLR2004
+        assert response.page == 1
+        assert response.size == 100  # noqa: PLR2004
+        assert response.pages == 1
+
+
+@pytest.mark.vcsp()
+def test_get_group(vcsp_client, mock_server, vcsp_get_group_parameters, test_group_name):
+    if not mock_server:
+        pytest.skip("This test only runs in mock mode")
+
+    for param in vcsp_get_group_parameters:
+        endpoint, mock_response, mock_status_code, _, _, _, _ = param
+        mock_server.get(endpoint, json=mock_response, status_code=mock_status_code)
+
+        response = vcsp_client.get_group(data_model=GetGroupInput(name=test_group_name))
+        assert response.name == test_group_name
+        assert response.credential_configuration_urn == mock_response["credential_configuration_urn"]
+        assert response.size == mock_response["size"]
+        assert response.description == mock_response["description"]
+        assert response.expired_at == mock_response["expired_at"]
+        assert response.created_at == mock_response["created_at"]
+        assert response.updated_at == mock_response["updated_at"]
+
+
+@pytest.mark.vcsp()
+def test_delete_group(vcsp_client, mock_server, vcsp_delete_group_parameters, test_group_name):
+    if not mock_server:
+        pytest.skip("This test only runs in mock mode")
+
+    for param in vcsp_delete_group_parameters:
+        endpoint, mock_response, mock_status_code, _, _, _, _ = param
+        mock_server.delete(endpoint, json=mock_response, status_code=mock_status_code)
+
+        response = vcsp_client.delete_group(data_model=DeleteGroupInput(name=test_group_name))
+        assert response is None
+
+
+@pytest.mark.vcsp()
+def test_get_group_members(vcsp_client, mock_server, vcsp_get_group_members_parameters, test_group_name):
+    if not mock_server:
+        pytest.skip("This test only runs in mock mode")
+
+    for param in vcsp_get_group_members_parameters:
+        endpoint, mock_response, mock_status_code, _, _, _, _ = param
+        mock_server.get(endpoint, json=mock_response, status_code=mock_status_code)
+
+        response = vcsp_client.get_group_members(data_model=GetGroupMembersInput(name=test_group_name))
+        assert response.items[0].subject_id == mock_response["items"][0]["subject_id"]
+        assert response.items[0].credential_id == mock_response["items"][0]["credential_id"]
+        assert response.items[0].expired_in_group == mock_response["items"][0]["expired_in_group"]
+        assert response.items[0].claims == mock_response["items"][0]["claims"]
+        assert response.items[0].tags == mock_response["items"][0]["tags"]
+        assert response.total == 2   # noqa: PLR2004
+        assert response.page == 1
+        assert response.size == 100  # noqa: PLR2004
+        assert response.pages == 1

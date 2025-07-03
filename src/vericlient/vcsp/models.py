@@ -488,6 +488,24 @@ class GetGroupMembersInput(GroupInput):
     """Input class for the get group members endpoint."""
 
 
+class GroupMember(BaseModel):
+    """Base class for the group member.
+
+    Attributes:
+        subject_id: The subject_id of the group member
+        credential_id: The credential_id of the group member
+        expired_in_group: The expired_in_group of the group member
+        claims: The claims of the group member
+        tags: The tags of the group member
+
+    """
+
+    subject_id: str
+    credential_id: str
+    expired_in_group: str
+    claims: dict
+    tags: list[str]
+
 class GetGroupMembersOutput(VcspResponse):
     """Output class for the get group members endpoint.
 
@@ -500,7 +518,7 @@ class GetGroupMembersOutput(VcspResponse):
 
     """
 
-    items: list[GetCredentialOutput]
+    items: list[GroupMember]
     total: int
     page: int
     size: int

@@ -166,6 +166,16 @@ def test_tag_name_2():
     return "test:tag2"
 
 
+@pytest.fixture(scope="session")
+def test_group_name():
+    return "test:group"
+
+
+@pytest.fixture(scope="session")
+def test_group_name_2():
+    return "test:group2"
+
+
 ####################
 # SERVER RESPONSES #
 ####################
@@ -331,6 +341,80 @@ def vcsp_get_tags_response(test_tag_name, test_tag_name_2):
             {
                 "name": test_tag_name_2,
                 "created_at": "2019-08-24T14:15:22Z",
+            },
+        ],
+        "total": 2,
+        "page": 1,
+        "size": 100,
+        "pages": 1,
+    }
+
+
+@pytest.fixture(scope="session")
+def vcsp_create_group_response(test_group_name):
+    return {
+        "name": test_group_name,
+        "credential_configuration_urn": "urn:vcsp:credential_configurations:face:selfie:v1",
+        "size": 0,
+        "created_at": "2019-08-24T14:15:22Z",
+        "description": "test:group",
+        "expired_at": "2019-08-24T14:15:22Z",
+        "updated_at": "2019-08-24T14:15:22Z",
+    }
+
+
+@pytest.fixture(scope="session")
+def vcsp_get_groups_response(test_group_name, test_group_name_2):
+    return {
+        "items": [
+            {
+                "name": test_group_name,
+                "credential_configuration_urn": "urn:vcsp:credential_configurations:face:selfie:v1",
+                "size": 0,
+                "created_at": "2019-08-24T14:15:22Z",
+                "description": test_group_name,
+                "expired_at": "2019-08-24T14:15:22Z",
+                "updated_at": "2019-08-24T14:15:22Z",
+            },
+            {
+                "name": test_group_name_2,
+                "credential_configuration_urn": "urn:vcsp:credential_configurations:face:selfie:v1",
+                "size": 0,
+                "created_at": "2019-08-24T14:15:22Z",
+                "description": test_group_name_2,
+                "expired_at": "2019-08-24T14:15:22Z",
+                "updated_at": "2019-08-24T14:15:22Z",
+            },
+        ],
+        "total": 2,
+        "page": 1,
+        "size": 100,
+        "pages": 1,
+    }
+
+
+@pytest.fixture(scope="session")
+def vcsp_get_group_response(vcsp_create_group_response):
+    return vcsp_create_group_response
+
+
+@pytest.fixture(scope="session")
+def vcsp_get_group_members_response():
+    return {
+        "items": [
+            {
+                "subject_id": "test:subject",
+                "credential_id": "test:credential",
+                "expired_in_group": "2019-08-24T14:15:22Z",
+                "claims": {},
+                "tags": [],
+            },
+            {
+                "subject_id": "test:subject2",
+                "credential_id": "test:credential2",
+                "expired_in_group": "2019-08-24T14:15:22Z",
+                "claims": {},
+                "tags": [],
             },
         ],
         "total": 2,
@@ -988,6 +1072,108 @@ def vcsp_delete_tag_parameters(
         endpoint=f"vcsp/v1/tags/{test_tag_name}",
         response={},
         status_code=204,
+        exception=None,
+        service_name=service_name,
+    )
+
+
+@pytest.fixture(scope="session")
+def vcsp_create_group_parameters(
+        mock_option,
+        test_environment,
+        all_environments,
+        service_name,
+        vcsp_create_group_response,
+) -> list:
+    return provide_testing_parameters(
+        test_environment=test_environment,
+        all_environments=all_environments,
+        mock_option=mock_option,
+        endpoint="vcsp/v1/groups",
+        response=vcsp_create_group_response,
+        status_code=201,
+        exception=None,
+        service_name=service_name,
+    )
+
+
+@pytest.fixture(scope="session")
+def vcsp_get_groups_parameters(
+        mock_option,
+        test_environment,
+        all_environments,
+        service_name,
+        vcsp_get_groups_response,
+) -> list:
+    return provide_testing_parameters(
+        test_environment=test_environment,
+        all_environments=all_environments,
+        mock_option=mock_option,
+        endpoint="vcsp/v1/groups",
+        response=vcsp_get_groups_response,
+        status_code=200,
+        exception=None,
+        service_name=service_name,
+    )
+
+
+@pytest.fixture(scope="session")
+def vcsp_get_group_parameters(
+        mock_option,
+        test_environment,
+        all_environments,
+        service_name,
+        vcsp_get_group_response,
+        test_group_name,
+) -> list:
+    return provide_testing_parameters(
+        test_environment=test_environment,
+        all_environments=all_environments,
+        mock_option=mock_option,
+        endpoint=f"vcsp/v1/groups/{test_group_name}",
+        response=vcsp_get_group_response,
+        status_code=200,
+        exception=None,
+        service_name=service_name,
+    )
+
+
+@pytest.fixture(scope="session")
+def vcsp_delete_group_parameters(
+        mock_option,
+        test_environment,
+        all_environments,
+        service_name,
+        test_group_name,
+) -> list:
+    return provide_testing_parameters(
+        test_environment=test_environment,
+        all_environments=all_environments,
+        mock_option=mock_option,
+        endpoint=f"vcsp/v1/groups/{test_group_name}",
+        response={},
+        status_code=204,
+        exception=None,
+        service_name=service_name,
+    )
+
+
+@pytest.fixture(scope="session")
+def vcsp_get_group_members_parameters(
+        mock_option,
+        test_environment,
+        all_environments,
+        service_name,
+        vcsp_get_group_members_response,
+        test_group_name,
+) -> list:
+    return provide_testing_parameters(
+        test_environment=test_environment,
+        all_environments=all_environments,
+        mock_option=mock_option,
+        endpoint=f"vcsp/v1/groups/{test_group_name}/credentials",
+        response=vcsp_get_group_members_response,
+        status_code=200,
         exception=None,
         service_name=service_name,
     )
