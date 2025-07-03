@@ -6,8 +6,10 @@ from vericlient.vcsp.exceptions import (
 from vericlient.vcsp.models import (
     Applicant,
     AssuranceMethodInput,
+    CreateTagsInput,
     DeleteAccountInput,
     DeleteCredentialInput,
+    DeleteTagInput,
     EnrollmentInput,
     GetAccountInput,
     GetCredentialInput,
@@ -247,4 +249,49 @@ def test_delete_credential(vcsp_client, mock_server, vcsp_delete_credential_para
                 credential_id=test_credential_id,
             ),
         )
+        assert response is None
+
+
+@pytest.mark.vcsp()
+def test_create_tags(vcsp_client, mock_server, vcsp_create_tags_parameters, test_tag_name, test_tag_name_2):
+    if not mock_server:
+        pytest.skip("This test only runs in mock mode")
+
+    for param in vcsp_create_tags_parameters:
+        endpoint, mock_response, mock_status_code, _, _, _, _ = param
+        mock_server.post(endpoint, json=mock_response, status_code=mock_status_code)
+
+        response = vcsp_client.create_tags(data_model=CreateTagsInput(tags=[test_tag_name, test_tag_name_2]))
+        assert response.tags == [test_tag_name, test_tag_name_2]
+        assert response.created_at == mock_response["created_at"]
+
+
+@pytest.mark.vcsp()
+def test_get_tags(vcsp_client, mock_server, vcsp_get_tags_parameters, test_tag_name, test_tag_name_2):
+    if not mock_server:
+        pytest.skip("This test only runs in mock mode")
+
+    for param in vcsp_get_tags_parameters:
+        endpoint, mock_response, mock_status_code, _, _, _, _ = param
+        mock_server.get(endpoint, json=mock_response, status_code=mock_status_code)
+
+        response = vcsp_client.get_tags()
+        assert response.items[0].name == test_tag_name
+        assert response.items[1].name == test_tag_name_2
+        assert response.total == 2   # noqa: PLR2004
+        assert response.page == 1
+        assert response.size == 100  # noqa: PLR2004
+        assert response.pages == 1
+
+
+@pytest.mark.vcsp()
+def test_delete_tag(vcsp_client, mock_server, vcsp_delete_tag_parameters, test_tag_name):
+    if not mock_server:
+        pytest.skip("This test only runs in mock mode")
+
+    for param in vcsp_delete_tag_parameters:
+        endpoint, mock_response, mock_status_code, _, _, _, _ = param
+        mock_server.delete(endpoint, json=mock_response, status_code=mock_status_code)
+
+        response = vcsp_client.delete_tag(data_model=DeleteTagInput(name=test_tag_name))
         assert response is None

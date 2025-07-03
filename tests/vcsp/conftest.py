@@ -156,6 +156,16 @@ def test_credential_id():
     return "test-credential-id"
 
 
+@pytest.fixture(scope="session")
+def test_tag_name():
+    return "test:tag1"
+
+
+@pytest.fixture(scope="session")
+def test_tag_name_2():
+    return "test:tag2"
+
+
 ####################
 # SERVER RESPONSES #
 ####################
@@ -296,6 +306,37 @@ def vcsp_get_credential_response():
             "role:employee",
         ],
         "claims": {},
+    }
+
+
+@pytest.fixture(scope="session")
+def vcsp_create_tags_response(test_tag_name, test_tag_name_2):
+    return {
+        "tags": [
+            test_tag_name,
+            test_tag_name_2,
+        ],
+        "created_at": "2019-08-24T14:15:22Z",
+    }
+
+
+@pytest.fixture(scope="session")
+def vcsp_get_tags_response(test_tag_name, test_tag_name_2):
+    return {
+        "items": [
+            {
+                "name": test_tag_name,
+                "created_at": "2019-08-24T14:15:22Z",
+            },
+            {
+                "name": test_tag_name_2,
+                "created_at": "2019-08-24T14:15:22Z",
+            },
+        ],
+        "total": 2,
+        "page": 1,
+        "size": 100,
+        "pages": 1,
     }
 
 
@@ -885,6 +926,66 @@ def vcsp_delete_credential_parameters(
         all_environments=all_environments,
         mock_option=mock_option,
         endpoint=f"vcsp/v1/accounts/{test_subject_id}/credentials/{test_credential_id}",
+        response={},
+        status_code=204,
+        exception=None,
+        service_name=service_name,
+    )
+
+
+@pytest.fixture(scope="session")
+def vcsp_create_tags_parameters(
+        mock_option,
+        test_environment,
+        all_environments,
+        service_name,
+        vcsp_create_tags_response,
+) -> list:
+    return provide_testing_parameters(
+        test_environment=test_environment,
+        all_environments=all_environments,
+        mock_option=mock_option,
+        endpoint="vcsp/v1/tags",
+        response=vcsp_create_tags_response,
+        status_code=201,
+        exception=None,
+        service_name=service_name,
+    )
+
+
+@pytest.fixture(scope="session")
+def vcsp_get_tags_parameters(
+        mock_option,
+        test_environment,
+        all_environments,
+        service_name,
+        vcsp_get_tags_response,
+) -> list:
+    return provide_testing_parameters(
+        test_environment=test_environment,
+        all_environments=all_environments,
+        mock_option=mock_option,
+        endpoint="vcsp/v1/tags",
+        response=vcsp_get_tags_response,
+        status_code=200,
+        exception=None,
+        service_name=service_name,
+    )
+
+
+@pytest.fixture(scope="session")
+def vcsp_delete_tag_parameters(
+        mock_option,
+        test_environment,
+        all_environments,
+        service_name,
+        test_tag_name,
+) -> list:
+    return provide_testing_parameters(
+        test_environment=test_environment,
+        all_environments=all_environments,
+        mock_option=mock_option,
+        endpoint=f"vcsp/v1/tags/{test_tag_name}",
         response={},
         status_code=204,
         exception=None,
