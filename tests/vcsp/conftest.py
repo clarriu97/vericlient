@@ -15,6 +15,9 @@ from vericlient.vcsp.exceptions import (
     FaceAlignmentError,
     FaceNotFoundError,
     FaceTooSmallError,
+    GroupAlreadyExistsError,
+    GroupNotFoundError,
+    GroupsLimitExceededError,
     InsufficientQualityError,
     InvalidAssuranceError,
     InvalidAssuranceMethodUrnError,
@@ -659,6 +662,30 @@ def vcsp_credential_configuration_already_assigned_error_response():
 
 
 @pytest.fixture(scope="session")
+def vcsp_group_already_exists_error_response():
+    return {
+        "error": "group_already_exists",
+        "title": "Group already exists",
+        "reason": "A group with specified name does already exist",
+        "details": {
+            "name": "employees",
+        },
+    }
+
+
+@pytest.fixture(scope="session")
+def vcsp_group_not_found_error_response():
+    return {
+        "error": "group_not_found",
+        "title": "Group not found",
+        "reason": "Group not found for specified 'group_name'",
+        "details": {
+            "group_name": "nonexistent_group_name",
+        },
+    }
+
+
+@pytest.fixture(scope="session")
 def vcsp_invalid_audio_format_error_response():
     return {
         "error": "invalid_audio_format",
@@ -1257,6 +1284,63 @@ def vcsp_create_group_parameters(
 
 
 @pytest.fixture(scope="session")
+def vcsp_create_group_exception_parameters(
+        mock_option,
+        test_environment,
+        all_environments,
+        service_name,
+        vcsp_request_validation_error_response,
+        vcsp_groups_limit_exceeded_error_response,
+        vcsp_invalid_credential_configuration_urn_error_response,
+        vcsp_group_already_exists_error_response,
+) -> list[list]:
+    four_hundred_responses = [
+        (vcsp_request_validation_error_response, RequestValidationError),
+    ]
+    four_hundred_responses = [
+        provide_testing_parameters(
+            test_environment=test_environment,
+            all_environments=all_environments,
+            mock_option=mock_option,
+            endpoint="vcsp/v1/groups",
+            response=response,
+            status_code=400,
+            exception=exception,
+            service_name=service_name,
+        )
+        for response, exception in four_hundred_responses
+    ]
+    four_hundred_three_response = [provide_testing_parameters(
+        test_environment=test_environment,
+        all_environments=all_environments,
+        mock_option=mock_option,
+        endpoint="vcsp/v1/groups",
+        response=vcsp_groups_limit_exceeded_error_response,
+        status_code=403,
+        exception=GroupsLimitExceededError,
+        service_name=service_name,
+    )]
+    four_hundred_twenty_two_responses = [
+        (vcsp_invalid_credential_configuration_urn_error_response, InvalidCredentialConfigurationUrnError),
+        (vcsp_group_already_exists_error_response, GroupAlreadyExistsError),
+    ]
+    four_hundred_twenty_two_responses = [
+        provide_testing_parameters(
+            test_environment=test_environment,
+            all_environments=all_environments,
+            mock_option=mock_option,
+            endpoint="vcsp/v1/groups",
+            response=response,
+            status_code=422,
+            exception=exception,
+            service_name=service_name,
+        )
+        for response, exception in four_hundred_twenty_two_responses
+    ]
+    return four_hundred_responses + four_hundred_three_response + four_hundred_twenty_two_responses
+
+
+@pytest.fixture(scope="session")
 def vcsp_get_groups_parameters(
         mock_option,
         test_environment,
@@ -1274,6 +1358,32 @@ def vcsp_get_groups_parameters(
         exception=None,
         service_name=service_name,
     )
+
+
+@pytest.fixture(scope="session")
+def vcsp_get_group_exception_parameters(
+        mock_option,
+        test_environment,
+        all_environments,
+        service_name,
+        vcsp_group_not_found_error_response,
+) -> list[list]:
+    four_hundred_four_responses = [
+        (vcsp_group_not_found_error_response, GroupNotFoundError),
+    ]
+    return [
+        provide_testing_parameters(
+            test_environment=test_environment,
+            all_environments=all_environments,
+            mock_option=mock_option,
+            endpoint="vcsp/v1/groups/nonexistent_group_name",
+            response=response,
+            status_code=404,
+            exception=exception,
+            service_name=service_name,
+        )
+        for response, exception in four_hundred_four_responses
+    ]
 
 
 @pytest.fixture(scope="session")
@@ -1318,6 +1428,32 @@ def vcsp_delete_group_parameters(
 
 
 @pytest.fixture(scope="session")
+def vcsp_delete_group_exception_parameters(
+        mock_option,
+        test_environment,
+        all_environments,
+        service_name,
+        vcsp_group_not_found_error_response,
+) -> list[list]:
+    four_hundred_four_responses = [
+        (vcsp_group_not_found_error_response, GroupNotFoundError),
+    ]
+    return [
+        provide_testing_parameters(
+            test_environment=test_environment,
+            all_environments=all_environments,
+            mock_option=mock_option,
+            endpoint="vcsp/v1/groups/nonexistent_group_name",
+            response=response,
+            status_code=404,
+            exception=exception,
+            service_name=service_name,
+        )
+        for response, exception in four_hundred_four_responses
+    ]
+
+
+@pytest.fixture(scope="session")
 def vcsp_get_group_members_parameters(
         mock_option,
         test_environment,
@@ -1336,3 +1472,29 @@ def vcsp_get_group_members_parameters(
         exception=None,
         service_name=service_name,
     )
+
+
+@pytest.fixture(scope="session")
+def vcsp_get_group_members_exception_parameters(
+        mock_option,
+        test_environment,
+        all_environments,
+        service_name,
+        vcsp_group_not_found_error_response,
+) -> list[list]:
+    four_hundred_four_responses = [
+        (vcsp_group_not_found_error_response, GroupNotFoundError),
+    ]
+    return [
+        provide_testing_parameters(
+            test_environment=test_environment,
+            all_environments=all_environments,
+            mock_option=mock_option,
+            endpoint="vcsp/v1/groups/nonexistent_group_name/credentials",
+            response=response,
+            status_code=404,
+            exception=exception,
+            service_name=service_name,
+        )
+        for response, exception in four_hundred_four_responses
+    ]

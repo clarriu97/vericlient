@@ -354,6 +354,27 @@ def test_create_group(vcsp_client, mock_server, vcsp_create_group_parameters, te
 
 
 @pytest.mark.vcsp()
+def test_vcsp_create_group_exception(
+    vcsp_client, mock_server, vcsp_create_group_exception_parameters, test_group_name,
+):
+    skip_if_not_mock(mock_server)
+
+    for exception_parameters in vcsp_create_group_exception_parameters:
+        for param in exception_parameters:
+            endpoint, mock_response, mock_status_code, _, _, _, exception = param
+            mock_server.post(endpoint, json=mock_response, status_code=mock_status_code)
+
+            input_model = CreateGroupInput(
+                name=test_group_name,
+                credential_configuration_urn="urn:vcsp:credential_configurations:face:selfie:v1",
+                description="test:group",
+                expired_at="P1Y",
+            )
+            with pytest.raises(exception):
+                vcsp_client.create_group(data_model=input_model)
+
+
+@pytest.mark.vcsp()
 def test_get_groups(vcsp_client, mock_server, vcsp_get_groups_parameters, test_group_name, test_group_name_2):
     skip_if_not_mock(mock_server)
 
@@ -368,6 +389,19 @@ def test_get_groups(vcsp_client, mock_server, vcsp_get_groups_parameters, test_g
         assert response.page == 1
         assert response.size == 100  # noqa: PLR2004
         assert response.pages == 1
+
+
+@pytest.mark.vcsp()
+def test_vcsp_get_group_exception(vcsp_client, mock_server, vcsp_get_group_exception_parameters):
+    skip_if_not_mock(mock_server)
+
+    for exception_parameters in vcsp_get_group_exception_parameters:
+        for param in exception_parameters:
+            endpoint, mock_response, mock_status_code, _, _, _, exception = param
+            mock_server.get(endpoint, json=mock_response, status_code=mock_status_code)
+
+            with pytest.raises(exception):
+                vcsp_client.get_group(data_model=GetGroupInput(name="nonexistent_group_name"))
 
 
 @pytest.mark.vcsp()
@@ -401,6 +435,19 @@ def test_delete_group(vcsp_client, mock_server, vcsp_delete_group_parameters, te
 
 
 @pytest.mark.vcsp()
+def test_vcsp_delete_group_exception(vcsp_client, mock_server, vcsp_delete_group_exception_parameters):
+    skip_if_not_mock(mock_server)
+
+    for exception_parameters in vcsp_delete_group_exception_parameters:
+        for param in exception_parameters:
+            endpoint, mock_response, mock_status_code, _, _, _, exception = param
+            mock_server.delete(endpoint, json=mock_response, status_code=mock_status_code)
+
+            with pytest.raises(exception):
+                vcsp_client.delete_group(data_model=DeleteGroupInput(name="nonexistent_group_name"))
+
+
+@pytest.mark.vcsp()
 def test_get_group_members(vcsp_client, mock_server, vcsp_get_group_members_parameters, test_group_name):
     skip_if_not_mock(mock_server)
 
@@ -418,3 +465,16 @@ def test_get_group_members(vcsp_client, mock_server, vcsp_get_group_members_para
         assert response.page == 1
         assert response.size == 100  # noqa: PLR2004
         assert response.pages == 1
+
+
+@pytest.mark.vcsp()
+def test_vcsp_get_group_members_exception(vcsp_client, mock_server, vcsp_get_group_members_exception_parameters):
+    skip_if_not_mock(mock_server)
+
+    for exception_parameters in vcsp_get_group_members_exception_parameters:
+        for param in exception_parameters:
+            endpoint, mock_response, mock_status_code, _, _, _, exception = param
+            mock_server.get(endpoint, json=mock_response, status_code=mock_status_code)
+
+            with pytest.raises(exception):
+                vcsp_client.get_group_members(data_model=GetGroupMembersInput(name="nonexistent_group_name"))
