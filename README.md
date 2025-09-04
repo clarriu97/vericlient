@@ -97,3 +97,5 @@ The following variables are supported:
 - `VERICLIENT_LOCATION`: The location to use for the requests (default: `eu`).
 - `VERICLIENT_URL`: In case you want to use a self-hosted API, you can set the URL with this variable.
 - `VERICLIENT_TIMEOUT`: The timeout for the requests (default: `10`).
+
+Esto es una nueva sección para probar la actualización del README.
