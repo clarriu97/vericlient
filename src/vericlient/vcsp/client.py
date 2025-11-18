@@ -15,9 +15,13 @@ from vericlient.vcsp.exceptions import (
     CredentialConfigurationUrnAlreadyAssignedError,
     CredentialNotFoundError,
     EmptyFileError,
+    EnrollmentsLimitExceededError,
     FaceAlignmentError,
     FaceNotFoundError,
     FaceTooSmallError,
+    GroupAlreadyExistsError,
+    GroupNotFoundError,
+    GroupsLimitExceededError,
     InsufficientQualityError,
     InvalidAssuranceError,
     InvalidAssuranceMethodUrnError,
@@ -28,6 +32,9 @@ from vericlient.vcsp.exceptions import (
     InvalidTagsError,
     MoreThanOneFaceError,
     RequestValidationError,
+    TagAlreadyExistsError,
+    TagListEmptyError,
+    TagsLimitExceededError,
     UnsupportedMediaTypeError,
     VoiceDurationIsNotEnoughError,
 )
@@ -35,9 +42,15 @@ from vericlient.vcsp.models import (
     AssuranceMethodInput,
     AssuranceMethodOutput,
     AssuranceMethodsOutput,
+    CreateGroupInput,
+    CreateGroupOutput,
+    CreateTagsInput,
+    CreateTagsOutput,
     CredentialConfigurationsOutput,
     DeleteAccountInput,
     DeleteCredentialInput,
+    DeleteGroupInput,
+    DeleteTagInput,
     EnrollmentInput,
     EnrollmentOutput,
     GetAccountInput,
@@ -46,6 +59,13 @@ from vericlient.vcsp.models import (
     GetCredentialOutput,
     GetCredentialsInput,
     GetCredentialsOutput,
+    GetGroupInput,
+    GetGroupMembersInput,
+    GetGroupMembersOutput,
+    GetGroupOutput,
+    GetGroupsInput,
+    GetGroupsOutput,
+    GetTagsOutput,
 )
 
 
@@ -103,8 +123,15 @@ class VcspClient(Client):
             "assurance_method_not_found": AssuranceMethodNotFoundError,
             "account_not_found": AccountNotFoundError,
             "credential_not_found": CredentialNotFoundError,
-            "request_validation": RequestValidationError,
+            "request_validation_error": RequestValidationError,
             "unsupported_media_type": UnsupportedMediaTypeError,
+            "groups_limit_exceeded": GroupsLimitExceededError,
+            "enrollments_limit_exceeded": EnrollmentsLimitExceededError,
+            "group_already_exists": GroupAlreadyExistsError,
+            "group_not_found": GroupNotFoundError,
+            "tags_limit_exceeded": TagsLimitExceededError,
+            "tag_list_empty": TagListEmptyError,
+            "tags_already_exist": TagAlreadyExistsError,
         }
 
     def alive(self) -> bool:
@@ -125,6 +152,9 @@ class VcspClient(Client):
         exception = response_json.get("error")
         if not exception or exception not in self._exceptions:
             self._raise_server_error(response)
+
+        if exception == "request_validation_error":
+            raise RequestValidationError(response_json["details"])
 
         handler = self._exceptions[exception]
         raise handler()
@@ -301,3 +331,142 @@ class VcspClient(Client):
         endpoint = VcspEndpoints.CREDENTIAL_ID.value.replace("<subject_id>", data_model.subject_id)
         endpoint = endpoint.replace("<credential_id>", data_model.credential_id)
         self._delete(endpoint=endpoint)
+
+    def create_tags(self, data_model: CreateTagsInput) -> CreateTagsOutput:
+        """Create tags.
+
+        Args:
+            data_model: The input to create the tags
+
+        Returns:
+            CreateTagsOutput: The output of the tags creation
+
+        Raises:
+            TagsLimitExceededError: If the tag limit is exceeded
+            TagAlreadyExistsError: If the tag already exists
+            TagListEmptyError: If the tag list is empty
+
+        """
+        endpoint = VcspEndpoints.TAGS.value
+        response = self._post(endpoint=endpoint, json_=data_model.model_dump())
+        return CreateTagsOutput(status_code=response.status_code, **response.json())
+
+    def get_tags(self) -> GetTagsOutput:
+        """Get tags.
+
+        Args:
+            data_model: The input to get the tags
+
+        Returns:
+            GetTagsOutput: The output of the tags
+
+        """
+        endpoint = VcspEndpoints.TAGS.value
+        response = self._get(endpoint=endpoint)
+        return GetTagsOutput(status_code=response.status_code, **response.json())
+
+    def delete_tag(self, data_model: DeleteTagInput) -> None:
+        """Delete a tag.
+
+        Args:
+            data_model: The input to delete the tag
+
+        Raises:
+            InvalidTagsError: If the tag is invalid
+
+        """
+        endpoint = VcspEndpoints.TAGS_NAME.value.replace("<tag_name>", data_model.name)
+        self._delete(endpoint=endpoint)
+
+    def create_group(self, data_model: CreateGroupInput) -> CreateGroupOutput:
+        """Create a group.
+
+        Args:
+            data_model: The input to create the group
+
+        Returns:
+            CreateGroupOutput: The output of the group creation
+
+        Raises:
+            GroupsLimitExceededError: If the group limit is exceeded
+            GroupAlreadyExistsError: If the group already exists
+            InvalidCredentialConfigurationUrnError: If the credential configuration urn is invalid
+
+        """
+        endpoint = VcspEndpoints.GROUPS.value
+        response = self._post(endpoint=endpoint, json_=data_model.model_dump(exclude_none=True))
+        return CreateGroupOutput(status_code=response.status_code, **response.json())
+
+    def get_groups(self, data_model: GetGroupsInput) -> GetGroupsOutput:
+        """Get all groups.
+
+        Args:
+            data_model: The input to get the groups
+
+        Returns:
+            GetGroupsOutput: The output of the groups
+
+        """
+        endpoint = VcspEndpoints.GROUPS.value
+        endpoint = endpoint + f"?size={data_model.size}&page={data_model.page}"
+        response = self._get(endpoint=endpoint)
+        items = response.json()["items"]
+        total = response.json()["total"]
+        page = response.json()["page"]
+        size = response.json()["size"]
+        pages = response.json()["pages"]
+        return GetGroupsOutput(
+            status_code=response.status_code,
+            items=items,
+            total=total,
+            page=page,
+            size=size,
+            pages=pages,
+        )
+
+    def get_group(self, data_model: GetGroupInput) -> GetGroupOutput:
+        """Get a group.
+
+        Args:
+            data_model: The input to get the group
+
+        Returns:
+            GetGroupOutput: The output of the group
+
+        Raises:
+            GroupNotFoundError: If the group is not found
+
+        """
+        endpoint = VcspEndpoints.GROUP_NAME.value.replace("<group_name>", data_model.name)
+        response = self._get(endpoint=endpoint)
+        return GetGroupOutput(status_code=response.status_code, **response.json())
+
+    def delete_group(self, data_model: DeleteGroupInput) -> None:
+        """Delete a group.
+
+        Args:
+            data_model: The input to delete the group
+
+        Raises:
+            GroupNotFoundError: If the group is not found
+
+        """
+        endpoint = VcspEndpoints.GROUP_NAME.value.replace("<group_name>", data_model.name)
+        self._delete(endpoint=endpoint)
+
+    def get_group_members(self, data_model: GetGroupMembersInput) -> GetGroupMembersOutput:
+        """Get the members of a group.
+
+        Args:
+            data_model: The input to get the members of the group
+
+        Returns:
+            GetGroupMembersOutput: The output of the group members
+
+        Raises:
+            GroupNotFoundError: If the group is not found
+
+        """
+        endpoint = VcspEndpoints.GROUP_MEMBERS.value.replace("<group_name>", data_model.name)
+        response = self._get(endpoint=endpoint)
+        return GetGroupMembersOutput(status_code=response.status_code, **response.json())

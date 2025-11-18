@@ -13,6 +13,7 @@ class VcspEndpoints(Enum):   # noqa: D101
     CREDENTIAL_ID = "accounts/<subject_id>/credentials/<credential_id>"
     GROUPS = "groups"
     GROUP_NAME = "groups/<group_name>"
+    GROUP_MEMBERS = "groups/<group_name>/credentials"
     MATCHINGS = "matchings"
     CREDENTIAL_CONFIGURATIONS = "credential_configurations"
     CREDENTIAL_CONFIGURATION_URN = "credential_configurations/<urn>"

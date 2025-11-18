@@ -18,10 +18,10 @@ class EmptyFileError(VcspError):
 
 
 class RequestValidationError(VcspError):
-    """Exception raised for request validation error."""
+    """Exception raised for request validation."""
 
-    def __init__(self) -> None:
-        message = "The request is invalid"
+    def __init__(self, details: list[dict]) -> None:
+        message = f"The request is invalid. Details: {details}"
         super().__init__(message)
 
 
@@ -174,4 +174,60 @@ class CredentialNotFoundError(VcspError):
 
     def __init__(self) -> None:
         message = "Credential not found"
+        super().__init__(message)
+
+
+class GroupNotFoundError(VcspError):
+    """Exception raised for group not found."""
+
+    def __init__(self) -> None:
+        message = "Group not found"
+        super().__init__(message)
+
+
+class GroupsLimitExceededError(VcspError):
+    """Exception raised for group limit exceeded."""
+
+    def __init__(self) -> None:
+        message = "Group limit exceeded"
+        super().__init__(message)
+
+
+class EnrollmentsLimitExceededError(VcspError):
+    """Exception raised for enrollment limit exceeded."""
+
+    def __init__(self) -> None:
+        message = "Enrollment limit exceeded"
+        super().__init__(message)
+
+
+class GroupAlreadyExistsError(VcspError):
+    """Exception raised for group already exists."""
+
+    def __init__(self) -> None:
+        message = "Group already exists"
+        super().__init__(message)
+
+
+class TagsLimitExceededError(VcspError):
+    """Exception raised for tags limit exceeded."""
+
+    def __init__(self) -> None:
+        message = "Tags limit exceeded"
+        super().__init__(message)
+
+
+class TagAlreadyExistsError(VcspError):
+    """Exception raised for tag already exists."""
+
+    def __init__(self) -> None:
+        message = "Tag already exists"
+        super().__init__(message)
+
+
+class TagListEmptyError(VcspError):
+    """Exception raised for tag list empty."""
+
+    def __init__(self) -> None:
+        message = "Tag list is empty"
         super().__init__(message)

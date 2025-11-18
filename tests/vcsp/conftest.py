@@ -11,9 +11,13 @@ from vericlient.vcsp.exceptions import (
     AssuranceValidationError,
     CredentialConfigurationUrnAlreadyAssignedError,
     EmptyFileError,
+    EnrollmentsLimitExceededError,
     FaceAlignmentError,
     FaceNotFoundError,
     FaceTooSmallError,
+    GroupAlreadyExistsError,
+    GroupNotFoundError,
+    GroupsLimitExceededError,
     InsufficientQualityError,
     InvalidAssuranceError,
     InvalidAssuranceMethodUrnError,
@@ -24,6 +28,9 @@ from vericlient.vcsp.exceptions import (
     InvalidTagsError,
     MoreThanOneFaceError,
     RequestValidationError,
+    TagAlreadyExistsError,
+    TagListEmptyError,
+    TagsLimitExceededError,
     UnsupportedMediaTypeError,
     VoiceDurationIsNotEnoughError,
 )
@@ -154,6 +161,26 @@ def test_subject_id():
 @pytest.fixture(scope="session")
 def test_credential_id():
     return "test-credential-id"
+
+
+@pytest.fixture(scope="session")
+def test_tag_name():
+    return "test:tag1"
+
+
+@pytest.fixture(scope="session")
+def test_tag_name_2():
+    return "test:tag2"
+
+
+@pytest.fixture(scope="session")
+def test_group_name():
+    return "test:group"
+
+
+@pytest.fixture(scope="session")
+def test_group_name_2():
+    return "test:group2"
 
 
 ####################
@@ -299,11 +326,116 @@ def vcsp_get_credential_response():
     }
 
 
-# #################
-# # SERVER ERRORS #
-# #################
+@pytest.fixture(scope="session")
+def vcsp_create_tags_response(test_tag_name, test_tag_name_2):
+    return {
+        "tags": [
+            test_tag_name,
+            test_tag_name_2,
+        ],
+        "created_at": "2019-08-24T14:15:22Z",
+    }
 
-# ### 400 BAD REQUEST ###
+
+@pytest.fixture(scope="session")
+def vcsp_get_tags_response(test_tag_name, test_tag_name_2):
+    return {
+        "items": [
+            {
+                "name": test_tag_name,
+                "created_at": "2019-08-24T14:15:22Z",
+            },
+            {
+                "name": test_tag_name_2,
+                "created_at": "2019-08-24T14:15:22Z",
+            },
+        ],
+        "total": 2,
+        "page": 1,
+        "size": 100,
+        "pages": 1,
+    }
+
+
+@pytest.fixture(scope="session")
+def vcsp_create_group_response(test_group_name):
+    return {
+        "name": test_group_name,
+        "credential_configuration_urn": "urn:vcsp:credential_configurations:face:selfie:v1",
+        "size": 0,
+        "created_at": "2019-08-24T14:15:22Z",
+        "description": "test:group",
+        "expired_at": "2019-08-24T14:15:22Z",
+        "updated_at": "2019-08-24T14:15:22Z",
+    }
+
+
+@pytest.fixture(scope="session")
+def vcsp_get_groups_response(test_group_name, test_group_name_2):
+    return {
+        "items": [
+            {
+                "name": test_group_name,
+                "credential_configuration_urn": "urn:vcsp:credential_configurations:face:selfie:v1",
+                "size": 0,
+                "created_at": "2019-08-24T14:15:22Z",
+                "description": test_group_name,
+                "expired_at": "2019-08-24T14:15:22Z",
+                "updated_at": "2019-08-24T14:15:22Z",
+            },
+            {
+                "name": test_group_name_2,
+                "credential_configuration_urn": "urn:vcsp:credential_configurations:face:selfie:v1",
+                "size": 0,
+                "created_at": "2019-08-24T14:15:22Z",
+                "description": test_group_name_2,
+                "expired_at": "2019-08-24T14:15:22Z",
+                "updated_at": "2019-08-24T14:15:22Z",
+            },
+        ],
+        "total": 2,
+        "page": 1,
+        "size": 100,
+        "pages": 1,
+    }
+
+
+@pytest.fixture(scope="session")
+def vcsp_get_group_response(vcsp_create_group_response):
+    return vcsp_create_group_response
+
+
+@pytest.fixture(scope="session")
+def vcsp_get_group_members_response():
+    return {
+        "items": [
+            {
+                "subject_id": "test:subject",
+                "credential_id": "test:credential",
+                "expired_in_group": "2019-08-24T14:15:22Z",
+                "claims": {},
+                "tags": [],
+            },
+            {
+                "subject_id": "test:subject2",
+                "credential_id": "test:credential2",
+                "expired_in_group": "2019-08-24T14:15:22Z",
+                "claims": {},
+                "tags": [],
+            },
+        ],
+        "total": 2,
+        "page": 1,
+        "size": 100,
+        "pages": 1,
+    }
+
+
+#################
+# SERVER ERRORS #
+#################
+
+### 400 BAD REQUEST ###
 
 @pytest.fixture(scope="session")
 def vcsp_empty_file_error_response():
@@ -313,7 +445,7 @@ def vcsp_empty_file_error_response():
 @pytest.fixture(scope="session")
 def vcsp_request_validation_error_response():
     return {
-        "error": "request_validation",
+        "error": "request_validation_error",
         "title": "Request validation",
         "reason": "There are one or more errors in the request",
         "details": {
@@ -371,7 +503,67 @@ def vcsp_invalid_assurance_error_response():
     }
 
 
-# ### 404 NOT FOUND ###
+### 403 FORBIDDEN ###
+
+@pytest.fixture(scope="session")
+def vcsp_enrollments_limit_exceeded_error_response():
+    return {
+        "error": "enrollments_limit_exceeded",
+        "title": "Enrollments limit exceeded",
+        "reason": "Enrollments limit has been exceeded",
+        "details": {
+            "enrollments_limit": 10,
+        },
+    }
+
+
+@pytest.fixture(scope="session")
+def vcsp_tags_limit_exceeded_error_response():
+    return {
+        "error": "tags_limit_exceeded",
+        "title": "Tags limit exceeded",
+        "reason": "Tags limit has been exceeded",
+        "details": {
+            "tags_limit": 10,
+        },
+    }
+
+
+@pytest.fixture(scope="session")
+def vcsp_tags_already_exist_error_response():
+    return {
+        "error": "tags_already_exist",
+        "title": "Tags already exist",
+        "reason": "One or more tags already exist",
+        "details": {
+            "tags": ["existing_tag1", "existing_tag2"],
+        },
+    }
+
+
+@pytest.fixture(scope="session")
+def vcsp_tag_list_empty_error_response():
+    return {
+        "error": "tag_list_empty",
+        "title": "Tag list empty",
+        "reason": "Tag list cannot be empty",
+        "details": {},
+    }
+
+
+@pytest.fixture(scope="session")
+def vcsp_groups_limit_exceeded_error_response():
+    return {
+        "error": "groups_limit_exceeded",
+        "title": "Groups limit exceeded",
+        "reason": "Groups limit has been exceeded",
+        "details": {
+            "groups_limit": 10,
+        },
+    }
+
+
+### 404 NOT FOUND ###
 
 @pytest.fixture(scope="session")
 def vcsp_account_not_found_error_response():
@@ -397,7 +589,7 @@ def vcsp_credential_not_found_error_response():
     }
 
 
-# ### 415 UNSUPPORTED MEDIA TYPE ###
+### 415 UNSUPPORTED MEDIA TYPE ###
 
 @pytest.fixture(scope="session")
 def vcsp_unsupported_media_type_error_response():
@@ -416,7 +608,7 @@ def vcsp_unsupported_media_type_error_response():
     }
 
 
-# ### 422 UNPROCESSABLE ENTITY ###
+### 422 UNPROCESSABLE ENTITY ###
 
 @pytest.fixture(scope="session")
 def vcsp_invalid_tags_error_response():
@@ -465,6 +657,30 @@ def vcsp_credential_configuration_already_assigned_error_response():
         "details": {
             "subject_id": "John Doe",
             "credential_configuration_urn": "urn:vcsp:credential_configurations:face:selfie",
+        },
+    }
+
+
+@pytest.fixture(scope="session")
+def vcsp_group_already_exists_error_response():
+    return {
+        "error": "group_already_exists",
+        "title": "Group already exists",
+        "reason": "A group with specified name does already exist",
+        "details": {
+            "name": "employees",
+        },
+    }
+
+
+@pytest.fixture(scope="session")
+def vcsp_group_not_found_error_response():
+    return {
+        "error": "group_not_found",
+        "title": "Group not found",
+        "reason": "Group not found for specified 'group_name'",
+        "details": {
+            "group_name": "nonexistent_group_name",
         },
     }
 
@@ -556,7 +772,7 @@ def vcsp_assurance_validation_error_response():
     }
 
 
-# ### 500 INTERNAL SERVER ERROR ###
+### 500 INTERNAL SERVER ERROR ###
 
 @pytest.fixture(scope="session")
 def vcsp_server_error_response():
@@ -716,6 +932,7 @@ def vcsp_enrollment_exception_parameters(
         vcsp_face_alignment_error_response,
         vcsp_assurance_validation_error_response,
         vcsp_server_error_response,
+        vcsp_enrollments_limit_exceeded_error_response,
 ) -> list[list]:
     four_hundred_responses = [
         (vcsp_empty_file_error_response, EmptyFileError),
@@ -736,6 +953,16 @@ def vcsp_enrollment_exception_parameters(
         )
         for response, exception in four_hundred_responses
     ]
+    four_hundred_three_response = [provide_testing_parameters(
+        test_environment=test_environment,
+        all_environments=all_environments,
+        mock_option=mock_option,
+        endpoint="vcsp/v1/enrollments",
+        response=vcsp_enrollments_limit_exceeded_error_response,
+        status_code=403,
+        exception=EnrollmentsLimitExceededError,
+        service_name=service_name,
+    )]
     unsupported_media_type_response = [provide_testing_parameters(
         test_environment=test_environment,
         all_environments=all_environments,
@@ -784,7 +1011,8 @@ def vcsp_enrollment_exception_parameters(
         exception=ServerError,
         service_name=service_name,
     )]
-    return four_hundred_responses + unsupported_media_type_response + four_hundred_twenty_two_responses + server_error_response
+    return (four_hundred_responses + four_hundred_three_response + unsupported_media_type_response +
+            four_hundred_twenty_two_responses + server_error_response)
 
 
 @pytest.fixture(scope="session")
@@ -890,3 +1118,383 @@ def vcsp_delete_credential_parameters(
         exception=None,
         service_name=service_name,
     )
+
+
+@pytest.fixture(scope="session")
+def vcsp_create_tags_parameters(
+        mock_option,
+        test_environment,
+        all_environments,
+        service_name,
+        vcsp_create_tags_response,
+) -> list:
+    return provide_testing_parameters(
+        test_environment=test_environment,
+        all_environments=all_environments,
+        mock_option=mock_option,
+        endpoint="vcsp/v1/tags",
+        response=vcsp_create_tags_response,
+        status_code=201,
+        exception=None,
+        service_name=service_name,
+    )
+
+
+@pytest.fixture(scope="session")
+def vcsp_create_tags_exception_parameters(
+        mock_option,
+        test_environment,
+        all_environments,
+        service_name,
+        vcsp_request_validation_error_response,
+        vcsp_tags_limit_exceeded_error_response,
+        vcsp_tags_already_exist_error_response,
+        vcsp_tag_list_empty_error_response,
+) -> list[list]:
+    four_hundred_responses = [
+        (vcsp_request_validation_error_response, RequestValidationError),
+    ]
+    four_hundred_responses = [
+        provide_testing_parameters(
+            test_environment=test_environment,
+            all_environments=all_environments,
+            mock_option=mock_option,
+            endpoint="vcsp/v1/tags",
+            response=response,
+            status_code=400,
+            exception=exception,
+            service_name=service_name,
+        )
+        for response, exception in four_hundred_responses
+    ]
+    four_hundred_three_response = [provide_testing_parameters(
+        test_environment=test_environment,
+        all_environments=all_environments,
+        mock_option=mock_option,
+        endpoint="vcsp/v1/tags",
+        response=vcsp_tags_limit_exceeded_error_response,
+        status_code=403,
+        exception=TagsLimitExceededError,
+        service_name=service_name,
+    )]
+    four_hundred_twenty_two_responses = [
+        (vcsp_tags_already_exist_error_response, TagAlreadyExistsError),
+        (vcsp_tag_list_empty_error_response, TagListEmptyError),
+    ]
+    four_hundred_twenty_two_responses = [
+        provide_testing_parameters(
+            test_environment=test_environment,
+            all_environments=all_environments,
+            mock_option=mock_option,
+            endpoint="vcsp/v1/tags",
+            response=response,
+            status_code=422,
+            exception=exception,
+            service_name=service_name,
+        )
+        for response, exception in four_hundred_twenty_two_responses
+    ]
+    return four_hundred_responses + four_hundred_three_response + four_hundred_twenty_two_responses
+
+
+@pytest.fixture(scope="session")
+def vcsp_get_tags_parameters(
+        mock_option,
+        test_environment,
+        all_environments,
+        service_name,
+        vcsp_get_tags_response,
+) -> list:
+    return provide_testing_parameters(
+        test_environment=test_environment,
+        all_environments=all_environments,
+        mock_option=mock_option,
+        endpoint="vcsp/v1/tags",
+        response=vcsp_get_tags_response,
+        status_code=200,
+        exception=None,
+        service_name=service_name,
+    )
+
+
+@pytest.fixture(scope="session")
+def vcsp_delete_tag_parameters(
+        mock_option,
+        test_environment,
+        all_environments,
+        service_name,
+        test_tag_name,
+) -> list:
+    return provide_testing_parameters(
+        test_environment=test_environment,
+        all_environments=all_environments,
+        mock_option=mock_option,
+        endpoint=f"vcsp/v1/tags/{test_tag_name}",
+        response={},
+        status_code=204,
+        exception=None,
+        service_name=service_name,
+    )
+
+
+@pytest.fixture(scope="session")
+def vcsp_delete_tag_exception_parameters(
+        mock_option,
+        test_environment,
+        all_environments,
+        service_name,
+        vcsp_invalid_tags_error_response,
+) -> list[list]:
+    four_hundred_twenty_two_responses = [
+        (vcsp_invalid_tags_error_response, InvalidTagsError),
+    ]
+    return [
+        provide_testing_parameters(
+            test_environment=test_environment,
+            all_environments=all_environments,
+            mock_option=mock_option,
+            endpoint="vcsp/v1/tags/invalid_tag",
+            response=response,
+            status_code=422,
+            exception=exception,
+            service_name=service_name,
+        )
+        for response, exception in four_hundred_twenty_two_responses
+    ]
+
+
+@pytest.fixture(scope="session")
+def vcsp_create_group_parameters(
+        mock_option,
+        test_environment,
+        all_environments,
+        service_name,
+        vcsp_create_group_response,
+) -> list:
+    return provide_testing_parameters(
+        test_environment=test_environment,
+        all_environments=all_environments,
+        mock_option=mock_option,
+        endpoint="vcsp/v1/groups",
+        response=vcsp_create_group_response,
+        status_code=201,
+        exception=None,
+        service_name=service_name,
+    )
+
+
+@pytest.fixture(scope="session")
+def vcsp_create_group_exception_parameters(
+        mock_option,
+        test_environment,
+        all_environments,
+        service_name,
+        vcsp_request_validation_error_response,
+        vcsp_groups_limit_exceeded_error_response,
+        vcsp_invalid_credential_configuration_urn_error_response,
+        vcsp_group_already_exists_error_response,
+) -> list[list]:
+    four_hundred_responses = [
+        (vcsp_request_validation_error_response, RequestValidationError),
+    ]
+    four_hundred_responses = [
+        provide_testing_parameters(
+            test_environment=test_environment,
+            all_environments=all_environments,
+            mock_option=mock_option,
+            endpoint="vcsp/v1/groups",
+            response=response,
+            status_code=400,
+            exception=exception,
+            service_name=service_name,
+        )
+        for response, exception in four_hundred_responses
+    ]
+    four_hundred_three_response = [provide_testing_parameters(
+        test_environment=test_environment,
+        all_environments=all_environments,
+        mock_option=mock_option,
+        endpoint="vcsp/v1/groups",
+        response=vcsp_groups_limit_exceeded_error_response,
+        status_code=403,
+        exception=GroupsLimitExceededError,
+        service_name=service_name,
+    )]
+    four_hundred_twenty_two_responses = [
+        (vcsp_invalid_credential_configuration_urn_error_response, InvalidCredentialConfigurationUrnError),
+        (vcsp_group_already_exists_error_response, GroupAlreadyExistsError),
+    ]
+    four_hundred_twenty_two_responses = [
+        provide_testing_parameters(
+            test_environment=test_environment,
+            all_environments=all_environments,
+            mock_option=mock_option,
+            endpoint="vcsp/v1/groups",
+            response=response,
+            status_code=422,
+            exception=exception,
+            service_name=service_name,
+        )
+        for response, exception in four_hundred_twenty_two_responses
+    ]
+    return four_hundred_responses + four_hundred_three_response + four_hundred_twenty_two_responses
+
+
+@pytest.fixture(scope="session")
+def vcsp_get_groups_parameters(
+        mock_option,
+        test_environment,
+        all_environments,
+        service_name,
+        vcsp_get_groups_response,
+) -> list:
+    return provide_testing_parameters(
+        test_environment=test_environment,
+        all_environments=all_environments,
+        mock_option=mock_option,
+        endpoint="vcsp/v1/groups",
+        response=vcsp_get_groups_response,
+        status_code=200,
+        exception=None,
+        service_name=service_name,
+    )
+
+
+@pytest.fixture(scope="session")
+def vcsp_get_group_exception_parameters(
+        mock_option,
+        test_environment,
+        all_environments,
+        service_name,
+        vcsp_group_not_found_error_response,
+) -> list[list]:
+    four_hundred_four_responses = [
+        (vcsp_group_not_found_error_response, GroupNotFoundError),
+    ]
+    return [
+        provide_testing_parameters(
+            test_environment=test_environment,
+            all_environments=all_environments,
+            mock_option=mock_option,
+            endpoint="vcsp/v1/groups/nonexistent_group_name",
+            response=response,
+            status_code=404,
+            exception=exception,
+            service_name=service_name,
+        )
+        for response, exception in four_hundred_four_responses
+    ]
+
+
+@pytest.fixture(scope="session")
+def vcsp_get_group_parameters(
+        mock_option,
+        test_environment,
+        all_environments,
+        service_name,
+        vcsp_get_group_response,
+        test_group_name,
+) -> list:
+    return provide_testing_parameters(
+        test_environment=test_environment,
+        all_environments=all_environments,
+        mock_option=mock_option,
+        endpoint=f"vcsp/v1/groups/{test_group_name}",
+        response=vcsp_get_group_response,
+        status_code=200,
+        exception=None,
+        service_name=service_name,
+    )
+
+
+@pytest.fixture(scope="session")
+def vcsp_delete_group_parameters(
+        mock_option,
+        test_environment,
+        all_environments,
+        service_name,
+        test_group_name,
+) -> list:
+    return provide_testing_parameters(
+        test_environment=test_environment,
+        all_environments=all_environments,
+        mock_option=mock_option,
+        endpoint=f"vcsp/v1/groups/{test_group_name}",
+        response={},
+        status_code=204,
+        exception=None,
+        service_name=service_name,
+    )
+
+
+@pytest.fixture(scope="session")
+def vcsp_delete_group_exception_parameters(
+        mock_option,
+        test_environment,
+        all_environments,
+        service_name,
+        vcsp_group_not_found_error_response,
+) -> list[list]:
+    four_hundred_four_responses = [
+        (vcsp_group_not_found_error_response, GroupNotFoundError),
+    ]
+    return [
+        provide_testing_parameters(
+            test_environment=test_environment,
+            all_environments=all_environments,
+            mock_option=mock_option,
+            endpoint="vcsp/v1/groups/nonexistent_group_name",
+            response=response,
+            status_code=404,
+            exception=exception,
+            service_name=service_name,
+        )
+        for response, exception in four_hundred_four_responses
+    ]
+
+
+@pytest.fixture(scope="session")
+def vcsp_get_group_members_parameters(
+        mock_option,
+        test_environment,
+        all_environments,
+        service_name,
+        vcsp_get_group_members_response,
+        test_group_name,
+) -> list:
+    return provide_testing_parameters(
+        test_environment=test_environment,
+        all_environments=all_environments,
+        mock_option=mock_option,
+        endpoint=f"vcsp/v1/groups/{test_group_name}/credentials",
+        response=vcsp_get_group_members_response,
+        status_code=200,
+        exception=None,
+        service_name=service_name,
+    )
+
+
+@pytest.fixture(scope="session")
+def vcsp_get_group_members_exception_parameters(
+        mock_option,
+        test_environment,
+        all_environments,
+        service_name,
+        vcsp_group_not_found_error_response,
+) -> list[list]:
+    four_hundred_four_responses = [
+        (vcsp_group_not_found_error_response, GroupNotFoundError),
+    ]
+    return [
+        provide_testing_parameters(
+            test_environment=test_environment,
+            all_environments=all_environments,
+            mock_option=mock_option,
+            endpoint="vcsp/v1/groups/nonexistent_group_name/credentials",
+            response=response,
+            status_code=404,
+            exception=exception,
+            service_name=service_name,
+        )
+        for response, exception in four_hundred_four_responses
+    ]

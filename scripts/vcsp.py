@@ -10,6 +10,13 @@ from vericlient.vcsp.models import (
     GetCredentialInput,
     DeleteCredentialInput,
     Applicant,
+    CreateGroupInput,
+    GetGroupInput,
+    DeleteGroupInput,
+    GetGroupsInput,
+    GetGroupMembersInput,
+    CreateTagsInput,
+    DeleteTagInput,
 )
 
 
@@ -129,3 +136,88 @@ client.delete_account(
 )
 print()
 print(f"Accounts deleted: {enrollment_data.subject_id} and user1")
+
+# create a group
+group = client.create_group(
+    data_model=CreateGroupInput(
+        credential_configuration_urn=credential_configuration_urn,
+        name="test_group",
+        description="Test group",
+        expired_at="P1D",  # 1 day from now
+    )
+)
+print()
+print(f"Group created: {group}")
+
+# get the group
+group = client.get_group(
+    data_model=GetGroupInput(
+        name="test_group"
+    )
+)
+print()
+print(f"Group retrieved: {group}")
+
+# get the group members
+group_members = client.get_group_members(
+    data_model=GetGroupMembersInput(
+        name="test_group"
+    )
+)
+print()
+print(f"Group members: {group_members.items}")
+print(f"Total group members: {group_members.total}")
+print(f"Page: {group_members.page}")
+print(f"Size: {group_members.size}")
+print(f"Pages: {group_members.pages}")
+
+# delete the group
+client.delete_group(
+    data_model=DeleteGroupInput(
+        name="test_group"
+    )
+)
+print()
+print(f"Group deleted: {group}")
+
+# get all groups
+groups = client.get_groups(
+    data_model=GetGroupsInput(
+        size=100,
+        page=1
+    )
+)
+print()
+print(f"Groups: {groups}")
+print(f"Total groups: {groups.total}")
+print(f"Page: {groups.page}")
+print(f"Pages: {groups.pages}")
+print(f"Size: {groups.size}")
+
+# create tags
+tags = client.create_tags(
+    data_model=CreateTagsInput(
+        tags=["test:tag1", "test:tag2"]
+    )
+)
+print()
+print(f"Tags created: {tags}")
+
+# get all tags
+all_tags = client.get_tags()
+print()
+print(f"All tags: {all_tags}")
+
+# delete a tag
+client.delete_tag(
+    data_model=DeleteTagInput(
+        name="test:tag1"
+    )
+)
+client.delete_tag(
+    data_model=DeleteTagInput(
+        name="test:tag2"
+    )
+)
+print()
+print(f"Tags deleted: {tags}")

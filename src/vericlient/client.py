@@ -109,7 +109,8 @@ class Client(ABC):
         return response
 
     def _post(
-            self, endpoint: str,
+            self,
+            endpoint: str,
             data: dict | None = None,
             json_: dict | None = None,
             files: dict | None = None,
