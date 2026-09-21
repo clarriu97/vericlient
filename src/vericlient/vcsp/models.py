@@ -534,3 +534,118 @@ class GetGroupMembersOutput(VcspResponse):
     page: int
     size: int
     pages: int
+
+
+class ListedCredential(GetCredentialOutput):
+    """A credential as it appears in the system-wide credential listing.
+
+    Attributes:
+        subject_id: The account the credential belongs to
+
+    """
+
+    subject_id: str
+
+
+class ListCredentialsInput(BaseModel):
+    """Input class for the system-wide credential listing.
+
+    Every field is a filter, and all of them are optional. Listing without one walks the
+    whole system, which on a busy deployment is a lot of pages.
+
+    Attributes:
+        credential_configuration_urn: Only credentials created with this configuration
+        tags: Only credentials carrying these tags
+        page: The page to retrieve, starting at 1
+        size: How many credentials per page
+
+    """
+
+    credential_configuration_urn: str | None = None
+    tags: list[str] | None = None
+    page: int | None = None
+    size: int | None = None
+
+
+class ListCredentialsOutput(VcspResponse):
+    """Output class for the system-wide credential listing.
+
+    Attributes:
+        items: The credentials on this page
+        total: The number of credentials matching the filters
+        page: The page returned
+        size: The page size
+        pages: The number of pages
+
+    """
+
+    items: list[ListedCredential]
+    total: int
+    page: int
+    size: int
+    pages: int
+
+
+class DeleteCredentialsInput(BaseModel):
+    """Input class for bulk credential deletion.
+
+    A group is the only filter the service accepts, and the operation is irreversible.
+    Credentials in the group are deleted and removed from any other group they belong to.
+
+    Attributes:
+        group_name: The group whose credentials are deleted
+        delete_empty_accounts: Whether to delete an account left with no credentials
+
+    """
+
+    group_name: str
+    delete_empty_accounts: bool = False
+
+
+class GetCredentialSampleInput(SubjectInput, CredentialInput):
+    """Input class for retrieving the sample behind a credential.
+
+    Attributes:
+        subject_id: The subject the credential belongs to
+        credential_id: The credential whose sample to retrieve
+
+    """
+
+
+class GetCredentialSampleOutput(VcspResponse):
+    """Output class for retrieving the sample behind a credential.
+
+    The service answers with the raw bytes it was enrolled with, not with JSON.
+
+    Attributes:
+        content: The sample itself
+        content_type: Its media type, such as `audio/wav` or `image/jpeg`
+
+    """
+
+    content: bytes
+    content_type: str
+
+
+class CredentialConfigurationInput(BaseModel):
+    """Input class for retrieving one credential configuration.
+
+    Attributes:
+        urn: The urn of the credential configuration
+
+    """
+
+    urn: str
+
+
+class CredentialConfigurationOutput(VcspResponse):
+    """Output class for retrieving one credential configuration.
+
+    Attributes:
+        urn: The urn of the credential configuration
+        claims_schema: The JSON schema the `claims` of an enrolment must satisfy
+
+    """
+
+    urn: str
+    claims_schema: dict

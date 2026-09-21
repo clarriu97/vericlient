@@ -7,6 +7,9 @@ The project follows [semantic versioning](https://semver.org/).
 
 ### Added
 
+- **VCSP credential listing and configuration lookup**: `list_credentials`,
+  `delete_credentials`, `get_credential_sample` and `get_credential_configuration`. Coverage
+  reaches 22 of the 31 endpoints.
 - **VCSP groups and tags**: `create_group`, `get_groups`, `get_group`, `delete_group`,
   `get_group_members`, `create_tags`, `get_tags` and `delete_tag`. Coverage goes from 10 to
   18 of the 31 endpoints in the specification.

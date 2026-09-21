@@ -10,17 +10,21 @@ from vericlient.vcsp.models import (
     AssuranceMethodInput,
     CreateGroupInput,
     CreateTagsInput,
+    CredentialConfigurationInput,
     DeleteAccountInput,
     DeleteCredentialInput,
+    DeleteCredentialsInput,
     DeleteGroupInput,
     DeleteTagInput,
     EnrollmentInput,
     GetAccountInput,
     GetCredentialInput,
+    GetCredentialSampleInput,
     GetCredentialsInput,
     GetGroupInput,
     GetGroupMembersInput,
     GetGroupsInput,
+    ListCredentialsInput,
 )
 
 
@@ -582,3 +586,69 @@ def test_real_deleted_account_is_gone(real_writes, temp_subject, resource_tracke
 
     with pytest.raises(AccountNotFoundError):
         real_writes.get_account(data_model=GetAccountInput(subject_id=subject_id))
+
+
+@pytest.mark.vcsp
+def test_real_list_credentials_by_tag(real_writes, temp_subject, shared_test_tag):
+    """The system-wide listing finds a credential by its tag, and reports its account.
+
+    This is the query the session sweeper depends on: the deployment holds six figures of
+    credentials, so filtering by tag is the only way to find the ones a run created.
+    """
+    subject_id, credential_id = temp_subject
+
+    listed = real_writes.list_credentials(ListCredentialsInput(tags=[shared_test_tag]))
+
+    matching = [c for c in listed.items if c.id == credential_id]
+    assert matching, f"credential {credential_id} not found among {listed.total} tagged credentials"
+    assert matching[0].subject_id == subject_id
+    assert shared_test_tag in matching[0].tags
+
+
+@pytest.mark.vcsp
+def test_real_list_credentials_pages(real_writes):
+    """Paging is honoured, which matters because the listing is unbounded by default."""
+    page = real_writes.list_credentials(ListCredentialsInput(size=2, page=1))
+    assert len(page.items) <= 2
+    assert page.page == 1
+    assert page.size == 2
+    assert page.total >= len(page.items)
+
+
+@pytest.mark.vcsp
+def test_real_credential_sample_round_trips(real_writes, temp_subject, audio_file):
+    """The sample comes back byte for byte, with the media type it was sent as."""
+    subject_id, credential_id = temp_subject
+
+    sample = real_writes.get_credential_sample(
+        data_model=GetCredentialSampleInput(subject_id=subject_id, credential_id=credential_id),
+    )
+
+    assert sample.content == audio_file
+    assert sample.content_type.startswith("audio/")
+
+
+@pytest.mark.vcsp
+def test_real_credential_configuration_has_a_claims_schema(real_writes, voice_credential_configuration):
+    """One configuration can be read on its own, with the schema its claims must satisfy."""
+    configuration = real_writes.get_credential_configuration(
+        data_model=CredentialConfigurationInput(urn=voice_credential_configuration),
+    )
+
+    assert configuration.urn == voice_credential_configuration
+    assert isinstance(configuration.claims_schema, dict)
+
+
+@pytest.mark.vcsp
+def test_real_delete_credentials_of_an_empty_group(real_writes, temp_group):
+    """Bulk deletion accepts a group with nothing in it.
+
+    Group membership is not implemented yet, so this pins down the request shape rather than
+    the deletion. The specification is wrong about it twice: it documents a multipart body
+    wrapping the filters, and the service wants a flat JSON one.
+    """
+    real_writes.delete_credentials(
+        data_model=DeleteCredentialsInput(group_name=temp_group, delete_empty_accounts=True),
+    )
+
+    assert real_writes.get_group(data_model=GetGroupInput(name=temp_group)).size == 0
