@@ -523,6 +523,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#precedence" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Precedence
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -727,6 +738,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#precedence" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Precedence
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -819,15 +841,66 @@ client like this:</p>
 <span class="n">client</span> <span class="o">=</span> <span class="n">DaspeakClient</span><span class="p">(</span><span class="n">apikey</span><span class="o">=</span><span class="s2">"your_api_key"</span><span class="p">)</span>
 </code></pre></div>
 <h3 id="environment-variables">Environment variables<a class="headerlink" href="#environment-variables" title="Permanent link">&para;</a></h3>
-<p>The following environment variables are supported and will override the
-programmatic configuration:</p>
-<ul>
-<li><code>VERICLIENT_ENVIRONMENT</code>: The environment to use for the requests.</li>
-<li><code>VERICLIENT_APIKEY</code>: The API key to use for the requests against the Veridas Cloud API.</li>
-<li><code>VERICLIENT_LOCATION</code>: The location to use for the requests.</li>
-<li><code>VERICLIENT_URL</code>: In case you want to use a self-hosted API, you can set the URL with this variable.</li>
-<li><code>VERICLIENT_TIMEOUT</code>: The timeout for the requests.</li>
-</ul>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Sets</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>VERICLIENT_APIKEY</code></td>
+<td>The API key used against the Veridas cloud</td>
+<td>none</td>
+</tr>
+<tr>
+<td><code>VERICLIENT_ENVIRONMENT</code></td>
+<td><code>sandbox</code> or <code>production</code></td>
+<td><code>sandbox</code></td>
+</tr>
+<tr>
+<td><code>VERICLIENT_LOCATION</code></td>
+<td><code>eu</code> or <code>us</code></td>
+<td><code>eu</code></td>
+</tr>
+<tr>
+<td><code>VERICLIENT_URL</code></td>
+<td>A self-hosted URL, which replaces the cloud entirely</td>
+<td>none</td>
+</tr>
+<tr>
+<td><code>VERICLIENT_TIMEOUT</code></td>
+<td>The request timeout in seconds</td>
+<td><code>10</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="precedence">Precedence<a class="headerlink" href="#precedence" title="Permanent link">&para;</a></h3>
+<p>Each setting is resolved in this order:</p>
+<ol>
+<li>the argument passed to the client constructor,</li>
+<li>the <code>VERICLIENT_</code> environment variable,</li>
+<li>the library default.</li>
+</ol>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">vericlient</span><span class="w"> </span><span class="kn">import</span> <span class="n">DaspeakClient</span>
+
+<span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">"VERICLIENT_APIKEY"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"from-the-environment"</span>
+
+<span class="n">DaspeakClient</span><span class="p">()</span>  <span class="c1"># uses "from-the-environment"</span>
+<span class="n">DaspeakClient</span><span class="p">(</span><span class="n">apikey</span><span class="o">=</span><span class="s2">"explicit"</span><span class="p">)</span>  <span class="c1"># uses "explicit"</span>
+</code></pre></div>
+<div class="admonition warning">
+<p class="admonition-title">Changed in 0.2.0</p>
+<p>Before 0.2.0 this was the other way round: an environment variable silently won over
+the constructor argument, so <code>DaspeakClient(apikey="explicit")</code> was ignored whenever
+<code>VERICLIENT_APIKEY</code> happened to be set, and two clients could not use two different
+keys in the same process.</p>
+</div>
+<p>Settings are read when a client is created, not when the library is imported, so changing
+the environment between two constructor calls does what you would expect.</p>
 
 
 
