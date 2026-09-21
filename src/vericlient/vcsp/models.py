@@ -1,6 +1,8 @@
 """Module to define the models for the VCSP API."""
 
 # ruff: noqa: N805, D102, ANN201
+from enum import StrEnum
+
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
@@ -649,3 +651,157 @@ class CredentialConfigurationOutput(VcspResponse):
 
     urn: str
     claims_schema: dict
+
+
+class TaskStatus(StrEnum):
+    """The states an asynchronous task moves through.
+
+    `TaskOutput.status` is a plain string rather than this enum, so a state the service adds
+    later does not break deserialisation. Compare against these members.
+    """
+
+    PENDING = "PENDING"
+    IN_PROGRESS = "IN_PROGRESS"
+    COMPLETED = "COMPLETED"
+    FAILED = "FAILED"
+
+
+class TaskInput(BaseModel):
+    """Input class for the task endpoints.
+
+    Attributes:
+        task_id: The identifier the service returned when the task was created
+
+    """
+
+    task_id: str
+
+
+class TaskOutput(VcspResponse):
+    """Output class describing one asynchronous task.
+
+    Attributes:
+        task_id: The identifier of the task
+        status: One of the `TaskStatus` values
+        progress: How far along the task is, from 0 to 100
+        created_at: When the task was accepted
+        started_at: When the task started, if it has
+        finished_at: When the task finished, if it has
+        expired_at: When the service will drop the task and its result
+
+    """
+
+    task_id: str
+    status: str
+    progress: float
+    created_at: str | None = None
+    started_at: str | None = None
+    finished_at: str | None = None
+    expired_at: str | None = None
+
+    @property
+    def is_finished(self) -> bool:
+        """Whether the task has stopped running, successfully or not."""
+        return self.status in (TaskStatus.COMPLETED, TaskStatus.FAILED)
+
+    @property
+    def succeeded(self) -> bool:
+        """Whether the task finished successfully."""
+        return self.status == TaskStatus.COMPLETED
+
+
+class GetTasksOutput(VcspResponse):
+    """Output class for the task listing.
+
+    Attributes:
+        items: The tasks on this page
+        total: The number of active tasks
+        page: The page returned
+        size: The page size
+        pages: The number of pages
+
+    """
+
+    items: list[TaskOutput]
+    total: int
+    page: int
+    size: int
+    pages: int
+
+
+class GetTaskResultOutput(VcspResponse):
+    """Output class for the outcome of a finished task.
+
+    The shape depends on what created the task — a batch enrolment, a matching or a
+    clustering all answer differently — so it is handed back as-is rather than forced into
+    one model.
+
+    Attributes:
+        result: The outcome, as the service returned it
+
+    """
+
+    result: dict
+
+
+class BatchApplicant(BaseModel):
+    """One enrolment inside a batch.
+
+    Attributes:
+        sample: The biometric sample, as a path or as bytes
+        applicant: The applicant to enrol, exactly as for a single enrolment
+        filename: The name the sample takes inside the archive. Derived from the path, or
+            generated for bytes, when omitted. It only has to be unique within the batch
+
+    """
+
+    sample: str | bytes
+    applicant: Applicant
+    filename: str | None = None
+
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+
+
+class BatchEnrollmentInput(BaseModel):
+    """Input class for batch enrolment.
+
+    The service takes a TAR archive holding the samples and an `applicants.json` that points
+    at them. Pass `applicants` and the client builds it; pass `batch_file` if you have one
+    already, which avoids holding a large batch in memory twice.
+
+    Attributes:
+        applicants: The enrolments to perform
+        batch_file: A prepared TAR archive, as a path or as bytes
+
+    """
+
+    applicants: list[BatchApplicant] | None = None
+    batch_file: str | bytes | None = None
+
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+
+    @field_validator("batch_file")
+    def exactly_one_source(cls, value: object, info: object):
+        if value is None and not info.data.get("applicants"):
+            error = "provide either applicants or batch_file"
+            raise ValueError(error)
+        if value is not None and info.data.get("applicants"):
+            error = "provide applicants or batch_file, not both"
+            raise ValueError(error)
+        return value
+
+
+class BatchEnrollmentOutput(VcspResponse):
+    """Output class for batch enrolment.
+
+    The work happens asynchronously: this is the handle to follow it with `get_task` and
+    `get_task_result`.
+
+    Attributes:
+        task_id: The task the enrolments run under
+        created_at: When the task was accepted
+
+    """
+
+    task_id: str
+    created_at: str

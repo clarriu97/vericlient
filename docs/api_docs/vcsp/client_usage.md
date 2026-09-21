@@ -281,3 +281,89 @@ configuration = client.get_credential_configuration(
 )
 print(configuration.claims_schema)
 ```
+
+## Enrolling in bulk
+
+Batch enrolment is asynchronous: the service accepts the work and hands back a task to
+follow. The client builds the archive it expects, so you pass applicants rather than
+assembling a TAR yourself.
+
+```python
+from vericlient import VcspClient
+from vericlient.vcsp.models import (
+    Applicant,
+    BatchApplicant,
+    BatchEnrollmentInput,
+    TaskInput,
+)
+
+client = VcspClient(apikey="your_api_key")
+
+batch = client.enroll_batch(
+    BatchEnrollmentInput(
+        applicants=[
+            BatchApplicant(
+                sample="/path/to/alice.wav",
+                applicant=Applicant(
+                    subject_id="alice",
+                    credential_configuration_urn=configuration,
+                    assurance_method_urn=method,
+                    assurance={"authenticity_threshold": 0.5},
+                ),
+            ),
+            BatchApplicant(sample="/path/to/bob.wav", applicant=bob),
+        ],
+    ),
+)
+
+task = client.wait_for_task(TaskInput(task_id=batch.task_id), timeout=300)
+if not task.succeeded:
+    raise RuntimeError(f"batch finished as {task.status}")
+
+result = client.get_task_result(TaskInput(task_id=batch.task_id)).result
+print(result["summary"])  # {'total': 2, 'success': 2, 'error': 0}
+for item in result["report"]:
+    print(item["subject_id"], item["status"])
+```
+
+A batch can partly succeed: `summary` counts both outcomes and `report` carries one entry
+per applicant, so check the report rather than only the task status.
+
+`sample` takes a path or bytes, as everywhere else. `filename` sets the name inside the
+archive if you need it to be something particular; otherwise it is derived.
+
+## Following asynchronous work
+
+Anything that answers `202` runs as a task.
+
+```python
+from vericlient.vcsp.models import TaskInput, TaskStatus
+
+# Everything still running or recently finished
+for task in client.get_tasks().items:
+    print(f"{task.task_id}: {task.status} at {task.progress}%")
+
+# One task, checked once
+task = client.get_task(TaskInput(task_id=task_id))
+if task.status == TaskStatus.FAILED:
+    ...
+
+# Or block until it finishes
+task = client.wait_for_task(TaskInput(task_id=task_id), timeout=300, poll_interval=2)
+print(task.is_finished, task.succeeded)
+
+client.delete_task(TaskInput(task_id=task_id))
+```
+
+`wait_for_task` returns on failure as well as on success — check `succeeded` rather than
+assuming. It raises `TimeoutError` if the task is still running when the timeout expires.
+
+!!! note "`status` is a plain string"
+
+    `TaskStatus` exists to compare against, but the field is typed as `str` so a state the
+    service adds later does not break deserialisation.
+
+!!! tip "Tasks expire on their own"
+
+    The service drops a task and its result after thirty days. `delete_task` is there for
+    callers that would rather not wait.

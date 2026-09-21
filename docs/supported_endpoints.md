@@ -6,7 +6,7 @@ specifications rather than against memory.
 | API | Specification | Covered |
 |---|---|---|
 | das-Peak | [v2.33](https://docs.veridas.com/das-peak/cloud/v2.33/api/definition/) | **11 / 11** |
-| VCSP | [v1.17](https://docs.veridas.com/vcsp_echo/cloud/v1.17/api/definition/) | **22 / 31** |
+| VCSP | [v1.17](https://docs.veridas.com/vcsp_echo/cloud/v1.17/api/definition/) | **27 / 31** |
 | das-Face | [v2](https://docs.veridas.com/das-face/cloud/v3.26/api/definition/) | 0 / 14 |
 
 ---
@@ -37,7 +37,7 @@ Work in progress, tracked in [issue #3](https://github.com/clarriu97/vericlient/
 |---|---|
 | `GET /v1/alive` | `alive()` |
 | `POST /v1/enrollments` | `enroll_subject()` |
-| `POST /v1/enrollments/batch` | — |
+| `POST /v1/enrollments/batch` | `enroll_batch()` |
 | `GET /v1/accounts/{subject_id}` | `get_account()` |
 | `DELETE /v1/accounts/{subject_id}` | `delete_account()` |
 | `GET /v1/accounts/{subject_id}/credentials` | `get_all_subject_credentials()` |
@@ -62,10 +62,10 @@ Work in progress, tracked in [issue #3](https://github.com/clarriu97/vericlient/
 | `POST /v1/tags` | `create_tags()` |
 | `GET /v1/tags` | `get_tags()` |
 | `DELETE /v1/tags/{tag_name}` | `delete_tag()` |
-| `GET /v1/tasks` | — |
-| `GET /v1/tasks/{task_id}` | — |
-| `DELETE /v1/tasks/{task_id}` | — |
-| `GET /v1/tasks/{task_id}/result` | — |
+| `GET /v1/tasks` | `get_tasks()` |
+| `GET /v1/tasks/{task_id}` | `get_task()`, `wait_for_task()` |
+| `DELETE /v1/tasks/{task_id}` | `delete_task()` |
+| `GET /v1/tasks/{task_id}/result` | `get_task_result()` |
 
 ## das-Face
 

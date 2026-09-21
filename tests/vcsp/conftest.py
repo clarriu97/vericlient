@@ -310,6 +310,11 @@ def sweep_leftovers(vcsp_client, mock_server, writes_allowed, keep_resources) ->
                     vcsp_client.delete_tag(DeleteTagInput(name=tag.name))
                     logger.info("swept_tag", name=tag.name, when=when)
 
+        # Tasks are deliberately not swept. They carry no name to recognise ours by, the
+        # listing is subscription-wide, and deleting someone else's would be worse than
+        # leaving one behind. A leaked task expires on its own after thirty days; the tests
+        # that create one delete it in their own teardown.
+
     sweep("before")
     yield
     sweep("after")

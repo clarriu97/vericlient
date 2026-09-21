@@ -7,6 +7,10 @@ The project follows [semantic versioning](https://semver.org/).
 
 ### Added
 
+- **VCSP batch enrolment and task management**: `enroll_batch`, `get_tasks`, `get_task`,
+  `delete_task`, `get_task_result` and `wait_for_task`. Coverage reaches 27 of 31 endpoints.
+  The client builds the TAR archive batch enrolment expects, whose layout is documented
+  nowhere and was worked out from the service's error messages.
 - **VCSP credential listing and configuration lookup**: `list_credentials`,
   `delete_credentials`, `get_credential_sample` and `get_credential_configuration`. Coverage
   reaches 22 of the 31 endpoints.

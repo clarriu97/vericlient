@@ -232,3 +232,22 @@ class TagListEmptyError(VcspError):
     def __init__(self) -> None:
         message = "Tag list is empty"
         super().__init__(message)
+
+
+class TaskNotFoundError(VcspError):
+    """Exception raised when no task exists with the given identifier."""
+
+    def __init__(self) -> None:
+        message = "No task exists with that task_id."
+        super().__init__(message)
+
+
+class InvalidBatchFileError(VcspError):
+    """Exception raised when a batch enrolment archive cannot be processed."""
+
+    def __init__(self) -> None:
+        message = (
+            "The batch archive is not valid. It must be a TAR holding the samples and an "
+            "applicants.json whose entries reference them as file://<name>."
+        )
+        super().__init__(message)
