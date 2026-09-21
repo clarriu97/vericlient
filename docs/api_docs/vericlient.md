@@ -100,8 +100,8 @@ from vericlient import DaspeakClient
 
 os.environ["VERICLIENT_APIKEY"] = "from-the-environment"
 
-DaspeakClient()                       # uses "from-the-environment"
-DaspeakClient(apikey="explicit")      # uses "explicit"
+DaspeakClient()  # uses "from-the-environment"
+DaspeakClient(apikey="explicit")  # uses "explicit"
 ```
 
 !!! warning "Changed in 0.2.0"
