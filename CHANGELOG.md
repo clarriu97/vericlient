@@ -7,6 +7,9 @@ The project follows [semantic versioning](https://semver.org/).
 
 ### Added
 
+- **VCSP is now fully covered**: `match` for 1:1 and 1:N biometric matching, `modify_group`
+  to populate or empty a group, `modify_credential_tags`, and `start_clustering`. All 31
+  endpoints in the specification are reachable.
 - **VCSP batch enrolment and task management**: `enroll_batch`, `get_tasks`, `get_task`,
   `delete_task`, `get_task_result` and `wait_for_task`. Coverage reaches 27 of 31 endpoints.
   The client builds the TAR archive batch enrolment expects, whose layout is documented

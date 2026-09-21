@@ -791,17 +791,213 @@ class BatchEnrollmentInput(BaseModel):
         return value
 
 
-class BatchEnrollmentOutput(VcspResponse):
-    """Output class for batch enrolment.
+class TaskCreatedOutput(VcspResponse):
+    """Output class for any operation the service accepts and runs asynchronously.
 
-    The work happens asynchronously: this is the handle to follow it with `get_task` and
-    `get_task_result`.
+    Batch enrolment, clustering, and a large group population all answer this way. Follow the
+    work with `get_task` or `wait_for_task`, and collect it with `get_task_result`.
 
     Attributes:
-        task_id: The task the enrolments run under
+        task_id: The task the work runs under
         created_at: When the task was accepted
 
     """
 
     task_id: str
     created_at: str
+
+
+# The name batch enrolment used before other endpoints started answering the same way.
+BatchEnrollmentOutput = TaskCreatedOutput
+
+
+class SubjectClaimant(BaseModel):
+    """The reference for a 1:1 matching: one subject's credential.
+
+    Attributes:
+        subject_id: The subject to match against
+        credential_configuration_urn: Which of the subject's credentials to use
+        assurance_method_urn: The assurance method to apply
+        assurance: The values that method requires, such as `{"biometric_threshold": 0.5}`
+
+    """
+
+    subject_id: str
+    credential_configuration_urn: str
+    assurance_method_urn: str
+    assurance: dict
+
+
+class GroupClaimant(BaseModel):
+    """The reference for a 1:N matching: every credential in a group.
+
+    Attributes:
+        group_name: The group to match against
+        assurance_method_urn: The assurance method to apply
+        assurance: The values that method requires
+        limit: How many results to return, best first
+        filter: A JsonLogic expression narrowing the group, such as
+            `{"AND": [{"tag": "role:employee"}]}`
+
+    """
+
+    group_name: str
+    assurance_method_urn: str
+    assurance: dict
+    limit: int | None = None
+    filter: dict | None = None
+
+
+class MatchingInput(BaseModel):
+    """Input class for a matching operation.
+
+    Attributes:
+        sample: The biometric sample to match, as a path or as bytes
+        claimant: What to match it against — a `SubjectClaimant` for 1:1, a `GroupClaimant`
+            for 1:N
+        sample_processing: Options for reading the sample, such as `{"nchannel": 1}`
+        content_type: The media type to declare for the sample. Inferred when omitted
+
+    """
+
+    sample: str | bytes
+    claimant: SubjectClaimant | GroupClaimant
+    sample_processing: dict | None = None
+    content_type: str | None = None
+
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+
+
+class MatchingResult(BaseModel):
+    """One candidate a matching operation scored.
+
+    Attributes:
+        subject_id: The subject the matched credential belongs to
+        biometrics_score: How closely the sample matched, from 0 to 1
+        match_status: `HIT` or `MISS`, against the assurance thresholds
+
+    """
+
+    subject_id: str
+    biometrics_score: float
+    match_status: str
+
+
+class MatchedSample(BaseModel):
+    """What the service made of the sample it was given.
+
+    Attributes:
+        type: `voice` or `face`
+        content_type: The media type it was read as
+        analysis: Quality figures, such as net speech duration or an authenticity score
+        sample_processing: The processing options that were applied
+
+    """
+
+    type: str
+    content_type: str
+    analysis: dict
+    sample_processing: dict | None = None
+
+
+class MatchingOutput(VcspResponse):
+    """Output class for a matching operation.
+
+    Attributes:
+        results: The candidates, best first
+        nhits: How many of them are a `HIT`
+        sample: What the service made of the sample
+
+    """
+
+    results: list[MatchingResult]
+    nhits: int
+    sample: MatchedSample
+
+
+class GroupAction(StrEnum):
+    """The actions `modify_group` can perform."""
+
+    POPULATE = "populate"
+    REMOVE = "remove"
+    UPDATE_INFO = "update_info"
+
+
+class GroupMembershipSource(BaseModel):
+    """Which credentials a populate or remove applies to.
+
+    At least one of the two is required.
+
+    Attributes:
+        subjects: Subject ids whose credentials to add or remove
+        tags: Tags whose credentials to add or remove
+
+    """
+
+    subjects: list[str] | None = None
+    tags: list[str] | None = None
+
+
+class ModifyGroupInput(GroupInput):
+    """Input class for modifying a group.
+
+    Attributes:
+        name: The group to modify
+        action: `populate`, `remove` or `update_info`
+        from_: Which credentials to add or remove. Required for populate and remove, and
+            serialised as `from`, which is a reserved word in Python
+        credential_ttl: How long added credentials stay in the group, as an ISO 8601
+            duration such as `P30D`
+        description: A new description, for `update_info`
+        expired_at: A new retention period, for `update_info`, as an ISO 8601 duration
+
+    """
+
+    action: str
+    from_: GroupMembershipSource | None = Field(default=None, alias="from")
+    credential_ttl: str | None = None
+    description: str | None = None
+    expired_at: str | None = None
+
+    model_config = ConfigDict(populate_by_name=True)
+
+
+class CredentialTagAction(StrEnum):
+    """The actions `modify_credential_tags` can perform."""
+
+    ADD = "add"
+    REMOVE = "remove"
+
+
+class ModifyCredentialTagsInput(SubjectInput, CredentialInput):
+    """Input class for changing the tags on a credential.
+
+    Attributes:
+        subject_id: The subject the credential belongs to
+        credential_id: The credential to change
+        action: `add` or `remove`
+        tags: The tags to add or remove. They must already exist in the system
+
+    """
+
+    action: str
+    tags: list[str]
+
+
+class ClusteringInput(GroupInput):
+    """Input class for starting a clustering task on a group.
+
+    Clustering is only supported for groups of face credentials; a voice group is rejected
+    with `ClusteringNotSupportedError`.
+
+    Attributes:
+        name: The group to cluster
+        assurance_method_urn: The clustering assurance method to apply
+        properties: The values that method requires, such as
+            `{"similarity_threshold": 0.5, "mode": "similarity_based"}`. Note the service
+            calls this `properties`, not `assurance` as everywhere else
+
+    """
+
+    assurance_method_urn: str
+    properties: dict

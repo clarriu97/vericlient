@@ -8,6 +8,7 @@ from tests.vcsp.conftest import SUBJECT_PREFIX, TEST_TAG, unique_group_name
 from vericlient.vcsp.exceptions import (
     AccountNotFoundError,
     AssuranceMethodNotFoundError,
+    ClusteringNotSupportedError,
     InvalidBatchFileError,
     TaskNotFoundError,
     UnsupportedMediaTypeError,
@@ -17,9 +18,11 @@ from vericlient.vcsp.models import (
     AssuranceMethodInput,
     BatchApplicant,
     BatchEnrollmentInput,
+    ClusteringInput,
     CreateGroupInput,
     CreateTagsInput,
     CredentialConfigurationInput,
+    CredentialTagAction,
     DeleteAccountInput,
     DeleteCredentialInput,
     DeleteCredentialsInput,
@@ -33,7 +36,14 @@ from vericlient.vcsp.models import (
     GetGroupInput,
     GetGroupMembersInput,
     GetGroupsInput,
+    GroupAction,
+    GroupClaimant,
+    GroupMembershipSource,
     ListCredentialsInput,
+    MatchingInput,
+    ModifyCredentialTagsInput,
+    ModifyGroupInput,
+    SubjectClaimant,
     TaskInput,
 )
 
@@ -771,3 +781,128 @@ def test_real_batch_rejects_something_that_is_not_an_archive(real_writes):
     """
     with pytest.raises(UnsupportedMediaTypeError):
         real_writes.enroll_batch(data_model=BatchEnrollmentInput(batch_file=b"not a tar archive"))
+
+
+@pytest.mark.vcsp
+def test_real_populate_a_group_and_match_against_it(
+    real_writes,
+    temp_group,
+    temp_subject,
+    audio_file,
+    matching_assurance_method,
+):
+    """The whole 1:N path: put a credential in a group, then match a sample against it.
+
+    This is what groups are for, so it is worth exercising as one flow rather than as two
+    endpoints that each returned a 200.
+    """
+    subject_id, credential_id = temp_subject
+
+    group = real_writes.modify_group(
+        data_model=ModifyGroupInput(
+            name=temp_group,
+            action=GroupAction.POPULATE,
+            from_=GroupMembershipSource(subjects=[subject_id]),
+        ),
+    )
+    assert group.size == 1
+
+    members = real_writes.get_group_members(data_model=GetGroupMembersInput(name=temp_group))
+    assert [member.credential_id for member in members.items] == [credential_id]
+    assert members.items[0].subject_id == subject_id
+
+    matched = real_writes.match(
+        data_model=MatchingInput(
+            sample=audio_file,
+            claimant=GroupClaimant(
+                group_name=temp_group,
+                assurance_method_urn=matching_assurance_method,
+                assurance={"biometric_threshold": 0.5},
+                limit=5,
+            ),
+        ),
+    )
+    assert matched.nhits == 1
+    assert matched.results[0].subject_id == subject_id
+    assert matched.results[0].match_status == "HIT"
+    assert matched.sample.type == "voice"
+
+    # And removing it empties the group again.
+    emptied = real_writes.modify_group(
+        data_model=ModifyGroupInput(
+            name=temp_group,
+            action=GroupAction.REMOVE,
+            from_=GroupMembershipSource(subjects=[subject_id]),
+        ),
+    )
+    assert emptied.size == 0
+
+
+@pytest.mark.vcsp
+def test_real_one_to_one_matching(
+    real_writes,
+    temp_subject,
+    audio_file,
+    voice_credential_configuration,
+    matching_assurance_method,
+):
+    """Matching a sample against the subject it was enrolled with is a hit."""
+    subject_id, _ = temp_subject
+
+    matched = real_writes.match(
+        data_model=MatchingInput(
+            sample=audio_file,
+            claimant=SubjectClaimant(
+                subject_id=subject_id,
+                credential_configuration_urn=voice_credential_configuration,
+                assurance_method_urn=matching_assurance_method,
+                assurance={"biometric_threshold": 0.5},
+            ),
+        ),
+    )
+
+    assert matched.nhits == 1
+    assert matched.results[0].subject_id == subject_id
+    assert matched.results[0].biometrics_score > 0.5
+    assert matched.sample.analysis["net_speech_duration"] > 3
+
+
+@pytest.mark.vcsp
+def test_real_credential_tags_can_be_added_and_removed(real_writes, temp_subject, shared_test_tag):
+    """Tags move on and off a credential, and the credential comes back each time."""
+    subject_id, credential_id = temp_subject
+    target = ModifyCredentialTagsInput(
+        subject_id=subject_id,
+        credential_id=credential_id,
+        action=CredentialTagAction.REMOVE,
+        tags=[shared_test_tag],
+    )
+
+    without = real_writes.modify_credential_tags(data_model=target)
+    assert shared_test_tag not in without.tags
+
+    target.action = CredentialTagAction.ADD
+    restored = real_writes.modify_credential_tags(data_model=target)
+    assert shared_test_tag in restored.tags
+    assert restored.id == credential_id
+
+
+@pytest.mark.vcsp
+def test_real_clustering_is_refused_for_a_voice_group(
+    real_writes,
+    temp_group,
+    clustering_assurance_method,
+):
+    """Clustering only runs on face credentials, and says so rather than failing obscurely.
+
+    A face group would need a face fixture, which this repository does not have yet, so this
+    pins the rejection instead.
+    """
+    with pytest.raises(ClusteringNotSupportedError):
+        real_writes.start_clustering(
+            data_model=ClusteringInput(
+                name=temp_group,
+                assurance_method_urn=clustering_assurance_method,
+                properties={"similarity_threshold": 0.5, "mode": "similarity_based"},
+            ),
+        )

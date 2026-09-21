@@ -251,3 +251,11 @@ class InvalidBatchFileError(VcspError):
             "applicants.json whose entries reference them as file://<name>."
         )
         super().__init__(message)
+
+
+class ClusteringNotSupportedError(VcspError):
+    """Exception raised when clustering is requested on a group it cannot run on."""
+
+    def __init__(self) -> None:
+        message = "Clustering is only supported for groups of face credentials."
+        super().__init__(message)
