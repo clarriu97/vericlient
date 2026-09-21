@@ -51,6 +51,20 @@ behaviour that was either wrong or impossible to use.
 - `EnrollmentInput.content_type`, for when the sniffed media type will not do.
 - `utils.guess_content_type`.
 
+### Documentation
+
+- A real quickstart on the home page, which previously held a `pip install` line and a link.
+- **Supported endpoints** page, with per-API coverage checked against the OpenAPI
+  specifications rather than claimed from memory.
+- **Error handling** page describing the exception tree, which until now was only dumped by
+  mkdocstrings with no explanation.
+- The VCSP usage page grew from a single `alive()` example to cover everything implemented.
+- Light and dark themes, copy buttons on code blocks, and a navigation that separates usage
+  from API reference.
+- `mkdocs build --strict`, so a broken internal link fails CI.
+- Removed a reference to a `javascripts/extra.js` that is not in the repository and was
+  404ing on every page.
+
 ### Internal
 
 - Every dependency refreshed; no known vulnerabilities in the resolved set.

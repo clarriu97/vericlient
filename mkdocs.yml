@@ -3,14 +3,17 @@ site_url: https://clarriu97.github.io/vericlient/
 repo_url: https://github.com/clarriu97/vericlient
 repo_name: clarriu97/vericlient
 nav:
-  - Get Started: index.md
+  - Get started: index.md
+  - Supported endpoints: supported_endpoints.md
+  - Configuration: api_docs/vericlient.md
+  - Error handling: errors.md
+  - Usage:
+    - das-Peak: api_docs/daspeak/client_usage.md
+    - VCSP: api_docs/vcsp/client_usage.md
+  - API reference:
+    - das-Peak: api_docs/daspeak/client.md
+    - VCSP: api_docs/vcsp/client.md
   - Changelog: CHANGELOG.md
-  - API Documentation:
-    - Vericlient: api_docs/vericlient.md
-    - Daspeak client docs: api_docs/daspeak/client.md
-    - Daspeak client usage: api_docs/daspeak/client_usage.md
-    - VCSP client docs: api_docs/vcsp/client.md
-    - VCSP client usage: api_docs/vcsp/client_usage.md
 
 plugins:
   - search
@@ -26,6 +29,7 @@ markdown_extensions:
   - toc:
       permalink: true
   - admonition
+  - tables
   - codehilite
   - footnotes
   - meta
@@ -36,16 +40,26 @@ markdown_extensions:
 extra_css:
   - stylesheets/extra.css
 
-extra_javascript:
-  - javascripts/extra.js
 
 theme:
   name: material
   language: en
   palette:
-    scheme: slate
-    primary: pink
-    accent: pink
+    # Follow the reader's system setting, and let them override it.
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: pink
+      accent: pink
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: pink
+      accent: pink
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
   font:
     text: Roboto
     code: Roboto Mono
@@ -53,6 +67,8 @@ theme:
     - navigation.instant
     - navigation.sections
     - navigation.top
+    - navigation.footer
+    - content.code.copy
     - navigation.tabs
     - search.highlight
     - search.share

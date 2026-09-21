@@ -58,7 +58,7 @@ lint-fix = "ruff check . --fix"
 format = "ruff format ."
 format-check = "ruff format --check ."
 docs-serve = "mkdocs serve"
-docs-build = "mkdocs build"
+docs-build = "mkdocs build --strict"
 audit = { shell = """
     pdm export -dG:all -f requirements --without-hashes -o /tmp/vericlient-audit.txt \
     && pip-audit --requirement /tmp/vericlient-audit.txt --no-deps --disable-pip \
