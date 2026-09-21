@@ -12,6 +12,7 @@ from vericlient.daspeak.exceptions import (
     CalibrationNotAvailableError,
     InsufficientQualityError,
     InvalidSpecifiedChannelError,
+    ModelNotAvailableError,
     NetSpeechDurationIsNotEnoughError,
     SignalNoiseRatioError,
     TooManyAudioChannelsError,
@@ -33,6 +34,12 @@ from vericlient.daspeak.models import (
     CompareInput,
     GenerateCredentialInput,
     GenerateCredentialOutput,
+    GetModelCalibrationsInput,
+    GetModelCalibrationsOutput,
+    GetModelMetadataFromCredentialInput,
+    GetModelMetadataFromCredentialOutput,
+    GetModelMetadataInput,
+    GetModelMetadataOutput,
     ModelsOutput,
 )
 from vericlient.exceptions import InvalidCredentialError, UnsupportedMediaTypeError
@@ -82,6 +89,7 @@ class DaspeakClient(Client):
             "ServerError",
             "InvalidCredential",
             "UnsupportedMediaType",
+            "ModelNotAvailable",
         ]
         self._compare_functions_map = {
             CompareCredential2AudioInput: self._compare_credential2audio,
@@ -98,6 +106,7 @@ class DaspeakClient(Client):
             "CalibrationNotAvailable": self._handle_calibration_error,
             "InvalidCredential": InvalidCredentialError,
             "UnsupportedMediaType": UnsupportedMediaTypeError,
+            "ModelNotAvailable": self._handle_model_not_available_error,
         }
         self._audio_input_errors = {
             "more channels than": TooManyAudioChannelsError,
@@ -145,6 +154,11 @@ class DaspeakClient(Client):
         net_speech_detected = float(error_message.split(" ")[-3].replace("s", ""))
         raise NetSpeechDurationIsNotEnoughError(net_speech_detected)
 
+    def _handle_model_not_available_error(self, response_json: dict) -> None:
+        error_message = response_json.get("error", "")
+        model_hash = error_message.rsplit(" ", 1)[-1]
+        raise ModelNotAvailableError(model_hash)
+
     def _handle_calibration_error(self, response_json: dict) -> None:
         error_message = response_json.get("error", "")
         calibration = str(error_message.split(" ")[2])
@@ -159,6 +173,72 @@ class DaspeakClient(Client):
         """
         response = self._get(endpoint=DaspeakEndpoints.MODELS.value)
         return ModelsOutput(status_code=response.status_code, **response.json())
+
+    def get_model_metadata(self, data_model: GetModelMetadataInput) -> GetModelMetadataOutput:
+        """Get the metadata of a biometrics model.
+
+        Args:
+            data_model: The hash of the model to describe
+
+        Returns:
+            The response from the service
+
+        Raises:
+            ModelNotAvailableError: If no model exists with that hash
+
+        """
+        response = self._post(
+            endpoint=DaspeakEndpoints.MODELS_METADATA.value,
+            data={"hash": data_model.hash},
+        )
+        return GetModelMetadataOutput(status_code=response.status_code, **response.json())
+
+    def get_model_calibrations(self, data_model: GetModelCalibrationsInput) -> GetModelCalibrationsOutput:
+        """Get the calibration modes a biometrics model supports.
+
+        Any of the returned values is valid as the `calibration` argument of
+        `generate_credential` and of the comparison inputs.
+
+        Args:
+            data_model: The hash of the model to list the calibrations of
+
+        Returns:
+            The response from the service
+
+        Raises:
+            ModelNotAvailableError: If no model exists with that hash
+
+        """
+        response = self._post(
+            endpoint=DaspeakEndpoints.MODELS_CALIBRATION.value,
+            data={"hash": data_model.hash},
+        )
+        return GetModelCalibrationsOutput(status_code=response.status_code, **response.json())
+
+    def get_model_metadata_from_credential(
+        self,
+        data_model: GetModelMetadataFromCredentialInput,
+    ) -> GetModelMetadataFromCredentialOutput:
+        """Get the metadata of the model a credential was generated with.
+
+        Useful to find out whether a stored credential is still compatible with the models
+        the service currently offers.
+
+        Args:
+            data_model: The credential to read the originating model from
+
+        Returns:
+            The response from the service
+
+        Raises:
+            InvalidCredentialError: If the credential is not valid
+
+        """
+        response = self._post(
+            endpoint=DaspeakEndpoints.MODELS_METADATA_FROM_CREDENTIAL.value,
+            data={"credential": data_model.credential},
+        )
+        return GetModelMetadataFromCredentialOutput(status_code=response.status_code, **response.json())
 
     def generate_credential(self, data_model: GenerateCredentialInput) -> GenerateCredentialOutput:
         """Generate a credential from a WAV file.

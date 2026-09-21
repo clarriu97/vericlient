@@ -6,6 +6,7 @@ from vericlient.daspeak.exceptions import (
     CalibrationNotAvailableError,
     InsufficientQualityError,
     InvalidSpecifiedChannelError,
+    ModelNotAvailableError,
     NetSpeechDurationIsNotEnoughError,
     SignalNoiseRatioError,
     TooManyAudioChannelsError,
@@ -274,6 +275,110 @@ def daspeak_alive_parameters(
         daspeak_alive_response,
         200,
         None,
+        service_name,
+    )
+
+
+@pytest.fixture(scope="session")
+def daspeak_model_metadata_response():
+    return {
+        "version": "1.0",
+        "metadata": {"hash": "fake-hash", "description": "2025Q2"},
+    }
+
+
+@pytest.fixture(scope="session")
+def daspeak_model_calibrations_response():
+    return {
+        "version": "1.0",
+        "calibrations": ["lossless-audio", "telephone-channel", "no-calibration"],
+    }
+
+
+@pytest.fixture(scope="session")
+def daspeak_model_not_available_response():
+    return {
+        "error": "The model is not available: not-a-real-hash",
+        "exception": "ModelNotAvailable",
+    }
+
+
+@pytest.fixture(scope="session")
+def daspeak_get_model_metadata_parameters(
+    mock_option,
+    test_environment,
+    all_environments,
+    daspeak_model_metadata_response,
+    service_name,
+) -> list:
+    return provide_testing_parameters(
+        test_environment,
+        all_environments,
+        mock_option,
+        "daspeak/v1/models/metadata",
+        daspeak_model_metadata_response,
+        200,
+        None,
+        service_name,
+    )
+
+
+@pytest.fixture(scope="session")
+def daspeak_get_model_calibrations_parameters(
+    mock_option,
+    test_environment,
+    all_environments,
+    daspeak_model_calibrations_response,
+    service_name,
+) -> list:
+    return provide_testing_parameters(
+        test_environment,
+        all_environments,
+        mock_option,
+        "daspeak/v1/models/calibration",
+        daspeak_model_calibrations_response,
+        200,
+        None,
+        service_name,
+    )
+
+
+@pytest.fixture(scope="session")
+def daspeak_get_model_metadata_from_credential_parameters(
+    mock_option,
+    test_environment,
+    all_environments,
+    daspeak_model_metadata_response,
+    service_name,
+) -> list:
+    return provide_testing_parameters(
+        test_environment,
+        all_environments,
+        mock_option,
+        "daspeak/v1/models/metadata/from-credential",
+        daspeak_model_metadata_response,
+        200,
+        None,
+        service_name,
+    )
+
+
+@pytest.fixture(scope="session")
+def daspeak_model_not_available_parameters(
+    mock_option,
+    test_environment,
+    all_environments,
+    daspeak_model_not_available_response,
+    service_name,
+) -> list:
+    return provide_testing_parameters(
+        test_environment,
+        all_environments,
+        mock_option,
+        "daspeak/v1/models/metadata",
+        daspeak_model_not_available_response,
+        400,
+        ModelNotAvailableError,
         service_name,
     )
 

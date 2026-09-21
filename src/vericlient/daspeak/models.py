@@ -28,6 +28,85 @@ class ModelsOutput(DaspeakResponse):
     models: list
 
 
+class BiometricsModelMetadata(BaseModel):
+    """Metadata describing a biometrics model.
+
+    Attributes:
+        hash: The hash that identifies the model
+        description: The human readable description of the model, such as its release
+
+    """
+
+    hash: str
+    description: str
+
+
+class GetModelMetadataInput(BaseModel):
+    """Input class for the model metadata endpoint.
+
+    Attributes:
+        hash: The hash of the biometrics model to describe
+
+    """
+
+    hash: str
+
+
+class GetModelMetadataOutput(DaspeakResponse):
+    """Output class for the model metadata endpoint.
+
+    Attributes:
+        metadata: The metadata of the model
+
+    """
+
+    metadata: BiometricsModelMetadata
+
+
+class GetModelCalibrationsInput(BaseModel):
+    """Input class for the model calibration endpoint.
+
+    Attributes:
+        hash: The hash of the biometrics model to list the calibrations of
+
+    """
+
+    hash: str
+
+
+class GetModelCalibrationsOutput(DaspeakResponse):
+    """Output class for the model calibration endpoint.
+
+    Attributes:
+        calibrations: The calibration modes the model supports
+
+    """
+
+    calibrations: list[str]
+
+
+class GetModelMetadataFromCredentialInput(BaseModel):
+    """Input class for the model metadata from credential endpoint.
+
+    Attributes:
+        credential: The credential to read the originating model from
+
+    """
+
+    credential: str
+
+
+class GetModelMetadataFromCredentialOutput(DaspeakResponse):
+    """Output class for the model metadata from credential endpoint.
+
+    Attributes:
+        metadata: The metadata of the model the credential was generated with
+
+    """
+
+    metadata: BiometricsModelMetadata
+
+
 class GenerateCredentialInput(BaseModel):
     """Input class for the generate credential endpoint.
 
