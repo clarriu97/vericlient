@@ -1,0 +1,68 @@
+name: Bug report
+description: Something in the client does not behave as documented
+labels: [bug]
+body:
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What you did, and what the client did instead of what you expected.
+      placeholder: |
+        Calling `DaspeakClient(apikey="x")` ignores the argument when VERICLIENT_APIKEY is set.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: How to reproduce
+      description: The smallest snippet that shows the problem. Never paste a real API key.
+      render: python
+    validations:
+      required: true
+
+  - type: textarea
+    id: traceback
+    attributes:
+      label: Traceback or response
+      description: The full traceback, or the API response you got back.
+      render: text
+
+  - type: input
+    id: version
+    attributes:
+      label: vericlient version
+      placeholder: "0.1.6"
+    validations:
+      required: true
+
+  - type: input
+    id: python
+    attributes:
+      label: Python version
+      placeholder: "3.12.7"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: api
+    attributes:
+      label: Which API
+      options:
+        - das-Peak
+        - VCSP
+        - das-Face
+        - Not API specific
+    validations:
+      required: true
+
+  - type: dropdown
+    id: target
+    attributes:
+      label: Target
+      options:
+        - Cloud sandbox
+        - Cloud production
+        - Self-hosted
+    validations:
+      required: true
