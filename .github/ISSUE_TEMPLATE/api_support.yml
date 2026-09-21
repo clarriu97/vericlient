@@ -1,0 +1,45 @@
+name: API support
+description: Add support for a Veridas API or for endpoints of an API already covered
+labels: [enhancement]
+body:
+  - type: dropdown
+    id: api
+    attributes:
+      label: Which API
+      options:
+        - das-Peak
+        - VCSP
+        - das-Face
+        - vali-Das
+        - eSign
+        - Other
+    validations:
+      required: true
+
+  - type: input
+    id: spec
+    attributes:
+      label: OpenAPI specification
+      description: Link to the versioned API definition this issue is written against.
+      placeholder: https://docs.veridas.com/vcsp_echo/cloud/v1.17/api/definition/
+    validations:
+      required: true
+
+  - type: textarea
+    id: endpoints
+    attributes:
+      label: Endpoints
+      description: >
+        One checkbox per operation, method and path, checked against the specification
+        above. Keep it exhaustive, so coverage can be read off the issue.
+      value: |
+        - [ ] `GET /v1/...`
+        - [ ] `POST /v1/...`
+    validations:
+      required: true
+
+  - type: textarea
+    id: notes
+    attributes:
+      label: Notes
+      description: Anything that affects the design, such as a different path version or async endpoints.

@@ -1,0 +1,24 @@
+name: Feature request
+description: Suggest an improvement to the client
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: The problem
+      description: What is awkward or impossible today? Describe the situation, not the solution.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What you would like instead
+      description: If you have an API in mind, sketch it.
+      render: python
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: What you are doing meanwhile
+      description: Workarounds you have in place, if any.

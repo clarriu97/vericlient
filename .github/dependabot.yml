@@ -1,0 +1,24 @@
+version: 2
+
+# Note: there is no `pip` entry on purpose. Dependabot's Python support covers pip,
+# pipenv, pip-compile and poetry, but not PDM: it would bump `pyproject.toml` without
+# regenerating `pdm.lock`, and every job would then fail on an out-of-date lockfile.
+# Python dependencies are handled by .github/workflows/dependencies.yml instead.
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: Europe/Madrid
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "ci"
+    labels:
+      - ci
+      - maintenance
+    groups:
+      actions:
+        patterns:
+          - "*"

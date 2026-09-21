@@ -1,0 +1,59 @@
+name: Dependencies
+
+# Dependabot cannot update a PDM project (see .github/dependabot.yml), so the refresh is
+# done here: relock, verify, and open a single pull request with the result.
+on:
+  schedule:
+    - cron: '0 5 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  update:
+    name: Update the lockfile
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: pdm-project/setup-pdm@v4
+        with:
+          python-version: '3.12'
+          cache: true
+
+      # The lock target is capped while dynaconf is still a dependency; see #20.
+      - name: Update the lockfile
+        run: pdm update --update-eager --no-sync -G:all --python ">=3.11,<3.15"
+
+      - name: Install the new set
+        run: pdm install --dev
+
+      - name: Verify
+        run: |
+          pdm run lint
+          pdm run format-check
+          pdm run test
+
+      - name: Audit
+        run: pdm run audit
+
+      - name: Open a pull request
+        uses: peter-evans/create-pull-request@v8
+        with:
+          branch: chore/update-dependencies
+          delete-branch: true
+          title: "Update Python dependencies"
+          commit-message: "Update Python dependencies"
+          labels: |
+            maintenance
+          body: |
+            Weekly `pdm update` run. Lint, code style, the test suite and the dependency
+            audit all passed against the updated set before this pull request was opened.
+
+            Review the `pdm.lock` diff for anything unexpected, then merge.
+          add-paths: |
+            pdm.lock
