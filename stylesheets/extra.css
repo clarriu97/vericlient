@@ -1,12 +1,138 @@
+/* ---------------------------------------------------------------------------
+   Palette
+   Material's `custom` scheme reads these variables, so both light and dark get
+   the same accent without fighting the theme's own colours.
+   --------------------------------------------------------------------------- */
 
-.md-typeset .md-content__button {
-    color: #e92063;
+:root {
+  --vc-pink: #e92063;
+  --vc-pink-light: #f45c8c;
+  --vc-pink-dark: #c2124d;
 }
 
-.md-header, .md-footer {
-    background-color: #e92063;
+[data-md-color-scheme="default"] {
+  --md-primary-fg-color: #1b1b23;
+  --md-primary-fg-color--light: #33333f;
+  --md-primary-fg-color--dark: #101016;
+  --md-primary-bg-color: #ffffff;
+  --md-primary-bg-color--light: rgba(255, 255, 255, 0.72);
+
+  --md-accent-fg-color: var(--vc-pink);
+  --md-accent-fg-color--transparent: rgba(233, 32, 99, 0.1);
+
+  --md-typeset-a-color: var(--vc-pink-dark);
 }
 
-.md-nav__title, .md-nav__button {
-    color: #e92063;
+[data-md-color-scheme="slate"] {
+  --md-hue: 248;
+
+  --md-primary-fg-color: #14141a;
+  --md-primary-fg-color--light: #24242e;
+  --md-primary-fg-color--dark: #0d0d11;
+  --md-primary-bg-color: #ffffff;
+
+  --md-accent-fg-color: var(--vc-pink-light);
+  --md-accent-fg-color--transparent: rgba(244, 92, 140, 0.12);
+
+  --md-typeset-a-color: var(--vc-pink-light);
+  --md-default-bg-color: #16161d;
+  --md-code-bg-color: #1d1d26;
+}
+
+/* ---------------------------------------------------------------------------
+   Typography
+   --------------------------------------------------------------------------- */
+
+.md-typeset h1 {
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--md-default-fg-color);
+}
+
+.md-typeset h2 {
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  margin-top: 2.2em;
+  padding-top: 0.4em;
+  border-top: 1px solid var(--md-default-fg-color--lightest);
+}
+
+.md-typeset h3 {
+  font-weight: 600;
+}
+
+/* The header sits on a near-black bar in both schemes, so keep the accent bar
+   underneath it rather than colouring the whole thing. */
+.md-header {
+  box-shadow: inset 0 -2px 0 var(--md-accent-fg-color);
+}
+
+.md-tabs {
+  border-bottom: none;
+}
+
+/* ---------------------------------------------------------------------------
+   Tables
+   The endpoint coverage and exception pages are mostly tables, so they get to
+   look deliberate rather than default.
+   --------------------------------------------------------------------------- */
+
+.md-typeset table:not([class]) {
+  border: 1px solid var(--md-default-fg-color--lightest);
+  border-radius: 0.4rem;
+  overflow: hidden;
+  font-size: 0.74rem;
+}
+
+.md-typeset table:not([class]) th {
+  background-color: var(--md-default-fg-color--lightest);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.md-typeset table:not([class]) tr:hover {
+  background-color: var(--md-accent-fg-color--transparent);
+}
+
+.md-typeset table:not([class]) code {
+  white-space: nowrap;
+}
+
+/* ---------------------------------------------------------------------------
+   Code
+   --------------------------------------------------------------------------- */
+
+.md-typeset pre > code {
+  border-radius: 0.4rem;
+}
+
+.md-typeset code {
+  border-radius: 0.2rem;
+}
+
+/* ---------------------------------------------------------------------------
+   Admonitions: flatter, less sticker-like
+   --------------------------------------------------------------------------- */
+
+.md-typeset .admonition,
+.md-typeset details {
+  border-width: 0;
+  border-left-width: 3px;
+  border-radius: 0.3rem;
+  box-shadow: none;
+  background-color: var(--md-code-bg-color);
+  font-size: 0.72rem;
+}
+
+/* ---------------------------------------------------------------------------
+   API reference: keep the generated signatures readable
+   --------------------------------------------------------------------------- */
+
+.doc-heading code {
+  font-size: 0.78em;
+}
+
+.doc-symbol-parameter,
+.doc-symbol-attribute {
+  font-size: 0.68rem;
 }
