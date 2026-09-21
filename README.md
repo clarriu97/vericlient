@@ -89,11 +89,14 @@ print(client.alive())
 
 # Configuration
 
-The library can be configured using environment variables.
-The following variables are supported:
+Every setting can be passed to the client constructor or read from an environment
+variable. The constructor argument wins, the environment fills in what you left out, and
+the library falls back to its own default.
 
-- `VERICLIENT_ENVIRONMENT`: The environment to use for the requests (default: `sandbox`).
-- `VERICLIENT_APIKEY`: The API key to use for the requests against the Veridas Cloud API.
-- `VERICLIENT_LOCATION`: The location to use for the requests (default: `eu`).
-- `VERICLIENT_URL`: In case you want to use a self-hosted API, you can set the URL with this variable.
-- `VERICLIENT_TIMEOUT`: The timeout for the requests (default: `10`).
+| Variable | Sets | Default |
+|---|---|---|
+| `VERICLIENT_APIKEY` | The API key used against the Veridas cloud | none |
+| `VERICLIENT_ENVIRONMENT` | `sandbox` or `production` | `sandbox` |
+| `VERICLIENT_LOCATION` | `eu` or `us` | `eu` |
+| `VERICLIENT_URL` | A self-hosted URL, which replaces the cloud entirely | none |
+| `VERICLIENT_TIMEOUT` | The request timeout in seconds | `10` |

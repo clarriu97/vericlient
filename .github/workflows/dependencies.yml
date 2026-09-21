@@ -25,9 +25,8 @@ jobs:
           python-version: '3.12'
           cache: true
 
-      # The lock target is capped while dynaconf is still a dependency; see #20.
       - name: Update the lockfile
-        run: pdm update --update-eager --no-sync -G:all --python ">=3.11,<3.15"
+        run: pdm update --update-eager --no-sync -G:all
 
       - name: Install the new set
         run: pdm install --dev

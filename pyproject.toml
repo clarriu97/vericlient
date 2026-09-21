@@ -1,6 +1,6 @@
 [project]
 name = "vericlient"
-version = "0.1.6"
+version = "0.2.0"
 description = "Provides a simple and robust interaction with Veridas APIs."
 authors = [
     {name = "Carlos Larriu", email = "larriucarlos@gmail.com"},
@@ -9,7 +9,7 @@ dependencies = [
     "pydantic>=2.13",
     "structlog>=25.4",
     "requests>=2.34.2",
-    "dynaconf>=3.3.5",
+    "pydantic-settings>=2.12",
 ]
 requires-python = ">=3.11"
 readme = "README.md"

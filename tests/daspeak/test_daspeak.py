@@ -31,7 +31,7 @@ def test_daspeak_alive(mock_server, daspeak_alive_parameters):
             mock_server.get(endpoint, json=mock_response, status_code=mock_status_code)
 
         daspeak_client = DaspeakClient(
-            apikey="fake-apikey",
+            apikey="fake-apikey" if mock_server else None,
             environment=environment,
             location=location,
             url=url,
@@ -49,7 +49,7 @@ def test_daspeak_get_models(mock_server, daspeak_get_models_parameters):
             mock_server.get(endpoint, json=mock_response, status_code=mock_status_code)
 
         daspeak_client = DaspeakClient(
-            apikey="fake-apikey",
+            apikey="fake-apikey" if mock_server else None,
             environment=environment,
             location=location,
             url=url,
@@ -67,7 +67,7 @@ def test_daspeak_generate_credential(mock_server, daspeak_generate_credential_pa
     for param in daspeak_generate_credential_parameters:
         endpoint, mock_response, mock_status_code, url, environment, location, _ = param
         daspeak_client = DaspeakClient(
-            apikey="fake-apikey",
+            apikey="fake-apikey" if mock_server else None,
             environment=environment,
             location=location,
             url=url,
@@ -101,7 +101,7 @@ def _test_error(  # noqa: ANN202
     for param in daspeak_generate_credential_error_response_parameters:
         endpoint, mock_response, mock_status_code, url, environment, location, exception = param
         daspeak_client = DaspeakClient(
-            apikey="fake-apikey",
+            apikey="fake-apikey" if mock_server else None,
             environment=environment,
             location=location,
             url=url,
@@ -220,7 +220,7 @@ def test_daspeak_generate_credential_invalid_specified_channel_error(
     for param in daspeak_generate_credential_invalid_specified_channel_error_response_parameters:
         endpoint, mock_response, mock_status_code, url, environment, location, exception = param
         daspeak_client = DaspeakClient(
-            apikey="fake-apikey",
+            apikey="fake-apikey" if mock_server else None,
             environment=environment,
             location=location,
             url=url,
@@ -249,7 +249,7 @@ def test_daspeak_generate_credential_calibration_not_available_error(
     for param in daspeak_generate_credential_calibration_not_available_error_response_parameters:
         endpoint, mock_response, mock_status_code, url, environment, location, exception = param
         daspeak_client = DaspeakClient(
-            apikey="fake-apikey",
+            apikey="fake-apikey" if mock_server else None,
             environment=environment,
             location=location,
             url=url,
@@ -291,7 +291,7 @@ def test_daspeak_server_error(
     for param in daspeak_server_error_response_parameters:
         endpoint, mock_response, mock_status_code, url, environment, location, exception = param
         daspeak_client = DaspeakClient(
-            apikey="fake-apikey",
+            apikey="fake-apikey" if mock_server else None,
             environment=environment,
             location=location,
             url=url,
@@ -318,7 +318,7 @@ def test_daspeak_compare_credential2audio(
     for param in daspeak_compare_credential2audio_parameters:
         endpoint, mock_response, mock_status_code, url, environment, location, _ = param
         daspeak_client = DaspeakClient(
-            apikey="fake-apikey",
+            apikey="fake-apikey" if mock_server else None,
             environment=environment,
             location=location,
             url=url,
@@ -357,7 +357,7 @@ def test_daspeak_compare_audio2audio(
     for param in daspeak_compare_audio2audio_parameters:
         endpoint, mock_response, mock_status_code, url, environment, location, _ = param
         daspeak_client = DaspeakClient(
-            apikey="fake-apikey",
+            apikey="fake-apikey" if mock_server else None,
             environment=environment,
             location=location,
             url=url,
@@ -386,7 +386,7 @@ def test_daspeak_compare_credential2credential(
     for param in daspeak_compare_credential2credential_parameters:
         endpoint, mock_response, mock_status_code, url, environment, location, _ = param
         daspeak_client = DaspeakClient(
-            apikey="fake-apikey",
+            apikey="fake-apikey" if mock_server else None,
             environment=environment,
             location=location,
             url=url,
@@ -418,7 +418,7 @@ def test_daspeak_compare_audio2credentials(
     for param in daspeak_compare_audio2credentials_parameters:
         endpoint, mock_response, mock_status_code, url, environment, location, _ = param
         daspeak_client = DaspeakClient(
-            apikey="fake-apikey",
+            apikey="fake-apikey" if mock_server else None,
             environment=environment,
             location=location,
             url=url,
@@ -454,7 +454,7 @@ def test_daspeak_client_compare_credential2credentials(
     for param in daspeak_compare_credential2credentials_parameters:
         endpoint, mock_response, mock_status_code, url, environment, location, _ = param
         daspeak_client = DaspeakClient(
-            apikey="fake-apikey",
+            apikey="fake-apikey" if mock_server else None,
             environment=environment,
             location=location,
             url=url,
