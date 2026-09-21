@@ -148,7 +148,7 @@ from vericlient.daspeak.models import CompareAudio2CredentialsInput
 
 client = DaspeakClient(apikey="your_api_key")
 compare_input = CompareAudio2CredentialsInput(
-    audio_reference="/home/audio.wav",
+    audio_to_evaluate="/home/audio.wav",
     credential_list=[
         ("subject1_credential", generate_credential_output.credential),
         ("subject2_credential", generate_credential_output.credential),

@@ -76,7 +76,7 @@ print(f"Similarity between the two credentials: {compare_output.score}")
 
 # identify a subject comparing an audio againts a list of credentials
 compare_input = CompareAudio2CredentialsInput(
-    audio_reference="/home/audio.wav",
+    audio_to_evaluate="/home/audio.wav",
     credential_list=[
         ("subject1_credential", generate_credential_output.credential),
         ("subject2_credential", generate_credential_output.credential),

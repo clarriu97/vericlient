@@ -324,9 +324,9 @@ class DaspeakClient(Client):
 
         """
         endpoint = DaspeakEndpoints.IDENTIFICATION_AUDIO2CREDENTIALS.value
-        audio = get_virtual_file(data_model.audio_reference)
+        audio = get_virtual_file(data_model.audio_to_evaluate)
         files = {
-            "audio_reference": ("audio_reference", audio, "audio/wav"),
+            "audio_to_evaluate": ("audio", audio, "audio/wav"),
         }
         credential_list = json.dumps(data_model.credential_list)
         data = {
@@ -344,7 +344,7 @@ class DaspeakClient(Client):
         endpoint = DaspeakEndpoints.IDENTIFICATION_CREDENTIAL2CREDENTIALS.value
         credential_list = json.dumps(data_model.credential_list)
         data = {
-            "credential_reference": data_model.credential_reference,
+            "credential_to_evaluate": data_model.credential_to_evaluate,
             "credential_list": credential_list,
             "calibration": data_model.calibration,
         }

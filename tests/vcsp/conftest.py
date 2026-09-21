@@ -7,6 +7,7 @@ from structlog import get_logger
 
 from tests.conftest import provide_testing_parameters
 from vericlient import VcspClient
+from vericlient.environments import Environments, Locations
 from vericlient.exceptions import ServerError
 from vericlient.vcsp.exceptions import (
     AssuranceMethodNotFoundError,
@@ -55,11 +56,12 @@ def vcsp_client(mock_server, test_environment, all_environments) -> VcspClient:
     if test_environment not in all_environments:
         pytest.fail(f"Invalid environment specified. Use one of {all_environments}")
 
+    # The client validates these against the enum values, which are lowercase.
     env_mapping = {
-        "EU_SANDBOX": ("SANDBOX", "EU"),
-        "EU_PRODUCTION": ("PRODUCTION", "EU"),
-        "US_SANDBOX": ("SANDBOX", "US"),
-        "US_PRODUCTION": ("PRODUCTION", "US"),
+        "EU_SANDBOX": (Environments.SANDBOX.value, Locations.EU.value),
+        "EU_PRODUCTION": (Environments.PRODUCTION.value, Locations.EU.value),
+        "US_SANDBOX": (Environments.SANDBOX.value, Locations.US.value),
+        "US_PRODUCTION": (Environments.PRODUCTION.value, Locations.US.value),
     }
 
     environment, location = env_mapping.get(test_environment)

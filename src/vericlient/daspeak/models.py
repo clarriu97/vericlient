@@ -255,7 +255,7 @@ class CompareAudio2CredentialsInput(CompareInput):
     """Input class for the identification audio to credentials endpoint.
 
     Attributes:
-        audio_reference: The audio to evaluate.
+        audio_to_evaluate: The audio to evaluate against the credential list.
             It can be a path to a file or a bytes object
             with the audio content
         credential_list: The credentials to compare the audio with.
@@ -264,11 +264,11 @@ class CompareAudio2CredentialsInput(CompareInput):
 
     """
 
-    audio_reference: str | bytes
+    audio_to_evaluate: str | bytes
     credential_list: list[tuple[str, str]]
     channel: int = 1
 
-    @field_validator("audio_reference")
+    @field_validator("audio_to_evaluate")
     def must_be_str_or_bytes(cls, value: object):
         if not isinstance(value, (str, bytes)):
             error = "audio must be a string or a bytes object"
@@ -302,9 +302,9 @@ class CompareAudio2CredentialsOutput(DaspeakResponse):
             The list contains dictionaries with two keys (and values): "id" and "score"
         calibration: The calibration used
         model: The model used to generate the credential
-        authenticity_reference: The authenticity of the reference audio sample
-        input_audio_duration_reference: The duration of the input audio
-        net_speech_duration_reference: The duration of the speech in the audio
+        authenticity_to_evaluate: The authenticity of the evaluated audio sample
+        input_audio_duration_to_evaluate: The duration of the evaluated audio
+        net_speech_duration_to_evaluate: The duration of the speech in the evaluated audio
 
     """
 
@@ -312,11 +312,11 @@ class CompareAudio2CredentialsOutput(DaspeakResponse):
     scores: list[dict]
     calibration: str
     model: ModelMetadata
-    authenticity_reference: float
-    input_audio_duration_reference: float
-    net_speech_duration_reference: float
+    authenticity_to_evaluate: float
+    input_audio_duration_to_evaluate: float
+    net_speech_duration_to_evaluate: float
 
-    @field_validator("authenticity_reference")
+    @field_validator("authenticity_to_evaluate")
     def round_value(cls, value: float) -> float:
         return round(value, 3)
 
@@ -325,13 +325,13 @@ class CompareCredential2CredentialsInput(CompareInput):
     """Input class for the identification credential to credentials endpoint.
 
     Attributes:
-        credential_reference: The reference credential
+        credential_to_evaluate: The credential to evaluate against the credential list
         credential_list: The credentials to compare the audio with.
             The list contains touples with two strings: the id and the credential
 
     """
 
-    credential_reference: str
+    credential_to_evaluate: str
     credential_list: list[tuple[str, str]]
 
     @field_validator("credential_list")
@@ -358,7 +358,6 @@ class CompareCredential2CredentialsOutput(DaspeakResponse):
         scores: The whole list of scores for each credential.
             The list contains dictionaries with two keys (and values): "id" and "score"
         calibration: The calibration used
-        model: The model used to generate the credential
 
     """
 
