@@ -1257,6 +1257,8 @@ The project follows <a href="https://semver.org/">semantic versioning</a>.</p>
 <h2 id="unreleased">Unreleased<a class="headerlink" href="#unreleased" title="Link to this section">&para;</a></h2>
 <h3 id="added">Added<a class="headerlink" href="#added" title="Link to this section">&para;</a></h3>
 <ul>
+<li>Every public <code>VcspClient</code> method is exercised against real infrastructure, guarded by a
+  test that fails if one is added without it.</li>
 <li><strong>VCSP is now fully covered</strong>: <code>match</code> for 1:1 and 1:N biometric matching, <code>modify_group</code>
   to populate or empty a group, <code>modify_credential_tags</code>, and <code>start_clustering</code>. All 31
   endpoints in the specification are reachable.</li>
