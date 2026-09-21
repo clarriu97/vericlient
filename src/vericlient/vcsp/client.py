@@ -8,6 +8,7 @@ from requests.models import Response
 
 from vericlient.apis import APIs
 from vericlient.client import Client
+from vericlient.utils import DEFAULT_CONTENT_TYPE, guess_content_type
 from vericlient.vcsp.endpoints import VcspEndpoints
 from vericlient.vcsp.exceptions import (
     AccountNotFoundError,
@@ -55,7 +56,6 @@ class VcspClient(Client):
 
     def __init__(
         self,
-        api: str = APIs.VCSP.value,
         apikey: str | None = None,
         timeout: int | None = None,
         environment: str | None = None,
@@ -66,7 +66,6 @@ class VcspClient(Client):
         """Create the VcspClient class.
 
         Args:
-            api: The API to use
             apikey: The API key to use
             timeout: The timeout to use in the requests
             environment: The environment to use
@@ -76,7 +75,7 @@ class VcspClient(Client):
 
         """
         super().__init__(
-            api=api,
+            api=APIs.VCSP,
             apikey=apikey,
             timeout=timeout,
             environment=environment,
@@ -121,7 +120,7 @@ class VcspClient(Client):
 
     def _handle_error_response(self, response: Response) -> None:
         """Handle error responses from the API."""
-        response_json = response.json()
+        response_json = self._error_payload(response)
 
         exception = response_json.get("error")
         if not exception or exception not in self._exceptions:
@@ -203,7 +202,7 @@ class VcspClient(Client):
 
         """
         endpoint = VcspEndpoints.ENROLLMENTS.value
-        sample = self._get_sample(data_model.sample)
+        sample = self._get_sample(data_model.sample, data_model.content_type)
         files = {"sample": sample}
         data = {"applicant": json.dumps(data_model.applicant.model_dump(exclude_none=True))}
         response = self._post(
@@ -213,18 +212,34 @@ class VcspClient(Client):
         )
         return EnrollmentOutput(status_code=response.status_code, **response.json())
 
-    def _get_sample(self, sample: str | bytes) -> tuple[str, bytes, str]:
-        """Given a sample, return the filename, the file and the content type."""
+    def _get_sample(self, sample: str | bytes, content_type: str | None = None) -> tuple[str, bytes, str]:
+        """Return the filename, the content and the media type of a sample.
+
+        Args:
+            sample: A path to a file, or the content itself as bytes
+            content_type: Media type to declare. When omitted it is taken from the file
+                extension for a path, and from the magic bytes for a bytes object
+
+        Returns:
+            The filename, the content and the media type to send
+
+        Raises:
+            TypeError: If `sample` is neither a string nor a bytes object
+
+        """
         if isinstance(sample, str):
             filename = os.path.basename(sample)
             with open(sample, "rb") as f:
                 file = f.read()
-            content_type = mimetypes.guess_type(sample)[0]
-        if isinstance(sample, bytes):
+            guessed = mimetypes.guess_type(sample)[0]
+        elif isinstance(sample, bytes):
             filename = "sample"
             file = sample
-            content_type = mimetypes.guess_type(sample)[0]
-        return filename, file, content_type
+            guessed = guess_content_type(sample)
+        else:
+            error = "sample must be a string or a bytes object"
+            raise TypeError(error)
+        return filename, file, content_type or guessed or DEFAULT_CONTENT_TYPE
 
     def get_account(self, data_model: GetAccountInput) -> GetAccountOutput:
         """Get an account.

@@ -1,5 +1,10 @@
 """Some general utility functions for the VeriClient."""
 
+DEFAULT_CONTENT_TYPE = "application/octet-stream"
+
+_JPEG_MAGIC = b"\xff\xd8\xff"
+_PNG_MAGIC = b"\x89PNG\r\n\x1a\n"
+
 
 def get_virtual_file(input_file: object) -> bytes:
     """Get the content of a file as bytes. The input can be a path to a file or a bytes object.
@@ -23,3 +28,28 @@ def get_virtual_file(input_file: object) -> bytes:
         error = "sample must be a string or a bytes object"
         raise TypeError(error)
     return sample
+
+
+def guess_content_type(sample: bytes) -> str:
+    """Guess the media type of an in-memory sample from its leading bytes.
+
+    A path can be handed to `mimetypes`, but a bytes object carries no filename, so its
+    magic bytes are all there is to go on. This matters because VCSP answers with a 500
+    when the declared media type does not match the content it receives.
+
+    Args:
+        sample: The sample content
+
+    Returns:
+        The guessed media type, or `application/octet-stream` when it is not recognised
+
+    """
+    if sample[:3] == _JPEG_MAGIC:
+        return "image/jpeg"
+    if sample[:8] == _PNG_MAGIC:
+        return "image/png"
+    if sample[:4] == b"RIFF" and sample[8:12] == b"WAVE":
+        return "audio/wav"
+    if sample[4:8] == b"ftyp":
+        return "video/mp4"
+    return DEFAULT_CONTENT_TYPE

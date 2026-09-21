@@ -18,7 +18,7 @@ class Client(ABC):
 
     def __init__(
         self,
-        api: str,
+        api: APIs,
         apikey: str | None = None,
         timeout: int | None = None,
         environment: str | None = None,
@@ -50,7 +50,7 @@ class Client(ABC):
 
         self._session.headers.update(self._headers)
 
-    def _configure_cloud_url(self, api: str, environment: str, location: str) -> None:
+    def _configure_cloud_url(self, api: APIs, environment: str, location: str) -> None:
         if not environment and not settings.environment:
             logger.warning("No environment provided. Defaulting to sandbox")
             environment = Environments.SANDBOX.value
@@ -69,10 +69,11 @@ class Client(ABC):
             error = f"Invalid location: {location}. Valid options are: {', '.join(loc.value for loc in Locations)}"
             raise ValueError(error)
 
-        if not any(api == api_.value for api_ in APIs):
-            error = f"If target is cloud, valid api must be provided. Valid options are: {', '.join(api.value for api in APIs)}"
-            raise ValueError(error)
-        self._url = cloud_env2url[environment][location] + f"/{api}"
+        if not isinstance(api, APIs):
+            valid = ", ".join(api_.api_name for api_ in APIs)
+            error = f"If target is cloud, api must be one of the APIs enum members: {valid}"
+            raise TypeError(error)
+        self._url = cloud_env2url[environment][location] + f"/{api.path}"
 
     def _configure_custom_url(self, url: str) -> None:
         url = settings.url or url
@@ -135,16 +136,44 @@ class Client(ABC):
         if not response.ok:
             self._handle_authorization_error(response)
             self._handle_error_response(response)
+        return response
 
     def _raise_server_error(self, response: requests.Response) -> None:
         """Raise a ServerError exception."""
         raise ServerError(response)
 
-    def _handle_authorization_error(self, response: requests.Response) -> None:
-        """Handle authorization errors."""
+    def _error_payload(self, response: requests.Response) -> dict:
+        """Return the body of a failed response as JSON.
+
+        Error bodies are not always JSON. A gateway in front of the API answers a 502 with
+        an HTML page, and the decode error that used to escape from here said nothing about
+        what had actually gone wrong.
+
+        Raises:
+            ServerError: If the body cannot be decoded as a JSON object
+
+        """
         try:
-            message = response.json()["message"]
-            if "no Authorization header found" in message:
-                raise AuthorizationError
-        except KeyError:
-            pass
+            payload = response.json()
+        except ValueError as error:
+            raise ServerError(response) from error
+        if not isinstance(payload, dict):
+            raise ServerError(response)
+        return payload
+
+    def _handle_authorization_error(self, response: requests.Response) -> None:
+        """Raise AuthorizationError when the server rejected the credentials.
+
+        A rejected request does not always answer with JSON: a gateway can reply with an
+        HTML error page, in which case there is nothing to inspect and the caller falls
+        through to the API-specific handler.
+        """
+        try:
+            payload = response.json()
+        except ValueError:
+            return
+        if not isinstance(payload, dict):
+            return
+        message = payload.get("message")
+        if isinstance(message, str) and "no Authorization header found" in message:
+            raise AuthorizationError
