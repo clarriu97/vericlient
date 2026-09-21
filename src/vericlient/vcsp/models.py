@@ -1,6 +1,7 @@
 """Module to define the models for the VCSP API."""
+
 # ruff: noqa: N805, D102, ANN201
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
 class VcspResponse(BaseModel):
@@ -40,7 +41,7 @@ class AssuranceMethodSchema(BaseModel):
     """Schema class for the assurance method.
 
     Attributes:
-        $schema: The schema of the assurance method
+        json_schema: The JSON schema of the assurance method, serialised as `$schema`
         title: The title of the assurance method
         type: The type of the assurance method
         properties: The properties of the assurance method
@@ -49,12 +50,14 @@ class AssuranceMethodSchema(BaseModel):
 
     """
 
-    schema: str = Field(alias="$schema")
+    model_config = ConfigDict(populate_by_name=True)
+
+    json_schema: str = Field(alias="$schema")
     title: str
     type: str
     properties: dict
     required: list[str] | None = None
-    additionalProperties: bool      # noqa: N815
+    additionalProperties: bool  # noqa: N815
 
 
 class AssuranceMethodInput(BaseModel):
@@ -73,12 +76,14 @@ class AssuranceMethodOutput(VcspResponse):
 
     Attributes:
         urn: The urn of the assurance method
-        schema: The schema of the assurance method
+        json_schema: The schema of the assurance method, serialised as `schema`
 
     """
 
+    model_config = ConfigDict(populate_by_name=True)
+
     urn: str
-    schema: AssuranceMethodSchema
+    json_schema: AssuranceMethodSchema = Field(alias="schema")
 
 
 class Sample(BaseModel):
@@ -143,8 +148,7 @@ class EnrollmentInput(BaseModel):
             raise TypeError(error)
         return value
 
-    class Config:
-        arbitrary_types_allowed = True
+    model_config = ConfigDict(arbitrary_types_allowed=True)
 
 
 class EnrollmentOutput(BaseModel):

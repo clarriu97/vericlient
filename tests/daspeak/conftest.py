@@ -1,4 +1,6 @@
 import pytest
+
+from tests.conftest import provide_testing_parameters
 from vericlient.daspeak.exceptions import (
     AudioDurationTooLongError,
     CalibrationNotAvailableError,
@@ -15,8 +17,6 @@ from vericlient.exceptions import (
     UnsupportedMediaTypeError,
 )
 
-from tests.conftest import provide_testing_parameters
-
 
 @pytest.fixture(scope="session")
 def service_name():
@@ -26,6 +26,7 @@ def service_name():
 ####################
 # SERVER RESPONSES #
 ####################
+
 
 @pytest.fixture(scope="session")
 def daspeak_alive_response():
@@ -155,6 +156,7 @@ def daspeak_compare_credential2credentials_response():
 # SERVER ERRORS #
 #################
 
+
 @pytest.fixture(scope="session")
 def daspeak_channels_error_response():
     return {
@@ -255,267 +257,382 @@ def daspeak_server_error_response():
 # PARAMETERS FIXTURES #
 #######################
 
+
 @pytest.fixture(scope="session")
 def daspeak_alive_parameters(
-        mock_option,
+    mock_option,
+    test_environment,
+    all_environments,
+    daspeak_alive_response,
+    service_name,
+) -> list:
+    return provide_testing_parameters(
         test_environment,
         all_environments,
+        mock_option,
+        "daspeak/v1/alive",
         daspeak_alive_response,
+        200,
+        None,
         service_name,
-    ) -> list:
-    return provide_testing_parameters(
-        test_environment, all_environments, mock_option, "daspeak/v1/alive", \
-        daspeak_alive_response, 200, None, service_name,
     )
 
 
 @pytest.fixture(scope="session")
 def daspeak_get_models_parameters(
-        mock_option,
+    mock_option,
+    test_environment,
+    all_environments,
+    daspeak_get_models_response,
+    service_name,
+) -> list:
+    return provide_testing_parameters(
         test_environment,
         all_environments,
+        mock_option,
+        "daspeak/v1/models",
         daspeak_get_models_response,
+        200,
+        None,
         service_name,
-    )-> list:
-    return provide_testing_parameters(
-        test_environment, all_environments, mock_option, "daspeak/v1/models", \
-        daspeak_get_models_response, 200, None, service_name,
     )
 
 
 @pytest.fixture(scope="session")
 def daspeak_generate_credential_parameters(
-        mock_option,
+    mock_option,
+    test_environment,
+    all_environments,
+    daspeak_generate_credential_response,
+    service_name,
+) -> list:
+    return provide_testing_parameters(
         test_environment,
         all_environments,
+        mock_option,
+        "daspeak/v1/models/fake-model/credential/wav",
         daspeak_generate_credential_response,
+        200,
+        None,
         service_name,
-    ) -> list:
-    return provide_testing_parameters(
-        test_environment, all_environments, mock_option, "daspeak/v1/models/fake-model/credential/wav", \
-        daspeak_generate_credential_response, 200, None, service_name,
     )
 
 
 @pytest.fixture(scope="session")
 def daspeak_generate_credential_channels_error_response_parameters(
-        mock_option,
+    mock_option,
+    test_environment,
+    all_environments,
+    daspeak_channels_error_response,
+    service_name,
+):
+    return provide_testing_parameters(
         test_environment,
         all_environments,
+        mock_option,
+        "daspeak/v1/models/fake-model/credential/wav",
         daspeak_channels_error_response,
+        400,
+        TooManyAudioChannelsError,
         service_name,
-    ):
-    return provide_testing_parameters(
-        test_environment, all_environments, mock_option, "daspeak/v1/models/fake-model/credential/wav", \
-        daspeak_channels_error_response, 400, TooManyAudioChannelsError, service_name,
     )
 
 
 @pytest.fixture(scope="session")
 def daspeak_generate_credential_sample_rate_error_response_parameters(
-        mock_option,
+    mock_option,
+    test_environment,
+    all_environments,
+    daspeak_sample_rate_error_response,
+    service_name,
+):
+    return provide_testing_parameters(
         test_environment,
         all_environments,
+        mock_option,
+        "daspeak/v1/models/fake-model/credential/wav",
         daspeak_sample_rate_error_response,
+        400,
+        UnsupportedSampleRateError,
         service_name,
-    ):
-    return provide_testing_parameters(
-        test_environment, all_environments, mock_option, "daspeak/v1/models/fake-model/credential/wav", \
-        daspeak_sample_rate_error_response, 400, UnsupportedSampleRateError, service_name,
     )
 
 
 @pytest.fixture(scope="session")
 def daspeak_generate_credential_net_speech_duration_error_response_parameters(
-        mock_option,
+    mock_option,
+    test_environment,
+    all_environments,
+    daspeak_net_speech_duration_error_response,
+    service_name,
+):
+    return provide_testing_parameters(
         test_environment,
         all_environments,
+        mock_option,
+        "daspeak/v1/models/fake-model/credential/wav",
         daspeak_net_speech_duration_error_response,
+        400,
+        NetSpeechDurationIsNotEnoughError,
         service_name,
-    ):
-    return provide_testing_parameters(
-        test_environment, all_environments, mock_option, "daspeak/v1/models/fake-model/credential/wav", \
-        daspeak_net_speech_duration_error_response, 400, NetSpeechDurationIsNotEnoughError, service_name,
     )
 
 
 @pytest.fixture(scope="session")
 def daspeak_generate_credential_bad_snr_error_response_parameters(
-        mock_option,
+    mock_option,
+    test_environment,
+    all_environments,
+    daspeak_snr_error_response,
+    service_name,
+):
+    return provide_testing_parameters(
         test_environment,
         all_environments,
+        mock_option,
+        "daspeak/v1/models/fake-model/credential/wav",
         daspeak_snr_error_response,
+        400,
+        SignalNoiseRatioError,
         service_name,
-    ):
-    return provide_testing_parameters(
-        test_environment, all_environments, mock_option, "daspeak/v1/models/fake-model/credential/wav", \
-        daspeak_snr_error_response, 400, SignalNoiseRatioError, service_name,
     )
 
 
 @pytest.fixture(scope="session")
 def daspeak_generate_credential_audio_too_long_error_response_parameters(
-        mock_option,
+    mock_option,
+    test_environment,
+    all_environments,
+    daspeak_long_audio_error_response,
+    service_name,
+):
+    return provide_testing_parameters(
         test_environment,
         all_environments,
+        mock_option,
+        "daspeak/v1/models/fake-model/credential/wav",
         daspeak_long_audio_error_response,
+        400,
+        AudioDurationTooLongError,
         service_name,
-    ):
-    return provide_testing_parameters(
-        test_environment, all_environments, mock_option, "daspeak/v1/models/fake-model/credential/wav", \
-        daspeak_long_audio_error_response, 400, AudioDurationTooLongError, service_name,
     )
 
 
 @pytest.fixture(scope="session")
 def daspeak_generate_credential_codec_error_response_parameters(
-        mock_option,
+    mock_option,
+    test_environment,
+    all_environments,
+    daspeak_codec_error_response,
+    service_name,
+):
+    return provide_testing_parameters(
         test_environment,
         all_environments,
+        mock_option,
+        "daspeak/v1/models/fake-model/credential/wav",
         daspeak_codec_error_response,
+        400,
+        UnsupportedAudioCodecError,
         service_name,
-    ):
-    return provide_testing_parameters(
-        test_environment, all_environments, mock_option, "daspeak/v1/models/fake-model/credential/wav", \
-        daspeak_codec_error_response, 400, UnsupportedAudioCodecError, service_name,
     )
 
 
 @pytest.fixture(scope="session")
 def daspeak_generate_credential_insufficient_quality_error_response_parameters(
-        mock_option,
+    mock_option,
+    test_environment,
+    all_environments,
+    daspeak_quality_error_response,
+    service_name,
+):
+    return provide_testing_parameters(
         test_environment,
         all_environments,
+        mock_option,
+        "daspeak/v1/models/fake-model/credential/wav",
         daspeak_quality_error_response,
+        400,
+        InsufficientQualityError,
         service_name,
-    ):
-    return provide_testing_parameters(
-        test_environment, all_environments, mock_option, "daspeak/v1/models/fake-model/credential/wav", \
-        daspeak_quality_error_response, 400, InsufficientQualityError, service_name,
     )
 
 
 @pytest.fixture(scope="session")
 def daspeak_generate_credential_invalid_specified_channel_error_response_parameters(
-        mock_option,
+    mock_option,
+    test_environment,
+    all_environments,
+    daspeak_invalid_specified_channel_error_response,
+    service_name,
+):
+    return provide_testing_parameters(
         test_environment,
         all_environments,
+        mock_option,
+        "daspeak/v1/models/fake-model/credential/wav",
         daspeak_invalid_specified_channel_error_response,
+        400,
+        InvalidSpecifiedChannelError,
         service_name,
-    ):
-    return provide_testing_parameters(
-        test_environment, all_environments, mock_option, "daspeak/v1/models/fake-model/credential/wav", \
-        daspeak_invalid_specified_channel_error_response, 400, InvalidSpecifiedChannelError, service_name,
     )
 
 
 @pytest.fixture(scope="session")
 def daspeak_generate_credential_calibration_not_available_error_response_parameters(
-        mock_option,
+    mock_option,
+    test_environment,
+    all_environments,
+    daspeak_calibration_not_available_error_response,
+    service_name,
+):
+    return provide_testing_parameters(
         test_environment,
         all_environments,
+        mock_option,
+        "daspeak/v1/models/fake-model/credential/wav",
         daspeak_calibration_not_available_error_response,
+        400,
+        CalibrationNotAvailableError,
         service_name,
-    ):
-    return provide_testing_parameters(
-        test_environment, all_environments, mock_option, "daspeak/v1/models/fake-model/credential/wav", \
-        daspeak_calibration_not_available_error_response, 400, CalibrationNotAvailableError, service_name,
     )
 
 
 @pytest.fixture(scope="session")
 def daspeak_generate_credential_unsupported_media_type_error_response_parameters(
-        mock_option,
+    mock_option,
+    test_environment,
+    all_environments,
+    daspeak_unsupported_media_type_error_response,
+    service_name,
+):
+    return provide_testing_parameters(
         test_environment,
         all_environments,
+        mock_option,
+        "daspeak/v1/models/fake-model/credential/wav",
         daspeak_unsupported_media_type_error_response,
+        415,
+        UnsupportedMediaTypeError,
         service_name,
-    ):
-    return provide_testing_parameters(
-        test_environment, all_environments, mock_option, "daspeak/v1/models/fake-model/credential/wav", \
-        daspeak_unsupported_media_type_error_response, 415, UnsupportedMediaTypeError, service_name,
     )
 
 
 @pytest.fixture(scope="session")
 def daspeak_server_error_response_parameters(
-        mock_option,
+    mock_option,
+    test_environment,
+    all_environments,
+    daspeak_server_error_response,
+    service_name,
+):
+    return provide_testing_parameters(
         test_environment,
         all_environments,
+        mock_option,
+        "daspeak/v1/models/fake-model/credential/wav",
         daspeak_server_error_response,
+        500,
+        ServerError,
         service_name,
-    ):
-    return provide_testing_parameters(
-        test_environment, all_environments, mock_option, "daspeak/v1/models/fake-model/credential/wav", \
-        daspeak_server_error_response, 500, ServerError, service_name,
     )
 
 
 @pytest.fixture(scope="session")
 def daspeak_compare_credential2audio_parameters(
-        mock_option,
+    mock_option,
+    test_environment,
+    all_environments,
+    daspeak_compare_credential2audio_response,
+    service_name,
+) -> list:
+    return provide_testing_parameters(
         test_environment,
         all_environments,
+        mock_option,
+        "daspeak/v1/similarity/credential2wav",
         daspeak_compare_credential2audio_response,
+        200,
+        None,
         service_name,
-    ) -> list:
-    return provide_testing_parameters(
-        test_environment, all_environments, mock_option, "daspeak/v1/similarity/credential2wav", \
-        daspeak_compare_credential2audio_response, 200, None, service_name,
     )
 
 
 @pytest.fixture(scope="session")
 def daspeak_compare_audio2audio_parameters(
-        mock_option,
+    mock_option,
+    test_environment,
+    all_environments,
+    daspeak_compare_audio2audio_response,
+    service_name,
+) -> list:
+    return provide_testing_parameters(
         test_environment,
         all_environments,
+        mock_option,
+        "daspeak/v1/similarity/wav2wav",
         daspeak_compare_audio2audio_response,
+        200,
+        None,
         service_name,
-    ) -> list:
-    return provide_testing_parameters(
-        test_environment, all_environments, mock_option, "daspeak/v1/similarity/wav2wav", \
-        daspeak_compare_audio2audio_response, 200, None, service_name,
     )
 
 
 @pytest.fixture(scope="session")
 def daspeak_compare_credential2credential_parameters(
-        mock_option,
+    mock_option,
+    test_environment,
+    all_environments,
+    daspeak_compare_credential2credential_response,
+    service_name,
+) -> list:
+    return provide_testing_parameters(
         test_environment,
         all_environments,
+        mock_option,
+        "daspeak/v1/similarity/credential2credential",
         daspeak_compare_credential2credential_response,
+        200,
+        None,
         service_name,
-    ) -> list:
-    return provide_testing_parameters(
-        test_environment, all_environments, mock_option, "daspeak/v1/similarity/credential2credential", \
-        daspeak_compare_credential2credential_response, 200, None, service_name,
     )
 
 
 @pytest.fixture(scope="session")
 def daspeak_compare_audio2credentials_parameters(
-        mock_option,
+    mock_option,
+    test_environment,
+    all_environments,
+    daspeak_compare_audio2credentials_response,
+    service_name,
+) -> list:
+    return provide_testing_parameters(
         test_environment,
         all_environments,
+        mock_option,
+        "daspeak/v1/identification/wav2credentials",
         daspeak_compare_audio2credentials_response,
+        200,
+        None,
         service_name,
-    ) -> list:
-    return provide_testing_parameters(
-        test_environment, all_environments, mock_option, "daspeak/v1/identification/wav2credentials", \
-        daspeak_compare_audio2credentials_response, 200, None, service_name,
     )
 
 
 @pytest.fixture(scope="session")
 def daspeak_compare_credential2credentials_parameters(
-        mock_option,
+    mock_option,
+    test_environment,
+    all_environments,
+    daspeak_compare_credential2credentials_response,
+    service_name,
+) -> list:
+    return provide_testing_parameters(
         test_environment,
         all_environments,
+        mock_option,
+        "daspeak/v1/identification/credential2credentials",
         daspeak_compare_credential2credentials_response,
+        200,
+        None,
         service_name,
-    ) -> list:
-    return provide_testing_parameters(
-        test_environment, all_environments, mock_option, "daspeak/v1/identification/credential2credentials", \
-        daspeak_compare_credential2credentials_response, 200, None, service_name,
     )

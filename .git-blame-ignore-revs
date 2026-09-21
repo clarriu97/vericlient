@@ -1,0 +1,6 @@
+# Revisions to skip in `git blame`, because they only reformat code.
+# Enable locally with:
+#   git config blame.ignoreRevsFile .git-blame-ignore-revs
+
+# Apply ruff format across the codebase
+b3b60ec95273e7562572667a42604b51d043dae2

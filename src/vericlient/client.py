@@ -1,4 +1,5 @@
 """Module with the abstraction of the client to interact with the Veridas APIs."""
+
 from abc import ABC, abstractmethod
 
 import requests
@@ -16,14 +17,14 @@ class Client(ABC):
     """Class to interact with the Veridas APIs."""
 
     def __init__(
-            self,
-            api: str,
-            apikey: str | None = None,
-            timeout: int | None = None,
-            environment: str | None = None,
-            location: str | None = None,
-            url: str | None = None,
-            headers: dict | None = None,
+        self,
+        api: str,
+        apikey: str | None = None,
+        timeout: int | None = None,
+        environment: str | None = None,
+        location: str | None = None,
+        url: str | None = None,
+        headers: dict | None = None,
     ) -> None:
         """Create Client class."""
         self._headers = headers or {}
@@ -109,10 +110,11 @@ class Client(ABC):
         return response
 
     def _post(
-            self, endpoint: str,
-            data: dict | None = None,
-            json_: dict | None = None,
-            files: dict | None = None,
+        self,
+        endpoint: str,
+        data: dict | None = None,
+        json_: dict | None = None,
+        files: dict | None = None,
     ) -> requests.Response:
         """Make a POST request to the API."""
         response = self._session.post(

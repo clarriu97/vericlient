@@ -1,4 +1,5 @@
 """Implementation of the client for the DASPEaK service."""
+
 import json
 
 from requests.models import Response
@@ -42,13 +43,13 @@ class DaspeakClient(Client):
     """Class to interact with the Daspeak API."""
 
     def __init__(
-            self,
-            apikey: str | None = None,
-            timeout: int | None = None,
-            environment: str | None = None,
-            location: str | None = None,
-            url: str | None = None,
-            headers: dict | None = None,
+        self,
+        apikey: str | None = None,
+        timeout: int | None = None,
+        environment: str | None = None,
+        location: str | None = None,
+        url: str | None = None,
+        headers: dict | None = None,
     ) -> None:
         """Create the DaspeakClient class.
 
@@ -194,12 +195,16 @@ class DaspeakClient(Client):
         response = self._post(endpoint=endpoint, data=data, files=files)
         return GenerateCredentialOutput(status_code=response.status_code, **response.json())
 
-    def compare(    # noqa: D417
-            self,
-            data_model: CompareInput,
-        ) -> CompareCredential2AudioOutput | CompareAudio2AudioOutput | \
-             CompareCredential2CredentialOutput | CompareAudio2CredentialsOutput | \
-             CompareCredential2CredentialsOutput:
+    def compare(  # noqa: D417
+        self,
+        data_model: CompareInput,
+    ) -> (
+        CompareCredential2AudioOutput
+        | CompareAudio2AudioOutput
+        | CompareCredential2CredentialOutput
+        | CompareAudio2CredentialsOutput
+        | CompareCredential2CredentialsOutput
+    ):
         """Compare two sets of data based on the provided input.
 
         Args:
@@ -233,9 +238,9 @@ class DaspeakClient(Client):
             raise TypeError(error) from e
 
     def _compare_credential2audio(
-            self,
-            data_model: CompareCredential2AudioInput,
-        ) -> CompareCredential2AudioOutput:
+        self,
+        data_model: CompareCredential2AudioInput,
+    ) -> CompareCredential2AudioOutput:
         """Compare a credential with an audio file.
 
         Args:
@@ -284,9 +289,9 @@ class DaspeakClient(Client):
         return CompareAudio2AudioOutput(status_code=response.status_code, **response.json())
 
     def _compare_credential2credential(
-            self,
-            data_model: CompareCredential2CredentialInput,
-        ) -> CompareCredential2CredentialOutput:
+        self,
+        data_model: CompareCredential2CredentialInput,
+    ) -> CompareCredential2CredentialOutput:
         """Compare two credentials.
 
         Args:

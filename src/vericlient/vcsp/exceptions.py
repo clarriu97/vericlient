@@ -1,4 +1,5 @@
 """Module to define the exceptions for the VCSP API."""
+
 from vericlient.exceptions import VeriClientError
 
 

@@ -1,4 +1,5 @@
 """Module to define the APIs that can be used from Veridas."""
+
 from enum import Enum
 
 
