@@ -825,6 +825,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Unreleased">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#breaking" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Breaking
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -840,7 +857,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#breaking" class="md-nav__link">
+  <a href="#breaking_1" class="md-nav__link">
     <span class="md-ellipsis">
       
         Breaking
@@ -1019,6 +1036,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Unreleased">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#breaking" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Breaking
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -1034,7 +1068,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#breaking" class="md-nav__link">
+  <a href="#breaking_1" class="md-nav__link">
     <span class="md-ellipsis">
       
         Breaking
@@ -1199,10 +1233,17 @@
 <p>Notable changes to <code>vericlient</code>, newest first. Dates are the day the version was released.
 The project follows <a href="https://semver.org/">semantic versioning</a>.</p>
 <h2 id="unreleased">Unreleased<a class="headerlink" href="#unreleased" title="Link to this section">&para;</a></h2>
+<h3 id="breaking">Breaking<a class="headerlink" href="#breaking" title="Link to this section">&para;</a></h3>
+<ul>
+<li><strong>Responses no longer carry <code>status_code</code>.</strong> An HTTP status code is a transport detail,
+  and surfacing it on a client's return value invites callers to branch on it instead of
+  relying on the exceptions the client already raises. <code>DaspeakResponse</code> keeps <code>version</code>;
+  <code>VcspResponse</code> now carries no fields and exists only as a shared type.</li>
+</ul>
 <h2 id="020-2026-09-21"><a href="https://github.com/clarriu97/vericlient/releases/tag/v0.2.0">0.2.0</a> — 2026-09-21<a class="headerlink" href="#020-2026-09-21" title="Link to this section">&para;</a></h2>
 <p>First release after a long gap. It carries breaking changes, all of them correcting
 behaviour that was either wrong or impossible to use.</p>
-<h3 id="breaking">Breaking<a class="headerlink" href="#breaking" title="Link to this section">&para;</a></h3>
+<h3 id="breaking_1">Breaking<a class="headerlink" href="#breaking_1" title="Link to this section">&para;</a></h3>
 <ul>
 <li><strong>Configuration precedence is inverted.</strong> A constructor argument now wins over the
   matching <code>VERICLIENT_</code> environment variable. Before, the environment silently won, so
