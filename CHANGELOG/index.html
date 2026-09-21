@@ -1257,6 +1257,10 @@ The project follows <a href="https://semver.org/">semantic versioning</a>.</p>
 <h2 id="unreleased">Unreleased<a class="headerlink" href="#unreleased" title="Link to this section">&para;</a></h2>
 <h3 id="added">Added<a class="headerlink" href="#added" title="Link to this section">&para;</a></h3>
 <ul>
+<li><strong>VCSP batch enrolment and task management</strong>: <code>enroll_batch</code>, <code>get_tasks</code>, <code>get_task</code>,
+  <code>delete_task</code>, <code>get_task_result</code> and <code>wait_for_task</code>. Coverage reaches 27 of 31 endpoints.
+  The client builds the TAR archive batch enrolment expects, whose layout is documented
+  nowhere and was worked out from the service's error messages.</li>
 <li><strong>VCSP credential listing and configuration lookup</strong>: <code>list_credentials</code>,
   <code>delete_credentials</code>, <code>get_credential_sample</code> and <code>get_credential_configuration</code>. Coverage
   reaches 22 of the 31 endpoints.</li>

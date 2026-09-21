@@ -822,6 +822,28 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#enrolling-in-bulk" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Enrolling in bulk
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#following-asynchronous-work" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Following asynchronous work
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1155,6 +1177,28 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#enrolling-in-bulk" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Enrolling in bulk
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#following-asynchronous-work" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Following asynchronous work
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1405,6 +1449,81 @@ scope this by tag or by account.</p>
 </span><span id="__span-14-5"><a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a><span class="p">)</span>
 </span><span id="__span-14-6"><a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a><span class="nb">print</span><span class="p">(</span><span class="n">configuration</span><span class="o">.</span><span class="n">claims_schema</span><span class="p">)</span>
 </span></code></pre></div>
+<h2 id="enrolling-in-bulk">Enrolling in bulk<a class="headerlink" href="#enrolling-in-bulk" title="Link to this section">&para;</a></h2>
+<p>Batch enrolment is asynchronous: the service accepts the work and hands back a task to
+follow. The client builds the archive it expects, so you pass applicants rather than
+assembling a TAR yourself.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">vericlient</span><span class="w"> </span><span class="kn">import</span> <span class="n">VcspClient</span>
+</span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">vericlient.vcsp.models</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+</span><span id="__span-15-3"><a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a>    <span class="n">Applicant</span><span class="p">,</span>
+</span><span id="__span-15-4"><a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a>    <span class="n">BatchApplicant</span><span class="p">,</span>
+</span><span id="__span-15-5"><a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a>    <span class="n">BatchEnrollmentInput</span><span class="p">,</span>
+</span><span id="__span-15-6"><a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a>    <span class="n">TaskInput</span><span class="p">,</span>
+</span><span id="__span-15-7"><a id="__codelineno-15-7" name="__codelineno-15-7" href="#__codelineno-15-7"></a><span class="p">)</span>
+</span><span id="__span-15-8"><a id="__codelineno-15-8" name="__codelineno-15-8" href="#__codelineno-15-8"></a>
+</span><span id="__span-15-9"><a id="__codelineno-15-9" name="__codelineno-15-9" href="#__codelineno-15-9"></a><span class="n">client</span> <span class="o">=</span> <span class="n">VcspClient</span><span class="p">(</span><span class="n">apikey</span><span class="o">=</span><span class="s2">"your_api_key"</span><span class="p">)</span>
+</span><span id="__span-15-10"><a id="__codelineno-15-10" name="__codelineno-15-10" href="#__codelineno-15-10"></a>
+</span><span id="__span-15-11"><a id="__codelineno-15-11" name="__codelineno-15-11" href="#__codelineno-15-11"></a><span class="n">batch</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">enroll_batch</span><span class="p">(</span>
+</span><span id="__span-15-12"><a id="__codelineno-15-12" name="__codelineno-15-12" href="#__codelineno-15-12"></a>    <span class="n">BatchEnrollmentInput</span><span class="p">(</span>
+</span><span id="__span-15-13"><a id="__codelineno-15-13" name="__codelineno-15-13" href="#__codelineno-15-13"></a>        <span class="n">applicants</span><span class="o">=</span><span class="p">[</span>
+</span><span id="__span-15-14"><a id="__codelineno-15-14" name="__codelineno-15-14" href="#__codelineno-15-14"></a>            <span class="n">BatchApplicant</span><span class="p">(</span>
+</span><span id="__span-15-15"><a id="__codelineno-15-15" name="__codelineno-15-15" href="#__codelineno-15-15"></a>                <span class="n">sample</span><span class="o">=</span><span class="s2">"/path/to/alice.wav"</span><span class="p">,</span>
+</span><span id="__span-15-16"><a id="__codelineno-15-16" name="__codelineno-15-16" href="#__codelineno-15-16"></a>                <span class="n">applicant</span><span class="o">=</span><span class="n">Applicant</span><span class="p">(</span>
+</span><span id="__span-15-17"><a id="__codelineno-15-17" name="__codelineno-15-17" href="#__codelineno-15-17"></a>                    <span class="n">subject_id</span><span class="o">=</span><span class="s2">"alice"</span><span class="p">,</span>
+</span><span id="__span-15-18"><a id="__codelineno-15-18" name="__codelineno-15-18" href="#__codelineno-15-18"></a>                    <span class="n">credential_configuration_urn</span><span class="o">=</span><span class="n">configuration</span><span class="p">,</span>
+</span><span id="__span-15-19"><a id="__codelineno-15-19" name="__codelineno-15-19" href="#__codelineno-15-19"></a>                    <span class="n">assurance_method_urn</span><span class="o">=</span><span class="n">method</span><span class="p">,</span>
+</span><span id="__span-15-20"><a id="__codelineno-15-20" name="__codelineno-15-20" href="#__codelineno-15-20"></a>                    <span class="n">assurance</span><span class="o">=</span><span class="p">{</span><span class="s2">"authenticity_threshold"</span><span class="p">:</span> <span class="mf">0.5</span><span class="p">},</span>
+</span><span id="__span-15-21"><a id="__codelineno-15-21" name="__codelineno-15-21" href="#__codelineno-15-21"></a>                <span class="p">),</span>
+</span><span id="__span-15-22"><a id="__codelineno-15-22" name="__codelineno-15-22" href="#__codelineno-15-22"></a>            <span class="p">),</span>
+</span><span id="__span-15-23"><a id="__codelineno-15-23" name="__codelineno-15-23" href="#__codelineno-15-23"></a>            <span class="n">BatchApplicant</span><span class="p">(</span><span class="n">sample</span><span class="o">=</span><span class="s2">"/path/to/bob.wav"</span><span class="p">,</span> <span class="n">applicant</span><span class="o">=</span><span class="n">bob</span><span class="p">),</span>
+</span><span id="__span-15-24"><a id="__codelineno-15-24" name="__codelineno-15-24" href="#__codelineno-15-24"></a>        <span class="p">],</span>
+</span><span id="__span-15-25"><a id="__codelineno-15-25" name="__codelineno-15-25" href="#__codelineno-15-25"></a>    <span class="p">),</span>
+</span><span id="__span-15-26"><a id="__codelineno-15-26" name="__codelineno-15-26" href="#__codelineno-15-26"></a><span class="p">)</span>
+</span><span id="__span-15-27"><a id="__codelineno-15-27" name="__codelineno-15-27" href="#__codelineno-15-27"></a>
+</span><span id="__span-15-28"><a id="__codelineno-15-28" name="__codelineno-15-28" href="#__codelineno-15-28"></a><span class="n">task</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">wait_for_task</span><span class="p">(</span><span class="n">TaskInput</span><span class="p">(</span><span class="n">task_id</span><span class="o">=</span><span class="n">batch</span><span class="o">.</span><span class="n">task_id</span><span class="p">),</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">300</span><span class="p">)</span>
+</span><span id="__span-15-29"><a id="__codelineno-15-29" name="__codelineno-15-29" href="#__codelineno-15-29"></a><span class="k">if</span> <span class="ow">not</span> <span class="n">task</span><span class="o">.</span><span class="n">succeeded</span><span class="p">:</span>
+</span><span id="__span-15-30"><a id="__codelineno-15-30" name="__codelineno-15-30" href="#__codelineno-15-30"></a>    <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"batch finished as </span><span class="si">{</span><span class="n">task</span><span class="o">.</span><span class="n">status</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+</span><span id="__span-15-31"><a id="__codelineno-15-31" name="__codelineno-15-31" href="#__codelineno-15-31"></a>
+</span><span id="__span-15-32"><a id="__codelineno-15-32" name="__codelineno-15-32" href="#__codelineno-15-32"></a><span class="n">result</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">get_task_result</span><span class="p">(</span><span class="n">TaskInput</span><span class="p">(</span><span class="n">task_id</span><span class="o">=</span><span class="n">batch</span><span class="o">.</span><span class="n">task_id</span><span class="p">))</span><span class="o">.</span><span class="n">result</span>
+</span><span id="__span-15-33"><a id="__codelineno-15-33" name="__codelineno-15-33" href="#__codelineno-15-33"></a><span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="s2">"summary"</span><span class="p">])</span>  <span class="c1"># {'total': 2, 'success': 2, 'error': 0}</span>
+</span><span id="__span-15-34"><a id="__codelineno-15-34" name="__codelineno-15-34" href="#__codelineno-15-34"></a><span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">result</span><span class="p">[</span><span class="s2">"report"</span><span class="p">]:</span>
+</span><span id="__span-15-35"><a id="__codelineno-15-35" name="__codelineno-15-35" href="#__codelineno-15-35"></a>    <span class="nb">print</span><span class="p">(</span><span class="n">item</span><span class="p">[</span><span class="s2">"subject_id"</span><span class="p">],</span> <span class="n">item</span><span class="p">[</span><span class="s2">"status"</span><span class="p">])</span>
+</span></code></pre></div>
+<p>A batch can partly succeed: <code>summary</code> counts both outcomes and <code>report</code> carries one entry
+per applicant, so check the report rather than only the task status.</p>
+<p><code>sample</code> takes a path or bytes, as everywhere else. <code>filename</code> sets the name inside the
+archive if you need it to be something particular; otherwise it is derived.</p>
+<h2 id="following-asynchronous-work">Following asynchronous work<a class="headerlink" href="#following-asynchronous-work" title="Link to this section">&para;</a></h2>
+<p>Anything that answers <code>202</code> runs as a task.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">vericlient.vcsp.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">TaskInput</span><span class="p">,</span> <span class="n">TaskStatus</span>
+</span><span id="__span-16-2"><a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a>
+</span><span id="__span-16-3"><a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a><span class="c1"># Everything still running or recently finished</span>
+</span><span id="__span-16-4"><a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a><span class="k">for</span> <span class="n">task</span> <span class="ow">in</span> <span class="n">client</span><span class="o">.</span><span class="n">get_tasks</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">:</span>
+</span><span id="__span-16-5"><a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">task</span><span class="o">.</span><span class="n">task_id</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">task</span><span class="o">.</span><span class="n">status</span><span class="si">}</span><span class="s2"> at </span><span class="si">{</span><span class="n">task</span><span class="o">.</span><span class="n">progress</span><span class="si">}</span><span class="s2">%"</span><span class="p">)</span>
+</span><span id="__span-16-6"><a id="__codelineno-16-6" name="__codelineno-16-6" href="#__codelineno-16-6"></a>
+</span><span id="__span-16-7"><a id="__codelineno-16-7" name="__codelineno-16-7" href="#__codelineno-16-7"></a><span class="c1"># One task, checked once</span>
+</span><span id="__span-16-8"><a id="__codelineno-16-8" name="__codelineno-16-8" href="#__codelineno-16-8"></a><span class="n">task</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">get_task</span><span class="p">(</span><span class="n">TaskInput</span><span class="p">(</span><span class="n">task_id</span><span class="o">=</span><span class="n">task_id</span><span class="p">))</span>
+</span><span id="__span-16-9"><a id="__codelineno-16-9" name="__codelineno-16-9" href="#__codelineno-16-9"></a><span class="k">if</span> <span class="n">task</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="n">TaskStatus</span><span class="o">.</span><span class="n">FAILED</span><span class="p">:</span>
+</span><span id="__span-16-10"><a id="__codelineno-16-10" name="__codelineno-16-10" href="#__codelineno-16-10"></a>    <span class="o">...</span>
+</span><span id="__span-16-11"><a id="__codelineno-16-11" name="__codelineno-16-11" href="#__codelineno-16-11"></a>
+</span><span id="__span-16-12"><a id="__codelineno-16-12" name="__codelineno-16-12" href="#__codelineno-16-12"></a><span class="c1"># Or block until it finishes</span>
+</span><span id="__span-16-13"><a id="__codelineno-16-13" name="__codelineno-16-13" href="#__codelineno-16-13"></a><span class="n">task</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">wait_for_task</span><span class="p">(</span><span class="n">TaskInput</span><span class="p">(</span><span class="n">task_id</span><span class="o">=</span><span class="n">task_id</span><span class="p">),</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span> <span class="n">poll_interval</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+</span><span id="__span-16-14"><a id="__codelineno-16-14" name="__codelineno-16-14" href="#__codelineno-16-14"></a><span class="nb">print</span><span class="p">(</span><span class="n">task</span><span class="o">.</span><span class="n">is_finished</span><span class="p">,</span> <span class="n">task</span><span class="o">.</span><span class="n">succeeded</span><span class="p">)</span>
+</span><span id="__span-16-15"><a id="__codelineno-16-15" name="__codelineno-16-15" href="#__codelineno-16-15"></a>
+</span><span id="__span-16-16"><a id="__codelineno-16-16" name="__codelineno-16-16" href="#__codelineno-16-16"></a><span class="n">client</span><span class="o">.</span><span class="n">delete_task</span><span class="p">(</span><span class="n">TaskInput</span><span class="p">(</span><span class="n">task_id</span><span class="o">=</span><span class="n">task_id</span><span class="p">))</span>
+</span></code></pre></div>
+<p><code>wait_for_task</code> returns on failure as well as on success — check <code>succeeded</code> rather than
+assuming. It raises <code>TimeoutError</code> if the task is still running when the timeout expires.</p>
+<div class="admonition note">
+<p class="admonition-title"><code>status</code> is a plain string</p>
+<p><code>TaskStatus</code> exists to compare against, but the field is typed as <code>str</code> so a state the
+service adds later does not break deserialisation.</p>
+</div>
+<div class="admonition tip">
+<p class="admonition-title">Tasks expire on their own</p>
+<p>The service drops a task and its result after thirty days. <code>delete_task</code> is there for
+callers that would rather not wait.</p>
+</div>
 
 
 
