@@ -1,16 +1,28 @@
 """Module with the abstraction of the client to interact with the Veridas APIs."""
 
 from abc import ABC, abstractmethod
+from typing import TypeVar
 
 import requests
 import structlog
 
 from vericlient.apis import APIs
-from vericlient.config.config import settings
+from vericlient.config import DEFAULT_TIMEOUT, Settings
 from vericlient.environments import Environments, Locations, cloud_env2url
 from vericlient.exceptions import AuthorizationError, ServerError
 
 logger = structlog.get_logger(__name__)
+
+T = TypeVar("T")
+
+
+def _first(*values: T | None) -> T | None:
+    """Return the first value that is not None.
+
+    This is the precedence rule the whole client follows: what the caller passed wins over
+    the environment, which wins over the built-in default.
+    """
+    return next((value for value in values if value is not None), None)
 
 
 class Client(ABC):
@@ -29,42 +41,38 @@ class Client(ABC):
         """Create Client class."""
         self._headers = headers or {}
         self._session = requests.Session()
+        settings = Settings()
 
-        if not timeout and not settings.timeout:
-            seconds = 10
-            logging_message = f"No timeout provided. Defaulting to {seconds} seconds"
-            logger.warning(logging_message)
-            self._timeout = seconds
-        else:
-            self._timeout = settings.timeout or timeout
+        self._timeout = _first(timeout, settings.timeout, DEFAULT_TIMEOUT)
 
+        url = _first(url, settings.url)
         if url:
-            self._configure_custom_url(url)
+            self._url = url
         else:
-            self._configure_cloud_url(api, environment, location)
-            if not apikey and not settings.apikey:
+            self._configure_cloud_url(
+                api,
+                _first(environment, settings.environment),
+                _first(location, settings.location),
+            )
+            apikey = _first(apikey, settings.apikey)
+            if not apikey:
                 error = "If target is cloud, apikey must be provided"
                 raise ValueError(error)
-            apikey = settings.apikey or apikey
             self._headers.update({"apikey": apikey})
 
         self._session.headers.update(self._headers)
 
-    def _configure_cloud_url(self, api: APIs, environment: str, location: str) -> None:
-        if not environment and not settings.environment:
+    def _configure_cloud_url(self, api: APIs, environment: str | None, location: str | None) -> None:
+        if not environment:
             logger.warning("No environment provided. Defaulting to sandbox")
             environment = Environments.SANDBOX.value
-        else:
-            environment = settings.environment or environment
         if not any(environment == env.value for env in Environments):
             error = f"Invalid environment: {environment}. Valid options are: {', '.join(env.value for env in Environments)}"
             raise ValueError(error)
 
-        if not location and not settings.location:
+        if not location:
             logger.warning("No location provided. Defaulting to EU")
             location = Locations.EU.value
-        else:
-            location = settings.location or location
         if not any(location == loc.value for loc in Locations):
             error = f"Invalid location: {location}. Valid options are: {', '.join(loc.value for loc in Locations)}"
             raise ValueError(error)
@@ -74,10 +82,6 @@ class Client(ABC):
             error = f"If target is cloud, api must be one of the APIs enum members: {valid}"
             raise TypeError(error)
         self._url = cloud_env2url[environment][location] + f"/{api.path}"
-
-    def _configure_custom_url(self, url: str) -> None:
-        url = settings.url or url
-        self._url = url
 
     @property
     def url(self) -> str:

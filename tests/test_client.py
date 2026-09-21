@@ -1,8 +1,10 @@
 import pytest
 import requests_mock
+from pydantic import ValidationError
 
 from vericlient import DaspeakClient, VcspClient
 from vericlient.apis import APIs
+from vericlient.config import DEFAULT_TIMEOUT
 from vericlient.exceptions import ServerError
 from vericlient.utils import DEFAULT_CONTENT_TYPE
 
@@ -78,3 +80,74 @@ def test_get_sample_falls_back_when_the_content_is_unknown():
     client = VcspClient(apikey="fake-apikey")
     _, _, content_type = client._get_sample(b"not a known format")  # noqa: SLF001
     assert content_type == DEFAULT_CONTENT_TYPE
+
+
+@pytest.fixture(autouse=True)
+def _clean_environment(monkeypatch) -> None:
+    """Keep VERICLIENT_* out of the tests that do not set it themselves."""
+    for name in ("APIKEY", "ENVIRONMENT", "LOCATION", "URL", "TIMEOUT"):
+        monkeypatch.delenv(f"VERICLIENT_{name}", raising=False)
+
+
+def test_explicit_arguments_win_over_the_environment(monkeypatch):
+    """The old behaviour was the other way round: the environment silently won."""
+    monkeypatch.setenv("VERICLIENT_APIKEY", "from-env")
+    monkeypatch.setenv("VERICLIENT_ENVIRONMENT", "production")
+    monkeypatch.setenv("VERICLIENT_LOCATION", "us")
+    monkeypatch.setenv("VERICLIENT_TIMEOUT", "99")
+
+    client = DaspeakClient(apikey="explicit", environment="sandbox", location="eu", timeout=5)
+
+    assert client.headers["apikey"] == "explicit"
+    assert client.url == "https://api-work.eu.veri-das.com/daspeak/v1"
+    assert client.timeout == 5
+
+
+def test_the_environment_fills_in_what_the_caller_left_out(monkeypatch):
+    monkeypatch.setenv("VERICLIENT_APIKEY", "from-env")
+    monkeypatch.setenv("VERICLIENT_ENVIRONMENT", "production")
+    monkeypatch.setenv("VERICLIENT_LOCATION", "us")
+    monkeypatch.setenv("VERICLIENT_TIMEOUT", "99")
+
+    client = DaspeakClient()
+
+    assert client.headers["apikey"] == "from-env"
+    assert client.url == "https://api.us.veri-das.com/daspeak/v1"
+    assert client.timeout == 99
+
+
+def test_defaults_apply_when_nothing_is_given():
+    client = DaspeakClient(apikey="explicit")
+    assert client.url == "https://api-work.eu.veri-das.com/daspeak/v1"
+    assert client.timeout == DEFAULT_TIMEOUT
+
+
+def test_an_explicit_url_wins_over_the_environment(monkeypatch):
+    monkeypatch.setenv("VERICLIENT_URL", "https://from-env.example.com")
+    assert DaspeakClient(url="https://explicit.example.com").url == "https://explicit.example.com"
+
+
+def test_a_self_hosted_url_needs_no_apikey(monkeypatch):
+    monkeypatch.setenv("VERICLIENT_URL", "https://self-hosted.example.com")
+    client = DaspeakClient()
+    assert client.url == "https://self-hosted.example.com"
+    assert "apikey" not in client.headers
+
+
+def test_a_cloud_client_without_an_apikey_is_refused():
+    with pytest.raises(ValueError, match="apikey must be provided"):
+        DaspeakClient()
+
+
+def test_a_malformed_timeout_in_the_environment_is_reported(monkeypatch):
+    """Dynaconf passed the string through; the value only blew up at request time."""
+    monkeypatch.setenv("VERICLIENT_TIMEOUT", "not-a-number")
+    with pytest.raises(ValidationError):
+        DaspeakClient(apikey="explicit")
+
+
+def test_two_clients_can_use_different_keys():
+    daspeak = DaspeakClient(apikey="key-one")
+    vcsp = VcspClient(apikey="key-two")
+    assert daspeak.headers["apikey"] == "key-one"
+    assert vcsp.headers["apikey"] == "key-two"

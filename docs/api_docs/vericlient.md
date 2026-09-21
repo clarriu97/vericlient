@@ -78,11 +78,38 @@ client = DaspeakClient(apikey="your_api_key")
 
 ### Environment variables
 
-The following environment variables are supported and will override the
-programmatic configuration:
+| Variable | Sets | Default |
+|---|---|---|
+| `VERICLIENT_APIKEY` | The API key used against the Veridas cloud | none |
+| `VERICLIENT_ENVIRONMENT` | `sandbox` or `production` | `sandbox` |
+| `VERICLIENT_LOCATION` | `eu` or `us` | `eu` |
+| `VERICLIENT_URL` | A self-hosted URL, which replaces the cloud entirely | none |
+| `VERICLIENT_TIMEOUT` | The request timeout in seconds | `10` |
 
-- `VERICLIENT_ENVIRONMENT`: The environment to use for the requests.
-- `VERICLIENT_APIKEY`: The API key to use for the requests against the Veridas Cloud API.
-- `VERICLIENT_LOCATION`: The location to use for the requests.
-- `VERICLIENT_URL`: In case you want to use a self-hosted API, you can set the URL with this variable.
-- `VERICLIENT_TIMEOUT`: The timeout for the requests.
+### Precedence
+
+Each setting is resolved in this order:
+
+1. the argument passed to the client constructor,
+2. the `VERICLIENT_` environment variable,
+3. the library default.
+
+```python
+import os
+from vericlient import DaspeakClient
+
+os.environ["VERICLIENT_APIKEY"] = "from-the-environment"
+
+DaspeakClient()                       # uses "from-the-environment"
+DaspeakClient(apikey="explicit")      # uses "explicit"
+```
+
+!!! warning "Changed in 0.2.0"
+
+    Before 0.2.0 this was the other way round: an environment variable silently won over
+    the constructor argument, so `DaspeakClient(apikey="explicit")` was ignored whenever
+    `VERICLIENT_APIKEY` happened to be set, and two clients could not use two different
+    keys in the same process.
+
+Settings are read when a client is created, not when the library is imported, so changing
+the environment between two constructor calls does what you would expect.
