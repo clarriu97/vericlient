@@ -557,6 +557,39 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#get-the-metadata-of-a-biometrics-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Get the metadata of a biometrics model
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#get-the-calibrations-a-model-supports" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Get the calibrations a model supports
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#find-out-which-model-generated-a-credential" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Find out which model generated a credential
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#generate-a-credential-from-an-audio-file" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -754,6 +787,39 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#get-the-metadata-of-a-biometrics-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Get the metadata of a biometrics model
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#get-the-calibrations-a-model-supports" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Get the calibrations a model supports
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#find-out-which-model-generated-a-credential" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Find out which model generated a credential
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#generate-a-credential-from-an-audio-file" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -864,6 +930,41 @@
 
 <span class="n">client</span> <span class="o">=</span> <span class="n">DaspeakClient</span><span class="p">(</span><span class="n">apikey</span><span class="o">=</span><span class="s2">"your_api_key"</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Biometrics models: </span><span class="si">{</span><span class="n">client</span><span class="o">.</span><span class="n">get_models</span><span class="p">()</span><span class="o">.</span><span class="n">models</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+</code></pre></div>
+<h2 id="get-the-metadata-of-a-biometrics-model">Get the metadata of a biometrics model<a class="headerlink" href="#get-the-metadata-of-a-biometrics-model" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">vericlient</span><span class="w"> </span><span class="kn">import</span> <span class="n">DaspeakClient</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">vericlient.daspeak.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">GetModelMetadataInput</span>
+
+<span class="n">client</span> <span class="o">=</span> <span class="n">DaspeakClient</span><span class="p">(</span><span class="n">apikey</span><span class="o">=</span><span class="s2">"your_api_key"</span><span class="p">)</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">get_models</span><span class="p">()</span><span class="o">.</span><span class="n">models</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+<span class="n">metadata</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">get_model_metadata</span><span class="p">(</span><span class="n">GetModelMetadataInput</span><span class="p">(</span><span class="nb">hash</span><span class="o">=</span><span class="n">model</span><span class="p">))</span><span class="o">.</span><span class="n">metadata</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Model </span><span class="si">{</span><span class="n">metadata</span><span class="o">.</span><span class="n">hash</span><span class="si">}</span><span class="s2"> is </span><span class="si">{</span><span class="n">metadata</span><span class="o">.</span><span class="n">description</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+</code></pre></div>
+<h2 id="get-the-calibrations-a-model-supports">Get the calibrations a model supports<a class="headerlink" href="#get-the-calibrations-a-model-supports" title="Permanent link">&para;</a></h2>
+<p>Any value returned here is valid as the <code>calibration</code> argument of <code>generate_credential</code>
+and of the comparison inputs.</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">vericlient</span><span class="w"> </span><span class="kn">import</span> <span class="n">DaspeakClient</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">vericlient.daspeak.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">GetModelCalibrationsInput</span>
+
+<span class="n">client</span> <span class="o">=</span> <span class="n">DaspeakClient</span><span class="p">(</span><span class="n">apikey</span><span class="o">=</span><span class="s2">"your_api_key"</span><span class="p">)</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">get_models</span><span class="p">()</span><span class="o">.</span><span class="n">models</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+<span class="n">calibrations</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">get_model_calibrations</span><span class="p">(</span><span class="n">GetModelCalibrationsInput</span><span class="p">(</span><span class="nb">hash</span><span class="o">=</span><span class="n">model</span><span class="p">))</span><span class="o">.</span><span class="n">calibrations</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Supported calibrations: </span><span class="si">{</span><span class="n">calibrations</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+</code></pre></div>
+<h2 id="find-out-which-model-generated-a-credential">Find out which model generated a credential<a class="headerlink" href="#find-out-which-model-generated-a-credential" title="Permanent link">&para;</a></h2>
+<p>Useful to check whether a credential you stored some time ago still matches a model the
+service offers today.</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">vericlient</span><span class="w"> </span><span class="kn">import</span> <span class="n">DaspeakClient</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">vericlient.daspeak.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">GetModelMetadataFromCredentialInput</span>
+
+<span class="n">client</span> <span class="o">=</span> <span class="n">DaspeakClient</span><span class="p">(</span><span class="n">apikey</span><span class="o">=</span><span class="s2">"your_api_key"</span><span class="p">)</span>
+
+<span class="n">metadata</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">get_model_metadata_from_credential</span><span class="p">(</span>
+    <span class="n">GetModelMetadataFromCredentialInput</span><span class="p">(</span><span class="n">credential</span><span class="o">=</span><span class="n">stored_credential</span><span class="p">),</span>
+<span class="p">)</span><span class="o">.</span><span class="n">metadata</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Generated with model </span><span class="si">{</span><span class="n">metadata</span><span class="o">.</span><span class="n">hash</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">metadata</span><span class="o">.</span><span class="n">description</span><span class="si">}</span><span class="s2">)"</span><span class="p">)</span>
 </code></pre></div>
 <h2 id="generate-a-credential-from-an-audio-file">Generate a credential from an audio file<a class="headerlink" href="#generate-a-credential-from-an-audio-file" title="Permanent link">&para;</a></h2>
 <p>The following code generates a credential from an audio file using the last model:</p>
