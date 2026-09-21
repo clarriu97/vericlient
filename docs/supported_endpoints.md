@@ -6,7 +6,7 @@ specifications rather than against memory.
 | API | Specification | Covered |
 |---|---|---|
 | das-Peak | [v2.33](https://docs.veridas.com/das-peak/cloud/v2.33/api/definition/) | **11 / 11** |
-| VCSP | [v1.17](https://docs.veridas.com/vcsp_echo/cloud/v1.17/api/definition/) | **10 / 31** |
+| VCSP | [v1.17](https://docs.veridas.com/vcsp_echo/cloud/v1.17/api/definition/) | **18 / 31** |
 | das-Face | [v2](https://docs.veridas.com/das-face/cloud/v3.26/api/definition/) | 0 / 14 |
 
 ---
@@ -47,21 +47,21 @@ Work in progress, tracked in [issue #3](https://github.com/clarriu97/vericlient/
 | `PATCH /v1/accounts/{subject_id}/credentials/{credential_id}/tags` | — |
 | `GET /v1/credentials` | — |
 | `DELETE /v1/credentials` | — |
-| `POST /v1/groups` | — |
-| `GET /v1/groups` | — |
-| `GET /v1/groups/{group_name}` | — |
+| `POST /v1/groups` | `create_group()` |
+| `GET /v1/groups` | `get_groups()` |
+| `GET /v1/groups/{group_name}` | `get_group()` |
 | `PATCH /v1/groups/{group_name}` | — |
-| `DELETE /v1/groups/{group_name}` | — |
-| `GET /v1/groups/{group_name}/credentials` | — |
+| `DELETE /v1/groups/{group_name}` | `delete_group()` |
+| `GET /v1/groups/{group_name}/credentials` | `get_group_members()` |
 | `POST /v1/groups/{group_name}/clustering` | — |
 | `POST /v1/matchings` | — |
 | `GET /v1/credential_configurations` | `get_credential_configurations()` |
 | `GET /v1/credential_configurations/{urn}` | — |
 | `GET /v1/assurance_methods` | `get_assurance_methods()` |
 | `GET /v1/assurance_methods/{urn}` | `get_assurance_method_info()` |
-| `POST /v1/tags` | — |
-| `GET /v1/tags` | — |
-| `DELETE /v1/tags/{tag_name}` | — |
+| `POST /v1/tags` | `create_tags()` |
+| `GET /v1/tags` | `get_tags()` |
+| `DELETE /v1/tags/{tag_name}` | `delete_tag()` |
 | `GET /v1/tasks` | — |
 | `GET /v1/tasks/{task_id}` | — |
 | `DELETE /v1/tasks/{task_id}` | — |

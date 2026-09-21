@@ -16,6 +16,12 @@ def pytest_addoption(parser):
         help="Run tests with mock server responses",
     )
     parser.addoption(
+        "--keep-resources",
+        action="store_true",
+        default=False,
+        help="Do not delete resources created against real infrastructure, for debugging",
+    )
+    parser.addoption(
         "--env",
         action="store",
         default=None,
@@ -47,6 +53,11 @@ def mock_option(request):
 @pytest.fixture(scope="session")
 def test_environment(request):
     return request.config.getoption("--env")
+
+
+@pytest.fixture(scope="session")
+def keep_resources(request):
+    return request.config.getoption("--keep-resources")
 
 
 @pytest.fixture(scope="session")

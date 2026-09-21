@@ -5,6 +5,18 @@ The project follows [semantic versioning](https://semver.org/).
 
 ## Unreleased
 
+### Added
+
+- **VCSP groups and tags**: `create_group`, `get_groups`, `get_group`, `delete_group`,
+  `get_group_members`, `create_tags`, `get_tags` and `delete_tag`. Coverage goes from 10 to
+  18 of the 31 endpoints in the specification.
+- Exceptions for the new failure modes: `GroupNotFoundError`, `GroupAlreadyExistsError`,
+  `GroupsLimitExceededError`, `TagAlreadyExistsError`, `TagsLimitExceededError`,
+  `TagListEmptyError` and `EnrollmentsLimitExceededError`.
+- The VCSP suite now creates and destroys real resources against a sandbox, with a session
+  sweeper that recovers from a run that died before its teardown, and a `--keep-resources`
+  flag for debugging.
+
 ### Breaking
 
 - **Responses no longer carry `status_code`.** An HTTP status code is a transport detail,

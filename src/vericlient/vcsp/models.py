@@ -301,3 +301,236 @@ class GetCredentialsOutput(VcspResponse):
     """
 
     credentials: list[GetCredentialOutput]
+
+
+class TagInput(BaseModel):
+    """Input class for the tag endpoint.
+
+    Attributes:
+        name: The name of the tag
+
+    """
+
+    name: str
+
+
+class TagOutput(TagInput):
+    """Output class for the tag endpoint.
+
+    Attributes:
+        name: The name of the tag
+        created_at: The created_at date
+
+    """
+
+    created_at: str
+
+
+class CreateTagsInput(BaseModel):
+    """Input class for the create tag endpoint.
+
+    Attributes:
+        tags: The tags to create
+
+    """
+
+    tags: list[str]
+
+
+class CreateTagsOutput(VcspResponse):
+    """Output class for the create tag endpoint.
+
+    Attributes:
+        tags: The tags created
+        created_at: The created_at date
+
+    """
+
+    tags: list[str]
+    created_at: str
+
+
+class GetTagsOutput(VcspResponse):
+    """Output class for the get tags endpoint.
+
+    Attributes:
+        items: The tags
+        total: The total number of tags
+        page: The page number
+        size: The size of the tags
+        pages: The total number of pages
+
+    """
+
+    items: list[TagOutput]
+    total: int
+    page: int
+    size: int
+    pages: int
+
+
+class DeleteTagInput(TagInput):
+    """Input class for the delete tag endpoint.
+
+    Attributes:
+        name: The name of the tag
+
+    """
+
+
+class GroupInput(BaseModel):
+    """Input class for the group endpoint.
+
+    Attributes:
+        name: The name of the group
+
+    """
+
+    name: str
+
+
+class CreateGroupInput(GroupInput):
+    """Input class for the create group endpoint.
+
+    Attributes:
+        name: The name of the group. Must match `^[a-zA-Z_][a-zA-Z0-9_]{2,63}$`, so letters,
+            digits and underscores only, starting with a letter or an underscore
+        credential_configuration_urn: The credential configuration the group holds
+        description: A free-text description. Defaults to empty on the service
+        expired_at: How long credentials are retained in the group, as an **ISO 8601
+            duration** such as `P1Y` or `P30D` — not a date. The service answers with the
+            resulting timestamp. Defaults to five years
+
+    """
+
+    credential_configuration_urn: str
+    description: str | None = None
+    expired_at: str | None = None
+
+
+class CreateGroupOutput(VcspResponse):
+    """Output class for the create group endpoint.
+
+    Attributes:
+        size: The number of credentials in the group
+        created_at: The created_at date
+        updated_at: The updated_at date
+        credential_configuration_urn: The credential configuration the group holds
+        name: The name of the group
+        description: The description of the group
+        expired_at: The date the credentials expire. Note the asymmetry with the input,
+            which takes a duration rather than a date
+
+    """
+
+    size: int
+    created_at: str
+    updated_at: str
+    credential_configuration_urn: str
+    name: str
+    description: str
+    expired_at: str
+
+
+class GetGroupsInput(BaseModel):
+    """Input class for the get groups endpoint.
+
+    Attributes:
+        size: The size of the groups (optional), default is 100
+        page: The page number (optional), default is 1
+
+    """
+
+    size: int | None = 100
+    page: int | None = 1
+
+
+class GetGroupsOutput(VcspResponse):
+    """Output class for the get groups endpoint.
+
+    Attributes:
+        items: The items of the groups
+        total: The total number of groups
+        page: The page number
+        size: The size of the groups
+        pages: The total number of pages
+
+    """
+
+    items: list[CreateGroupOutput]
+    total: int
+    page: int
+    size: int
+    pages: int
+
+
+class GetGroupInput(GroupInput):
+    """Input class for the get a specific group endpoint."""
+
+
+class GetGroupOutput(CreateGroupOutput):
+    """Output class for the get a specific group endpoint.
+
+    Attributes:
+        size: The size of the group
+        created_at: The created_at date
+        updated_at: The updated_at date
+        credential_configuration_urn: The credential configuration urn
+        name: The name of the group
+        description: The description of the group
+        expired_at: The expired_at date
+
+    """
+
+
+class DeleteGroupInput(GroupInput):
+    """Input class for the delete group endpoint.
+
+    Attributes:
+        name: The name of the group
+
+    """
+
+    name: str
+
+
+class GetGroupMembersInput(GroupInput):
+    """Input class for the get group members endpoint."""
+
+
+class GroupMember(BaseModel):
+    """Base class for the group member.
+
+    Attributes:
+        subject_id: The subject_id of the group member
+        credential_id: The credential_id of the group member
+        expired_in_group: The expired_in_group of the group member
+        claims: The claims of the group member
+        tags: The tags of the group member
+
+    """
+
+    subject_id: str
+    credential_id: str
+    expired_in_group: str
+    claims: dict
+    tags: list[str]
+
+
+class GetGroupMembersOutput(VcspResponse):
+    """Output class for the get group members endpoint.
+
+    Attributes:
+        items: The items of the group members
+        total: The total number of group members
+        page: The page number
+        size: The size of the group members
+        pages: The total number of pages
+
+    """
+
+    items: list[GroupMember]
+    total: int
+    page: int
+    size: int
+    pages: int
