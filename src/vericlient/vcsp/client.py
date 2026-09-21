@@ -3,12 +3,14 @@
 import json
 import mimetypes
 import os
+import time
 
 from requests.models import Response
 
 from vericlient.apis import APIs
 from vericlient.client import Client
-from vericlient.utils import DEFAULT_CONTENT_TYPE, guess_content_type
+from vericlient.utils import DEFAULT_CONTENT_TYPE, get_virtual_file, guess_content_type
+from vericlient.vcsp.batch import build_batch_archive, sample_filename
 from vericlient.vcsp.endpoints import VcspEndpoints
 from vericlient.vcsp.exceptions import (
     AccountNotFoundError,
@@ -28,6 +30,7 @@ from vericlient.vcsp.exceptions import (
     InvalidAssuranceError,
     InvalidAssuranceMethodUrnError,
     InvalidAudioFormatError,
+    InvalidBatchFileError,
     InvalidClaimsError,
     InvalidCredentialConfigurationUrnError,
     InvalidSnrError,
@@ -37,6 +40,7 @@ from vericlient.vcsp.exceptions import (
     TagAlreadyExistsError,
     TagListEmptyError,
     TagsLimitExceededError,
+    TaskNotFoundError,
     UnsupportedMediaTypeError,
     VoiceDurationIsNotEnoughError,
 )
@@ -44,6 +48,8 @@ from vericlient.vcsp.models import (
     AssuranceMethodInput,
     AssuranceMethodOutput,
     AssuranceMethodsOutput,
+    BatchEnrollmentInput,
+    BatchEnrollmentOutput,
     CreateGroupInput,
     CreateGroupOutput,
     CreateTagsInput,
@@ -73,8 +79,12 @@ from vericlient.vcsp.models import (
     GetGroupsInput,
     GetGroupsOutput,
     GetTagsOutput,
+    GetTaskResultOutput,
+    GetTasksOutput,
     ListCredentialsInput,
     ListCredentialsOutput,
+    TaskInput,
+    TaskOutput,
 )
 
 
@@ -139,6 +149,8 @@ class VcspClient(Client):
             "tags_limit_exceeded": TagsLimitExceededError,
             "tag_list_empty": TagListEmptyError,
             "tags_already_exist": TagAlreadyExistsError,
+            "task_not_found": TaskNotFoundError,
+            "invalid_batch_file": InvalidBatchFileError,
         }
 
     def alive(self) -> bool:
@@ -245,6 +257,140 @@ class VcspClient(Client):
         endpoint = VcspEndpoints.CREDENTIAL_CONFIGURATION_URN.value.replace("<urn>", data_model.urn)
         response = self._get(endpoint=endpoint)
         return CredentialConfigurationOutput(**response.json())
+
+    def enroll_batch(self, data_model: BatchEnrollmentInput) -> BatchEnrollmentOutput:
+        """Enrol several applicants at once.
+
+        The work happens asynchronously. Follow it with `get_task`, or block on
+        `wait_for_task`, and collect the outcome with `get_task_result`.
+
+        Pass `applicants` and the client builds the archive the service expects. Neither the
+        `applicants.json` name nor the `file://` reference its entries use is documented;
+        both were found by reading the service's errors.
+
+        Args:
+            data_model: The enrolments to perform, or a prepared TAR archive
+
+        Returns:
+            BatchEnrollmentOutput: The task the enrolments run under
+
+        Raises:
+            InvalidBatchFileError: If the archive is malformed or a sample is missing
+
+        """
+        if data_model.batch_file is not None:
+            archive = get_virtual_file(data_model.batch_file)
+        else:
+            entries = [
+                (
+                    sample_filename(applicant.sample, index, applicant.filename),
+                    get_virtual_file(applicant.sample),
+                    applicant.applicant.model_dump(exclude_none=True),
+                )
+                for index, applicant in enumerate(data_model.applicants)
+            ]
+            archive = build_batch_archive(entries)
+
+        response = self._post(
+            endpoint=VcspEndpoints.ENROLLMENTS_BATCH.value,
+            files={"batch_file": ("batch.tar", archive, "application/x-tar")},
+        )
+        return BatchEnrollmentOutput(**response.json())
+
+    def get_tasks(self) -> GetTasksOutput:
+        """List the asynchronous tasks the service is still holding.
+
+        Returns:
+            GetTasksOutput: The active tasks, paginated
+
+        """
+        response = self._get(endpoint=VcspEndpoints.TASKS.value)
+        return GetTasksOutput(**response.json())
+
+    def get_task(self, data_model: TaskInput) -> TaskOutput:
+        """Get the state of one asynchronous task.
+
+        Args:
+            data_model: The task to look up
+
+        Returns:
+            TaskOutput: Its status and progress
+
+        Raises:
+            TaskNotFoundError: If no task exists with that identifier
+
+        """
+        endpoint = VcspEndpoints.TASK_ID.value.replace("<task_id>", data_model.task_id)
+        response = self._get(endpoint=endpoint)
+        return TaskOutput(**response.json())
+
+    def delete_task(self, data_model: TaskInput) -> None:
+        """Delete a task and its result.
+
+        Tasks expire on their own, but a long-running caller is better off tidying up.
+
+        Args:
+            data_model: The task to delete
+
+        Raises:
+            TaskNotFoundError: If no task exists with that identifier
+
+        """
+        endpoint = VcspEndpoints.TASK_ID.value.replace("<task_id>", data_model.task_id)
+        self._delete(endpoint=endpoint)
+
+    def get_task_result(self, data_model: TaskInput) -> GetTaskResultOutput:
+        """Get the outcome of a finished task.
+
+        The shape depends on what created the task, so it comes back as a dictionary.
+
+        Args:
+            data_model: The task to collect
+
+        Returns:
+            GetTaskResultOutput: The outcome, as the service returned it
+
+        Raises:
+            TaskNotFoundError: If no task exists with that identifier
+
+        """
+        endpoint = VcspEndpoints.TASK_RESULT.value.replace("<task_id>", data_model.task_id)
+        response = self._get(endpoint=endpoint)
+        return GetTaskResultOutput(result=response.json())
+
+    def wait_for_task(
+        self,
+        data_model: TaskInput,
+        timeout: float = 300,
+        poll_interval: float = 2,
+    ) -> TaskOutput:
+        """Block until a task finishes, and return its final state.
+
+        Saves every caller writing the same polling loop. It returns on failure as well as on
+        success, so check `succeeded` on the result.
+
+        Args:
+            data_model: The task to wait for
+            timeout: How long to wait, in seconds, before giving up
+            poll_interval: How long to sleep between checks, in seconds
+
+        Returns:
+            TaskOutput: The task in its final state
+
+        Raises:
+            TaskNotFoundError: If no task exists with that identifier
+            TimeoutError: If the task has not finished within `timeout`
+
+        """
+        deadline = time.monotonic() + timeout
+        while True:
+            task = self.get_task(data_model=data_model)
+            if task.is_finished:
+                return task
+            if time.monotonic() >= deadline:
+                error = f"Task {data_model.task_id} did not finish within {timeout} seconds"
+                raise TimeoutError(error)
+            time.sleep(poll_interval)
 
     def get_credential_configurations(self) -> CredentialConfigurationsOutput:
         """Get all credential configurations.

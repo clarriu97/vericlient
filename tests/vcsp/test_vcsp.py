@@ -1,13 +1,22 @@
+import io
+import tarfile
+import uuid
+
 import pytest
 
-from tests.vcsp.conftest import TEST_TAG, unique_group_name
+from tests.vcsp.conftest import SUBJECT_PREFIX, TEST_TAG, unique_group_name
 from vericlient.vcsp.exceptions import (
     AccountNotFoundError,
     AssuranceMethodNotFoundError,
+    InvalidBatchFileError,
+    TaskNotFoundError,
+    UnsupportedMediaTypeError,
 )
 from vericlient.vcsp.models import (
     Applicant,
     AssuranceMethodInput,
+    BatchApplicant,
+    BatchEnrollmentInput,
     CreateGroupInput,
     CreateTagsInput,
     CredentialConfigurationInput,
@@ -25,6 +34,7 @@ from vericlient.vcsp.models import (
     GetGroupMembersInput,
     GetGroupsInput,
     ListCredentialsInput,
+    TaskInput,
 )
 
 
@@ -652,3 +662,112 @@ def test_real_delete_credentials_of_an_empty_group(real_writes, temp_group):
     )
 
     assert real_writes.get_group(data_model=GetGroupInput(name=temp_group)).size == 0
+
+
+@pytest.mark.vcsp
+def test_real_task_listing_is_paginated(real_writes):
+    """The task listing answers even with nothing running."""
+    tasks = real_writes.get_tasks()
+    assert tasks.page == 1
+    assert tasks.total >= 0
+    assert len(tasks.items) <= tasks.size
+
+
+@pytest.mark.vcsp
+def test_real_unknown_task_is_reported(real_writes):
+    """A task id that does not exist raises rather than returning an empty task."""
+    unknown = TaskInput(task_id="00000000-0000-0000-0000-000000000000")
+
+    with pytest.raises(TaskNotFoundError):
+        real_writes.get_task(data_model=unknown)
+
+    with pytest.raises(TaskNotFoundError):
+        real_writes.delete_task(data_model=unknown)
+
+
+@pytest.mark.vcsp
+def test_real_batch_enrollment_runs_as_a_task(
+    real_writes,
+    resource_tracker,
+    shared_test_tag,
+    audio_file,
+    voice_credential_configuration,
+    enrollment_assurance_method,
+):
+    """Enrol two applicants at once, follow the task, and read the outcome.
+
+    This is the full asynchronous path: the archive the client builds, the 202 with a task
+    handle, the polling, and the per-applicant report.
+    """
+    subject_ids = [f"{SUBJECT_PREFIX}-{uuid.uuid4()}" for _ in range(2)]
+    for subject_id in subject_ids:
+        resource_tracker.add(
+            "account",
+            subject_id,
+            lambda subject_id=subject_id: real_writes.delete_account(
+                DeleteAccountInput(subject_id=subject_id),
+            ),
+        )
+
+    batch = real_writes.enroll_batch(
+        data_model=BatchEnrollmentInput(
+            applicants=[
+                BatchApplicant(
+                    sample=audio_file,
+                    filename=f"sample_{index}.wav",
+                    applicant=Applicant(
+                        subject_id=subject_id,
+                        credential_configuration_urn=voice_credential_configuration,
+                        assurance_method_urn=enrollment_assurance_method,
+                        assurance={"authenticity_threshold": 0.5},
+                        tags=[shared_test_tag],
+                    ),
+                )
+                for index, subject_id in enumerate(subject_ids)
+            ],
+        ),
+    )
+    resource_tracker.add(
+        "task",
+        batch.task_id,
+        lambda: real_writes.delete_task(TaskInput(task_id=batch.task_id)),
+    )
+
+    task = real_writes.wait_for_task(TaskInput(task_id=batch.task_id), timeout=120)
+    assert task.succeeded, f"batch task finished as {task.status}"
+    assert task.is_finished
+    assert task.progress == 100
+    assert task.finished_at
+
+    result = real_writes.get_task_result(data_model=TaskInput(task_id=batch.task_id)).result
+    assert result["summary"] == {"total": 2, "success": 2, "error": 0}
+    assert sorted(item["subject_id"] for item in result["report"]) == sorted(subject_ids)
+    assert {item["status"] for item in result["report"]} == {"success"}
+
+    # The accounts really exist, rather than the report just saying so.
+    for subject_id in subject_ids:
+        assert real_writes.get_account(data_model=GetAccountInput(subject_id=subject_id)).credentials
+
+
+@pytest.mark.vcsp
+def test_real_batch_rejects_a_tar_without_applicants(real_writes):
+    """A TAR missing applicants.json is refused, rather than silently enrolling nothing."""
+    archive = io.BytesIO()
+    with tarfile.open(fileobj=archive, mode="w") as tar:
+        info = tarfile.TarInfo(name="sample.wav")
+        info.size = 4
+        tar.addfile(info, io.BytesIO(b"fake"))
+
+    with pytest.raises(InvalidBatchFileError):
+        real_writes.enroll_batch(data_model=BatchEnrollmentInput(batch_file=archive.getvalue()))
+
+
+@pytest.mark.vcsp
+def test_real_batch_rejects_something_that_is_not_an_archive(real_writes):
+    """Bytes that are not a TAR at all come back as an unsupported media type, not a bad batch.
+
+    Worth pinning: the service distinguishes "this is not an archive" from "this archive is
+    wrong", and they surface as different exceptions.
+    """
+    with pytest.raises(UnsupportedMediaTypeError):
+        real_writes.enroll_batch(data_model=BatchEnrollmentInput(batch_file=b"not a tar archive"))
