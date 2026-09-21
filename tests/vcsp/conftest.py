@@ -4,6 +4,8 @@ from unittest.mock import MagicMock
 
 import pytest
 from structlog import get_logger
+
+from tests.conftest import provide_testing_parameters
 from vericlient import VcspClient
 from vericlient.exceptions import ServerError
 from vericlient.vcsp.exceptions import (
@@ -32,8 +34,6 @@ from vericlient.vcsp.models import (
     EnrollmentInput,
     EnrollmentOutput,
 )
-
-from tests.conftest import provide_testing_parameters
 
 logger = get_logger(__name__)
 
@@ -92,7 +92,7 @@ def resource_tracker() -> ResourceTracker:
     return ResourceTracker()
 
 
-@pytest.fixture()
+@pytest.fixture
 def temp_subject(vcsp_client, mock_server, resource_tracker, audio_file_path) -> Generator[tuple[str, str], None, None]:
     """Create a temporary subject for testing and clean it up after.
 
@@ -126,7 +126,7 @@ def temp_subject(vcsp_client, mock_server, resource_tracker, audio_file_path) ->
 
 
 @pytest.fixture(scope="session", autouse=True)
-def cleanup_resources(vcsp_client, mock_server, resource_tracker) -> Generator[None, None, None]:   # noqa: PT004
+def cleanup_resources(vcsp_client, mock_server, resource_tracker) -> Generator[None, None, None]:
     """Clean up all resources created during tests.
 
     This fixture runs automatically at the end of the session to clean up all created resources.
@@ -140,7 +140,7 @@ def cleanup_resources(vcsp_client, mock_server, resource_tracker) -> Generator[N
         try:
             vcsp_client.delete_account(data_model=DeleteSubjectInput(subject_id=subject_id))
             logger.info("cleaned_up_subject", subject_id=subject_id)
-        except Exception as e:   # noqa: PERF203
+        except Exception as e:
             logger.exception("failed_to_clean_up_subject", subject_id=subject_id, error=e)
 
     resource_tracker.clear()

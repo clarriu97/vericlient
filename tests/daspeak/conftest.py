@@ -1,4 +1,6 @@
 import pytest
+
+from tests.conftest import provide_testing_parameters
 from vericlient.daspeak.exceptions import (
     AudioDurationTooLongError,
     CalibrationNotAvailableError,
@@ -14,8 +16,6 @@ from vericlient.exceptions import (
     ServerError,
     UnsupportedMediaTypeError,
 )
-
-from tests.conftest import provide_testing_parameters
 
 
 @pytest.fixture(scope="session")

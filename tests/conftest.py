@@ -2,6 +2,7 @@ import tempfile
 
 import pytest
 import requests_mock
+
 from vericlient.environments import Environments, Locations
 
 # pytest hooks

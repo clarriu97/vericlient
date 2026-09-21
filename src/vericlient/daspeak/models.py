@@ -1,7 +1,7 @@
 """Module to define the models for the Daspeak API."""
 # ruff: noqa: N805, D102, ANN201
 
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, ConfigDict, field_validator
 
 
 class DaspeakResponse(BaseModel):
@@ -53,8 +53,7 @@ class GenerateCredentialInput(BaseModel):
             raise TypeError(error)
         return value
 
-    class Config:
-        arbitrary_types_allowed = True
+    model_config = ConfigDict(arbitrary_types_allowed=True)
 
 
 class ModelMetadata(BaseModel):
@@ -167,8 +166,7 @@ class CompareCredential2AudioInput(CompareInput):
             raise TypeError(error)
         return value
 
-    class Config:
-        arbitrary_types_allowed = True
+    model_config = ConfigDict(arbitrary_types_allowed=True)
 
 
 class CompareCredential2AudioOutput(CompareOutput):
@@ -221,8 +219,7 @@ class CompareAudio2AudioInput(CompareInput):
             raise TypeError(error)
         return value
 
-    class Config:
-        arbitrary_types_allowed = True
+    model_config = ConfigDict(arbitrary_types_allowed=True)
 
 
 class CompareAudio2AudioOutput(CompareOutput):
@@ -292,8 +289,7 @@ class CompareAudio2CredentialsInput(CompareInput):
                 raise ValueError(error)
         return [{"id": item[0], "credential": item[1]} for item in value]
 
-    class Config:
-        arbitrary_types_allowed = True
+    model_config = ConfigDict(arbitrary_types_allowed=True)
 
 
 class CompareAudio2CredentialsOutput(DaspeakResponse):

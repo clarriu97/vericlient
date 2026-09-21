@@ -1,12 +1,11 @@
-"""Example script to demonstrate how to use the daspeak module.
-"""
+"""Example script to demonstrate how to use the daspeak module."""
 from vericlient import DaspeakClient
 from vericlient.daspeak.models import (
-    GenerateCredentialInput,
-    CompareCredential2AudioInput,
     CompareAudio2AudioInput,
+    CompareAudio2CredentialsInput,
+    CompareCredential2AudioInput,
     CompareCredential2CredentialInput,
-    CompareAudio2CredentialsInput
+    GenerateCredentialInput,
 )
 
 client = DaspeakClient()
@@ -79,7 +78,7 @@ compare_input = CompareAudio2CredentialsInput(
     audio_reference="/home/audio.wav",
     credential_list=[
         ("subject1_credential", generate_credential_output.credential),
-        ("subject2_credential", generate_credential_output.credential),   
+        ("subject2_credential", generate_credential_output.credential),
     ],
 )
 compare_output = client.compare(compare_input)

@@ -1,5 +1,6 @@
 
 import pytest
+
 from vericlient.vcsp.exceptions import (
     AssuranceMethodNotFoundError,
 )
@@ -15,7 +16,7 @@ from vericlient.vcsp.models import (
 )
 
 
-@pytest.mark.vcsp()
+@pytest.mark.vcsp
 def test_vcsp_alive(vcsp_client, mock_server, vcsp_alive_parameters):
     if mock_server:
         for param in vcsp_alive_parameters:
@@ -26,7 +27,7 @@ def test_vcsp_alive(vcsp_client, mock_server, vcsp_alive_parameters):
     assert response
 
 
-@pytest.mark.vcsp()
+@pytest.mark.vcsp
 def test_get_credential_configurations(
         vcsp_client, mock_server,
         vcsp_credential_configurations_response,
@@ -45,7 +46,7 @@ def test_get_credential_configurations(
         assert response.credential_configurations == vcsp_credential_configurations_response
 
 
-@pytest.mark.vcsp()
+@pytest.mark.vcsp
 def test_get_assurance_methods(
         vcsp_client,
         mock_server,
@@ -65,7 +66,7 @@ def test_get_assurance_methods(
         assert response.assurance_methods == vcsp_assurance_methods_response
 
 
-@pytest.mark.vcsp()
+@pytest.mark.vcsp
 def test_get_assurance_method_info_success(
         vcsp_client,
         mock_server,
@@ -86,19 +87,19 @@ def test_get_assurance_method_info_success(
     )
 
     assert response.urn == valid_assurance_method_urn
-    assert hasattr(response.schema, "schema")
-    assert hasattr(response.schema, "title")
-    assert hasattr(response.schema, "type")
-    assert hasattr(response.schema, "properties")
+    assert hasattr(response.json_schema, "json_schema")
+    assert hasattr(response.json_schema, "title")
+    assert hasattr(response.json_schema, "type")
+    assert hasattr(response.json_schema, "properties")
 
     if mock_server:
-        assert response.schema.schema == vcsp_assurance_method_response["schema"]["$schema"]
-        assert response.schema.title == vcsp_assurance_method_response["schema"]["title"]
-        assert response.schema.type == vcsp_assurance_method_response["schema"]["type"]
-        assert response.schema.properties == vcsp_assurance_method_response["schema"]["properties"]
+        assert response.json_schema.json_schema == vcsp_assurance_method_response["schema"]["$schema"]
+        assert response.json_schema.title == vcsp_assurance_method_response["schema"]["title"]
+        assert response.json_schema.type == vcsp_assurance_method_response["schema"]["type"]
+        assert response.json_schema.properties == vcsp_assurance_method_response["schema"]["properties"]
 
 
-@pytest.mark.vcsp()
+@pytest.mark.vcsp
 def test_get_assurance_method_info_not_found(
         vcsp_client,
         mock_server,
@@ -117,7 +118,7 @@ def test_get_assurance_method_info_not_found(
         )
 
 
-@pytest.mark.vcsp()
+@pytest.mark.vcsp
 def test_mock_vcsp_enroll_subject(vcsp_client, mock_server, vcsp_enrollment_parameters, audio_file_path, test_subject_id):
     if not mock_server:
         pytest.skip("This test only runs in mock mode")
@@ -141,14 +142,14 @@ def test_mock_vcsp_enroll_subject(vcsp_client, mock_server, vcsp_enrollment_para
         assert response.subject_id == test_subject_id
 
 
-@pytest.mark.vcsp()
+@pytest.mark.vcsp
 def test_vcsp_enrollment_exception(vcsp_client, mock_server, vcsp_enrollment_exception_parameters, audio_file_path):
     if not mock_server:
         pytest.skip("This test only runs in mock mode")
 
     for exception_parameters in vcsp_enrollment_exception_parameters:
         for param in exception_parameters:
-            endpoint, mock_response, mock_status_code, _, environment, location, exception = param
+            endpoint, mock_response, mock_status_code, _, _environment, _location, exception = param
             mock_server.post(endpoint, json=mock_response, status_code=mock_status_code)
 
             input_model = EnrollmentInput(
@@ -163,7 +164,7 @@ def test_vcsp_enrollment_exception(vcsp_client, mock_server, vcsp_enrollment_exc
                 vcsp_client.enroll_subject(data_model=input_model)
 
 
-@pytest.mark.vcsp()
+@pytest.mark.vcsp
 def test_get_account(vcsp_client, mock_server, vcsp_get_account_parameters, test_subject_id):
     if not mock_server:
         pytest.skip("This test only runs in mock mode")
@@ -176,7 +177,7 @@ def test_get_account(vcsp_client, mock_server, vcsp_get_account_parameters, test
         assert response.subject_id == test_subject_id
 
 
-@pytest.mark.vcsp()
+@pytest.mark.vcsp
 def test_delete_account(vcsp_client, mock_server, vcsp_delete_account_parameters, test_subject_id):
     if not mock_server:
         pytest.skip("This test only runs in mock mode")
@@ -189,7 +190,7 @@ def test_delete_account(vcsp_client, mock_server, vcsp_delete_account_parameters
         assert response is None
 
 
-@pytest.mark.vcsp()
+@pytest.mark.vcsp
 def test_get_all_credentials(vcsp_client, mock_server, vcsp_get_all_credentials_parameters, test_subject_id):
     if not mock_server:
         pytest.skip("This test only runs in mock mode")
@@ -210,7 +211,7 @@ def test_get_all_credentials(vcsp_client, mock_server, vcsp_get_all_credentials_
             assert cred_response.issuer == cred_mock["issuer"]
 
 
-@pytest.mark.vcsp()
+@pytest.mark.vcsp
 def test_get_credential(vcsp_client, mock_server, vcsp_get_credential_parameters, test_subject_id, test_credential_id):
     if not mock_server:
         pytest.skip("This test only runs in mock mode")
@@ -232,7 +233,7 @@ def test_get_credential(vcsp_client, mock_server, vcsp_get_credential_parameters
         assert response.issuer == mock_response["issuer"]
 
 
-@pytest.mark.vcsp()
+@pytest.mark.vcsp
 def test_delete_credential(vcsp_client, mock_server, vcsp_delete_credential_parameters, test_subject_id, test_credential_id):
     if not mock_server:
         pytest.skip("This test only runs in mock mode")
