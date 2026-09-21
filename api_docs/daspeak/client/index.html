@@ -1837,7 +1837,7 @@
 <span class="sd">            headers: The headers to be used in the requests</span>
 
 <span class="sd">        """</span>
-        <span class="n">api</span> <span class="o">=</span> <span class="n">APIs</span><span class="o">.</span><span class="n">DASPEAK</span><span class="o">.</span><span class="n">value</span>
+        <span class="n">api</span> <span class="o">=</span> <span class="n">APIs</span><span class="o">.</span><span class="n">DASPEAK</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="n">api</span><span class="o">=</span><span class="n">api</span><span class="p">,</span>
             <span class="n">apikey</span><span class="o">=</span><span class="n">apikey</span><span class="p">,</span>
@@ -1894,7 +1894,7 @@
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_handle_error_response</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">response</span><span class="p">:</span> <span class="n">Response</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""Handle error responses from the API."""</span>
-        <span class="n">response_json</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+        <span class="n">response_json</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_error_payload</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
 
         <span class="n">exception</span> <span class="o">=</span> <span class="n">response_json</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"exception"</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">exception</span> <span class="ow">or</span> <span class="n">exception</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_exceptions</span><span class="p">:</span>
@@ -2350,7 +2350,7 @@
 <span class="sd">        headers: The headers to be used in the requests</span>
 
 <span class="sd">    """</span>
-    <span class="n">api</span> <span class="o">=</span> <span class="n">APIs</span><span class="o">.</span><span class="n">DASPEAK</span><span class="o">.</span><span class="n">value</span>
+    <span class="n">api</span> <span class="o">=</span> <span class="n">APIs</span><span class="o">.</span><span class="n">DASPEAK</span>
     <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
         <span class="n">api</span><span class="o">=</span><span class="n">api</span><span class="p">,</span>
         <span class="n">apikey</span><span class="o">=</span><span class="n">apikey</span><span class="p">,</span>
