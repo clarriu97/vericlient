@@ -45,7 +45,9 @@ dev = [
     "pip-audit>=2.9",
 ]
 docs = [
-    "mkdocs>=1.6",
+    # Capped below 2.0 on purpose: Material for MkDocs reports that MkDocs 2.0 removes the
+    # plugin system and offers no migration path.
+    "mkdocs>=1.6,<2",
     "mkdocs-material>=9.7",
     "mkdocstrings[python]>=1.0",
 ]
@@ -58,9 +60,10 @@ format-check = "ruff format --check ."
 docs-serve = "mkdocs serve"
 docs-build = "mkdocs build"
 audit = { shell = """
-    pdm export --no-default -dG:all -f requirements --without-hashes -o /tmp/vericlient-audit.txt \
-    && pdm export -f requirements --without-hashes >> /tmp/vericlient-audit.txt \
-    && pip-audit --requirement /tmp/vericlient-audit.txt --no-deps --disable-pip
+    pdm export -dG:all -f requirements --without-hashes -o /tmp/vericlient-audit.txt \
+    && pip-audit --requirement /tmp/vericlient-audit.txt --no-deps --disable-pip \
+        --format=json --output=/tmp/vericlient-audit.json \
+    ; python .github/scripts/audit_report.py /tmp/vericlient-audit.json
     """ }
 test = """pytest tests --mock \
     --cov src/vericlient \
@@ -134,6 +137,10 @@ unfixable = []
     "D100",     # Missing docstring in public module
     "D103",     # Missing docstring in public function
     "D104",     # Missing docstring in public package
+]
+".github/scripts/*.py" = [
+    "INP001",   # File is part of an implicit namespace package
+    "T201",     # `print` found: the report is meant to be read in the job log
 ]
 "scripts/*.py" = [
     "INP001",   # File is part of an implicit namespace package

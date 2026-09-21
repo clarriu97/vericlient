@@ -1,213 +1,194 @@
-name: CI Pipeline
+name: CI
 
 on:
   push:
     branches:
-      - '**'
+      - master
     tags:
       - 'v*'
+  pull_request:
+
+# Superseded runs on the same ref are pointless; keep master runs though, they gate the
+# docs deployment.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/master' }}
+
+permissions:
+  contents: read
+
+env:
+  # Single place to bump the version used by the jobs that do not need the matrix.
+  DEFAULT_PYTHON: '3.12'
 
 jobs:
-  test:
-    runs-on: ubuntu-latest
-
-    steps:
-    - name: Check out the repository
-      uses: actions/checkout@v2
-
-    - name: Set up Python
-      uses: actions/setup-python@v2
-      with:
-        python-version: '3.10'
-
-    - name: Install PDM
-      run: |
-        python -m pip install --upgrade pip
-        pip install pdm
-
-    - name: Cache PDM
-      id: cache-pdm
-      uses: actions/cache@v4
-      with:
-        path: |
-          ~/.cache/pdm
-          __pypackages__
-        key: ${{ runner.os }}-pdm-${{ hashFiles('pdm.lock') }}
-        restore-keys: |
-          ${{ runner.os }}-pdm-
-
-    - name: Install dependencies
-      run: pdm install
-
-    - name: Run tests
-      run: pdm run test
-
-    - name: Upload coverage reports to Codecov
-      uses: codecov/codecov-action@v4.0.1
-      with:
-        token: ${{ secrets.CODECOV_TOKEN }}
-
   quality:
+    name: Lint and code style
     runs-on: ubuntu-latest
-    needs: test
-
     steps:
-    - name: Check out the repository
-      uses: actions/checkout@v2
+      - uses: actions/checkout@v7
 
-    - name: Set up Python
-      uses: actions/setup-python@v2
-      with:
-        python-version: '3.10'
+      - uses: pdm-project/setup-pdm@v4
+        with:
+          python-version: ${{ env.DEFAULT_PYTHON }}
+          cache: true
 
-    - name: Install PDM
-      run: |
-        python -m pip install --upgrade pip
-        pip install pdm
+      - name: Install dependencies
+        run: pdm install --dev
 
-    - name: Cache PDM
-      id: cache-pdm
-      uses: actions/cache@v4
-      with:
-        path: |
-          ~/.cache/pdm
-          __pypackages__
-        key: ${{ runner.os }}-pdm-${{ hashFiles('pdm.lock') }}
-        restore-keys: |
-          ${{ runner.os }}-pdm-
+      # `select = ["ALL"]` includes the S (bandit) rules, so this step is also the
+      # static security check on our own code.
+      - name: Lint
+        run: pdm run lint
 
-    - name: Install dependencies
-      run: pdm install
+      - name: Code style
+        run: pdm run format-check
 
-    - name: Run lint
-      run: pdm run lint && pdm run lint-test
+  test:
+    name: Test on Python ${{ matrix.python-version }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ['3.11', '3.12', '3.13', '3.14']
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: pdm-project/setup-pdm@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: true
+
+      - name: Install dependencies
+        run: pdm install --dev
+
+      - name: Run tests
+        run: pdm run test
+
+      - name: Upload coverage to Codecov
+        if: matrix.python-version == env.DEFAULT_PYTHON
+        uses: codecov/codecov-action@v7
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: docs/_build/coverage/coverage.xml
+          fail_ci_if_error: false
+
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: test-reports-${{ matrix.python-version }}
+          path: docs/_build/test-reports/
+          retention-days: 14
+
+  security:
+    name: Dependency audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: pdm-project/setup-pdm@v4
+        with:
+          python-version: ${{ env.DEFAULT_PYTHON }}
+          cache: true
+
+      - name: Install dependencies
+        run: pdm install --dev
+
+      # Runtime, dev and docs dependencies in one resolved, de-duplicated list.
+      - name: Export the resolved dependency set
+        run: pdm export -dG:all -f requirements --without-hashes -o requirements-audit.txt
+
+      - name: Audit dependencies
+        run: |
+          pdm run pip-audit \
+            --requirement requirements-audit.txt --no-deps --disable-pip \
+            --format=json --output=audit.json || true
+          test -f audit.json
+
+      # Turns the raw JSON into a table in the run summary, and fails the job only when a
+      # fixed version exists upstream.
+      - name: Report
+        run: pdm run python .github/scripts/audit_report.py audit.json
+
+      - name: Build SBOM
+        if: always()
+        run: |
+          pdm run pip-audit \
+            --requirement requirements-audit.txt --no-deps --disable-pip \
+            --format=cyclonedx-json --output=sbom.json || true
+
+      - name: Upload audit artifacts
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: dependency-audit
+          path: |
+            audit.json
+            sbom.json
+            requirements-audit.txt
+          retention-days: 30
 
   docs:
+    name: Build and deploy docs
     if: github.ref == 'refs/heads/master'
+    needs: [quality, test, security]
     runs-on: ubuntu-latest
-    needs: [test, quality]
-
+    permissions:
+      contents: write
     steps:
-    - name: Check out the repository
-      uses: actions/checkout@v2
+      - uses: actions/checkout@v7
 
-    - name: Set up Python
-      uses: actions/setup-python@v2
-      with:
-        python-version: '3.10'
+      - uses: pdm-project/setup-pdm@v4
+        with:
+          python-version: ${{ env.DEFAULT_PYTHON }}
+          cache: true
 
-    - name: Install PDM
-      run: |
-        python -m pip install --upgrade pip
-        pip install pdm
+      - name: Install dependencies
+        run: pdm install -G docs
 
-    - name: Cache PDM
-      id: cache-pdm
-      uses: actions/cache@v4
-      with:
-        path: |
-          ~/.cache/pdm
-          __pypackages__
-        key: ${{ runner.os }}-pdm-${{ hashFiles('pdm.lock') }}
-        restore-keys: |
-          ${{ runner.os }}-pdm-
+      - name: Build docs
+        run: pdm run docs-build
 
-    - name: Install dependencies
-      run: pdm install --group docs
-
-    - name: Build Docs
-      run: pdm run docs-build
-
-    - name: Deploy to GitHub Pages
-      uses: peaceiris/actions-gh-pages@v3
-      with:
-        github_token: ${{ secrets.GH_TOKEN }}
-        publish_dir: ./site
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./site
 
   publish:
+    name: Publish to PyPI
     if: startsWith(github.ref, 'refs/tags/v')
+    needs: [quality, test, security]
     runs-on: ubuntu-latest
-    needs: [test, quality]
-
+    environment:
+      name: pypi
+      url: https://pypi.org/p/vericlient
+    permissions:
+      contents: write    # create the GitHub release
+      id-token: write    # PyPI Trusted Publishing
     steps:
-    - name: Check out the repository
-      uses: actions/checkout@v2
+      - uses: actions/checkout@v7
 
-    - name: Set up Python
-      uses: actions/setup-python@v2
-      with:
-        python-version: '3.10'
+      - uses: pdm-project/setup-pdm@v4
+        with:
+          python-version: ${{ env.DEFAULT_PYTHON }}
+          cache: true
 
-    - name: Install PDM
-      run: |
-        python -m pip install --upgrade pip
-        pip install pdm
+      - name: Install dependencies
+        run: pdm install --dev
 
-    - name: Cache PDM
-      id: cache-pdm
-      uses: actions/cache@v4
-      with:
-        path: |
-          ~/.cache/pdm
-          __pypackages__
-        key: ${{ runner.os }}-pdm-${{ hashFiles('pdm.lock') }}
-        restore-keys: |
-          ${{ runner.os }}-pdm-
+      - name: Build package
+        run: pdm run build
 
-    - name: Install dependencies
-      run: pdm install
+      # No API token: PyPI verifies the workflow's OIDC identity instead.
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
 
-    - name: Build package
-      run: pdm run build
-
-    - name: Publish to PyPI
-      env:
-        TWINE_USERNAME: __token__
-        TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
-      run: pdm run publish
-
-    - name: Create GitHub Release
-      id: create_release
-      uses: actions/create-release@v1
-      with:
-        tag_name: ${{ github.ref }}
-        release_name: Release ${{ github.ref }}
-        body: |
-          This is an automatic release from CI for version ${{ github.ref }}.
-          - Changelog or other notes can be added here.
-        draft: false
-        prerelease: false
-      env:
-        GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
-
-    - name: Set .whl artifact name
-      id: artifact_whl
-      run: |
-        echo "ARTIFACT_WHL=$(ls dist/*.whl)" >> $GITHUB_ENV
-        echo "ARTIFACT_WHL_BASENAME=$(basename $(ls dist/*.whl))" >> $GITHUB_ENV
-
-    - name: Set .tar.gz artifact name
-      id: artifact_targz
-      run: |
-        echo "ARTIFACT_TARGZ=$(ls dist/*.tar.gz)" >> $GITHUB_ENV
-        echo "ARTIFACT_TARGZ_BASENAME=$(basename $(ls dist/*.tar.gz))" >> $GITHUB_ENV
-
-    - name: Upload .whl Artifact to Release
-      uses: actions/upload-release-asset@v1
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ${{ env.ARTIFACT_WHL }}
-        asset_name: ${{ env.ARTIFACT_WHL_BASENAME }}
-        asset_content_type: application/octet-stream
-      env:
-        GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
-
-    - name: Upload .tar.gz Artifact to Release
-      uses: actions/upload-release-asset@v1
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ${{ env.ARTIFACT_TARGZ }}
-        asset_name: ${{ env.ARTIFACT_TARGZ_BASENAME }}
-        asset_content_type: application/gzip
-      env:
-        GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v3
+        with:
+          generate_release_notes: true
+          files: |
+            dist/*.whl
+            dist/*.tar.gz
