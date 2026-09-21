@@ -778,6 +778,50 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#finding-credentials-across-the-whole-system" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Finding credentials across the whole system
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#retrieving-the-sample-behind-a-credential" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Retrieving the sample behind a credential
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#deleting-credentials-in-bulk" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Deleting credentials in bulk
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#inspecting-one-credential-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Inspecting one credential configuration
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1067,6 +1111,50 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#finding-credentials-across-the-whole-system" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Finding credentials across the whole system
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#retrieving-the-sample-behind-a-credential" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Retrieving the sample behind a credential
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#deleting-credentials-in-bulk" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Deleting credentials in bulk
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#inspecting-one-credential-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Inspecting one credential configuration
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1268,6 +1356,55 @@ for five years.</p>
 <p>Creating one past the limit raises <code>GroupsLimitExceededError</code>. The limit is part of the
 subscription, not something the client controls.</p>
 </div>
+<h2 id="finding-credentials-across-the-whole-system">Finding credentials across the whole system<a class="headerlink" href="#finding-credentials-across-the-whole-system" title="Link to this section">&para;</a></h2>
+<p><code>get_all_subject_credentials</code> is scoped to one account. <code>list_credentials</code> is not: it walks
+everything, so filter and page rather than asking for the lot.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">vericlient</span><span class="w"> </span><span class="kn">import</span> <span class="n">VcspClient</span>
+</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">vericlient.vcsp.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">ListCredentialsInput</span>
+</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>
+</span><span id="__span-11-4"><a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="n">client</span> <span class="o">=</span> <span class="n">VcspClient</span><span class="p">(</span><span class="n">apikey</span><span class="o">=</span><span class="s2">"your_api_key"</span><span class="p">)</span>
+</span><span id="__span-11-5"><a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a>
+</span><span id="__span-11-6"><a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a><span class="n">page</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">list_credentials</span><span class="p">(</span><span class="n">ListCredentialsInput</span><span class="p">(</span><span class="n">tags</span><span class="o">=</span><span class="p">[</span><span class="s2">"role:employee"</span><span class="p">],</span> <span class="n">size</span><span class="o">=</span><span class="mi">50</span><span class="p">))</span>
+</span><span id="__span-11-7"><a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">page</span><span class="o">.</span><span class="n">total</span><span class="si">}</span><span class="s2"> credentials over </span><span class="si">{</span><span class="n">page</span><span class="o">.</span><span class="n">pages</span><span class="si">}</span><span class="s2"> pages"</span><span class="p">)</span>
+</span><span id="__span-11-8"><a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a><span class="k">for</span> <span class="n">credential</span> <span class="ow">in</span> <span class="n">page</span><span class="o">.</span><span class="n">items</span><span class="p">:</span>
+</span><span id="__span-11-9"><a id="__codelineno-11-9" name="__codelineno-11-9" href="#__codelineno-11-9"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">credential</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2"> belongs to </span><span class="si">{</span><span class="n">credential</span><span class="o">.</span><span class="n">subject_id</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+</span></code></pre></div>
+<p>Each item carries <code>subject_id</code>, which the per-account endpoints do not return — that is what
+makes the listing useful for finding an account you only know a tag for.</p>
+<h2 id="retrieving-the-sample-behind-a-credential">Retrieving the sample behind a credential<a class="headerlink" href="#retrieving-the-sample-behind-a-credential" title="Link to this section">&para;</a></h2>
+<p>The service answers with the raw bytes it was enrolled with, not with JSON.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">vericlient.vcsp.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">GetCredentialSampleInput</span>
+</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>
+</span><span id="__span-12-3"><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="n">sample</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">get_credential_sample</span><span class="p">(</span>
+</span><span id="__span-12-4"><a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a>    <span class="n">GetCredentialSampleInput</span><span class="p">(</span><span class="n">subject_id</span><span class="o">=</span><span class="s2">"user-1"</span><span class="p">,</span> <span class="n">credential_id</span><span class="o">=</span><span class="n">credential_id</span><span class="p">),</span>
+</span><span id="__span-12-5"><a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a><span class="p">)</span>
+</span><span id="__span-12-6"><a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">"recovered.wav"</span><span class="p">,</span> <span class="s2">"wb"</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+</span><span id="__span-12-7"><a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a>    <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">sample</span><span class="o">.</span><span class="n">content</span><span class="p">)</span>
+</span><span id="__span-12-8"><a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a><span class="nb">print</span><span class="p">(</span><span class="n">sample</span><span class="o">.</span><span class="n">content_type</span><span class="p">)</span>  <span class="c1"># audio/wav</span>
+</span></code></pre></div>
+<h2 id="deleting-credentials-in-bulk">Deleting credentials in bulk<a class="headerlink" href="#deleting-credentials-in-bulk" title="Link to this section">&para;</a></h2>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">vericlient.vcsp.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">DeleteCredentialsInput</span>
+</span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>
+</span><span id="__span-13-3"><a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a><span class="n">client</span><span class="o">.</span><span class="n">delete_credentials</span><span class="p">(</span>
+</span><span id="__span-13-4"><a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a>    <span class="n">DeleteCredentialsInput</span><span class="p">(</span><span class="n">group_name</span><span class="o">=</span><span class="s2">"support_agents"</span><span class="p">,</span> <span class="n">delete_empty_accounts</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+</span><span id="__span-13-5"><a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a><span class="p">)</span>
+</span></code></pre></div>
+<div class="admonition danger">
+<p class="admonition-title">Irreversible, and a group is the only filter</p>
+<p>Credentials in the group are deleted and removed from every other group they belong to.
+With <code>delete_empty_accounts</code>, accounts left holding nothing go too. There is no way to
+scope this by tag or by account.</p>
+</div>
+<h2 id="inspecting-one-credential-configuration">Inspecting one credential configuration<a class="headerlink" href="#inspecting-one-credential-configuration" title="Link to this section">&para;</a></h2>
+<p><code>get_credential_configurations</code> lists the URNs; this returns the schema that an enrolment's
+<code>claims</code> must satisfy for a given one.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">vericlient.vcsp.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">CredentialConfigurationInput</span>
+</span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a>
+</span><span id="__span-14-3"><a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a><span class="n">configuration</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">get_credential_configuration</span><span class="p">(</span>
+</span><span id="__span-14-4"><a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a>    <span class="n">CredentialConfigurationInput</span><span class="p">(</span><span class="n">urn</span><span class="o">=</span><span class="s2">"urn:vcsp:credential_configurations:voice_telephone:v1"</span><span class="p">),</span>
+</span><span id="__span-14-5"><a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a><span class="p">)</span>
+</span><span id="__span-14-6"><a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a><span class="nb">print</span><span class="p">(</span><span class="n">configuration</span><span class="o">.</span><span class="n">claims_schema</span><span class="p">)</span>
+</span></code></pre></div>
 
 
 

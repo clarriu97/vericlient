@@ -985,7 +985,7 @@ specifications rather than against memory.</p>
 <tr>
 <td>VCSP</td>
 <td><a href="https://docs.veridas.com/vcsp_echo/cloud/v1.17/api/definition/">v1.17</a></td>
-<td><strong>18 / 31</strong></td>
+<td><strong>22 / 31</strong></td>
 </tr>
 <tr>
 <td>das-Face</td>
@@ -1095,7 +1095,7 @@ specifications rather than against memory.</p>
 </tr>
 <tr>
 <td><code>GET /v1/accounts/{subject_id}/credentials/{credential_id}/sample</code></td>
-<td>—</td>
+<td><code>get_credential_sample()</code></td>
 </tr>
 <tr>
 <td><code>PATCH /v1/accounts/{subject_id}/credentials/{credential_id}/tags</code></td>
@@ -1103,11 +1103,11 @@ specifications rather than against memory.</p>
 </tr>
 <tr>
 <td><code>GET /v1/credentials</code></td>
-<td>—</td>
+<td><code>list_credentials()</code></td>
 </tr>
 <tr>
 <td><code>DELETE /v1/credentials</code></td>
-<td>—</td>
+<td><code>delete_credentials()</code></td>
 </tr>
 <tr>
 <td><code>POST /v1/groups</code></td>
@@ -1147,7 +1147,7 @@ specifications rather than against memory.</p>
 </tr>
 <tr>
 <td><code>GET /v1/credential_configurations/{urn}</code></td>
-<td>—</td>
+<td><code>get_credential_configuration()</code></td>
 </tr>
 <tr>
 <td><code>GET /v1/assurance_methods</code></td>
