@@ -1,12 +1,16 @@
+import inspect
+
 import pytest
 import requests_mock
-from pydantic import ValidationError
+from pydantic import BaseModel, ValidationError
 
 from vericlient import DaspeakClient, VcspClient
 from vericlient.apis import APIs
 from vericlient.config import DEFAULT_TIMEOUT
+from vericlient.daspeak import models as daspeak_models
 from vericlient.exceptions import ServerError
 from vericlient.utils import DEFAULT_CONTENT_TYPE
+from vericlient.vcsp import models as vcsp_models
 
 VCSP_SANDBOX_EU = "https://api-work.eu.veri-das.com/vcsp/v1"
 
@@ -151,3 +155,18 @@ def test_two_clients_can_use_different_keys():
     vcsp = VcspClient(apikey="key-two")
     assert daspeak.headers["apikey"] == "key-one"
     assert vcsp.headers["apikey"] == "key-two"
+
+
+def test_no_response_model_exposes_the_http_status_code():
+    """The status code is an HTTP detail and has no place on a service client's response.
+
+    Written generically on purpose: a new output model that copies the old pattern fails
+    here rather than shipping.
+    """
+    offenders = [
+        f"{module.__name__}.{name}"
+        for module in (daspeak_models, vcsp_models)
+        for name, obj in vars(module).items()
+        if inspect.isclass(obj) and issubclass(obj, BaseModel) and "status_code" in obj.model_fields
+    ]
+    assert not offenders, f"these models still carry the HTTP status code: {offenders}"

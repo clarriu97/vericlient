@@ -139,7 +139,6 @@ class VcspClient(Client):
         endpoint = VcspEndpoints.CREDENTIAL_CONFIGURATIONS.value
         response = self._get(endpoint=endpoint)
         return CredentialConfigurationsOutput(
-            status_code=response.status_code,
             credential_configurations=response.json(),
         )
 
@@ -153,7 +152,6 @@ class VcspClient(Client):
         endpoint = VcspEndpoints.ASSURANCE_METHODS.value
         response = self._get(endpoint=endpoint)
         return AssuranceMethodsOutput(
-            status_code=response.status_code,
             assurance_methods=response.json(),
         )
 
@@ -169,7 +167,7 @@ class VcspClient(Client):
         """
         endpoint = VcspEndpoints.ASSURANCE_METHOD_URN.value.replace("<urn>", data_model.urn)
         response = self._get(endpoint=endpoint)
-        return AssuranceMethodOutput(status_code=response.status_code, **response.json())
+        return AssuranceMethodOutput(**response.json())
 
     def enroll_subject(self, data_model: EnrollmentInput) -> EnrollmentOutput:
         """Enroll a subject.
@@ -210,7 +208,7 @@ class VcspClient(Client):
             files=files,
             data=data,
         )
-        return EnrollmentOutput(status_code=response.status_code, **response.json())
+        return EnrollmentOutput(**response.json())
 
     def _get_sample(self, sample: str | bytes, content_type: str | None = None) -> tuple[str, bytes, str]:
         """Return the filename, the content and the media type of a sample.
@@ -256,7 +254,7 @@ class VcspClient(Client):
         """
         endpoint = VcspEndpoints.ACCOUNTS.value.replace("<subject_id>", data_model.subject_id)
         response = self._get(endpoint=endpoint)
-        return GetAccountOutput(status_code=response.status_code, **response.json())
+        return GetAccountOutput(**response.json())
 
     def delete_account(self, data_model: DeleteAccountInput) -> None:
         """Delete an account.
@@ -286,7 +284,7 @@ class VcspClient(Client):
         """
         endpoint = VcspEndpoints.CREDENTIALS.value.replace("<subject_id>", data_model.subject_id)
         response = self._get(endpoint=endpoint)
-        return GetCredentialsOutput(credentials=response.json(), status_code=response.status_code)
+        return GetCredentialsOutput(credentials=response.json())
 
     def get_credential(self, data_model: GetCredentialInput) -> GetCredentialOutput:
         """Get a credential.
@@ -305,7 +303,7 @@ class VcspClient(Client):
         endpoint = VcspEndpoints.CREDENTIAL_ID.value.replace("<subject_id>", data_model.subject_id)
         endpoint = endpoint.replace("<credential_id>", data_model.credential_id)
         response = self._get(endpoint=endpoint)
-        return GetCredentialOutput(status_code=response.status_code, **response.json())
+        return GetCredentialOutput(**response.json())
 
     def delete_credential(self, data_model: DeleteCredentialInput) -> None:
         """Delete a credential.
