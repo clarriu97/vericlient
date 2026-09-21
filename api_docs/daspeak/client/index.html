@@ -2099,9 +2099,9 @@
 
 <span class="sd">        """</span>
         <span class="n">endpoint</span> <span class="o">=</span> <span class="n">DaspeakEndpoints</span><span class="o">.</span><span class="n">IDENTIFICATION_AUDIO2CREDENTIALS</span><span class="o">.</span><span class="n">value</span>
-        <span class="n">audio</span> <span class="o">=</span> <span class="n">get_virtual_file</span><span class="p">(</span><span class="n">data_model</span><span class="o">.</span><span class="n">audio_reference</span><span class="p">)</span>
+        <span class="n">audio</span> <span class="o">=</span> <span class="n">get_virtual_file</span><span class="p">(</span><span class="n">data_model</span><span class="o">.</span><span class="n">audio_to_evaluate</span><span class="p">)</span>
         <span class="n">files</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="s2">"audio_reference"</span><span class="p">:</span> <span class="p">(</span><span class="s2">"audio_reference"</span><span class="p">,</span> <span class="n">audio</span><span class="p">,</span> <span class="s2">"audio/wav"</span><span class="p">),</span>
+            <span class="s2">"audio_to_evaluate"</span><span class="p">:</span> <span class="p">(</span><span class="s2">"audio"</span><span class="p">,</span> <span class="n">audio</span><span class="p">,</span> <span class="s2">"audio/wav"</span><span class="p">),</span>
         <span class="p">}</span>
         <span class="n">credential_list</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">data_model</span><span class="o">.</span><span class="n">credential_list</span><span class="p">)</span>
         <span class="n">data</span> <span class="o">=</span> <span class="p">{</span>
@@ -2119,7 +2119,7 @@
         <span class="n">endpoint</span> <span class="o">=</span> <span class="n">DaspeakEndpoints</span><span class="o">.</span><span class="n">IDENTIFICATION_CREDENTIAL2CREDENTIALS</span><span class="o">.</span><span class="n">value</span>
         <span class="n">credential_list</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">data_model</span><span class="o">.</span><span class="n">credential_list</span><span class="p">)</span>
         <span class="n">data</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="s2">"credential_reference"</span><span class="p">:</span> <span class="n">data_model</span><span class="o">.</span><span class="n">credential_reference</span><span class="p">,</span>
+            <span class="s2">"credential_to_evaluate"</span><span class="p">:</span> <span class="n">data_model</span><span class="o">.</span><span class="n">credential_to_evaluate</span><span class="p">,</span>
             <span class="s2">"credential_list"</span><span class="p">:</span> <span class="n">credential_list</span><span class="p">,</span>
             <span class="s2">"calibration"</span><span class="p">:</span> <span class="n">data_model</span><span class="o">.</span><span class="n">calibration</span><span class="p">,</span>
         <span class="p">}</span>
@@ -3508,13 +3508,13 @@ with the audio content</p>
       </thead>
       <tbody>
           <tr class="doc-section-item">
-            <td><code><span title="vericlient.daspeak.models.CompareAudio2CredentialsInput.audio_reference">audio_reference</span></code></td>
+            <td><code><span title="vericlient.daspeak.models.CompareAudio2CredentialsInput.audio_to_evaluate">audio_to_evaluate</span></code></td>
             <td>
                   <code><span title="str">str</span> | <span title="bytes">bytes</span></code>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>The audio to evaluate.
+                <p>The audio to evaluate against the credential list.
 It can be a path to a file or a bytes object
 with the audio content</p>
               </div>
@@ -3597,7 +3597,7 @@ The list contains touples with two strings: the id and the credential</p>
 <span class="w">    </span><span class="sd">"""Input class for the identification audio to credentials endpoint.</span>
 
 <span class="sd">    Attributes:</span>
-<span class="sd">        audio_reference: The audio to evaluate.</span>
+<span class="sd">        audio_to_evaluate: The audio to evaluate against the credential list.</span>
 <span class="sd">            It can be a path to a file or a bytes object</span>
 <span class="sd">            with the audio content</span>
 <span class="sd">        credential_list: The credentials to compare the audio with.</span>
@@ -3606,11 +3606,11 @@ The list contains touples with two strings: the id and the credential</p>
 
 <span class="sd">    """</span>
 
-    <span class="n">audio_reference</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">bytes</span>
+    <span class="n">audio_to_evaluate</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">bytes</span>
     <span class="n">credential_list</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span>
     <span class="n">channel</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span>
 
-    <span class="nd">@field_validator</span><span class="p">(</span><span class="s2">"audio_reference"</span><span class="p">)</span>
+    <span class="nd">@field_validator</span><span class="p">(</span><span class="s2">"audio_to_evaluate"</span><span class="p">)</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">must_be_str_or_bytes</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">object</span><span class="p">):</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">)):</span>
             <span class="n">error</span> <span class="o">=</span> <span class="s2">"audio must be a string or a bytes object"</span>
@@ -3733,35 +3733,35 @@ The list contains dictionaries with two keys (and values): "id" and "score"</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code><span title="vericlient.daspeak.models.CompareAudio2CredentialsOutput.authenticity_reference">authenticity_reference</span></code></td>
+            <td><code><span title="vericlient.daspeak.models.CompareAudio2CredentialsOutput.authenticity_to_evaluate">authenticity_to_evaluate</span></code></td>
             <td>
                   <code><span title="float">float</span></code>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>The authenticity of the reference audio sample</p>
+                <p>The authenticity of the evaluated audio sample</p>
               </div>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code><span title="vericlient.daspeak.models.CompareAudio2CredentialsOutput.input_audio_duration_reference">input_audio_duration_reference</span></code></td>
+            <td><code><span title="vericlient.daspeak.models.CompareAudio2CredentialsOutput.input_audio_duration_to_evaluate">input_audio_duration_to_evaluate</span></code></td>
             <td>
                   <code><span title="float">float</span></code>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>The duration of the input audio</p>
+                <p>The duration of the evaluated audio</p>
               </div>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code><span title="vericlient.daspeak.models.CompareAudio2CredentialsOutput.net_speech_duration_reference">net_speech_duration_reference</span></code></td>
+            <td><code><span title="vericlient.daspeak.models.CompareAudio2CredentialsOutput.net_speech_duration_to_evaluate">net_speech_duration_to_evaluate</span></code></td>
             <td>
                   <code><span title="float">float</span></code>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>The duration of the speech in the audio</p>
+                <p>The duration of the speech in the evaluated audio</p>
               </div>
             </td>
           </tr>
@@ -3813,9 +3813,9 @@ The list contains dictionaries with two keys (and values): "id" and "score"</p>
 <span class="sd">            The list contains dictionaries with two keys (and values): "id" and "score"</span>
 <span class="sd">        calibration: The calibration used</span>
 <span class="sd">        model: The model used to generate the credential</span>
-<span class="sd">        authenticity_reference: The authenticity of the reference audio sample</span>
-<span class="sd">        input_audio_duration_reference: The duration of the input audio</span>
-<span class="sd">        net_speech_duration_reference: The duration of the speech in the audio</span>
+<span class="sd">        authenticity_to_evaluate: The authenticity of the evaluated audio sample</span>
+<span class="sd">        input_audio_duration_to_evaluate: The duration of the evaluated audio</span>
+<span class="sd">        net_speech_duration_to_evaluate: The duration of the speech in the evaluated audio</span>
 
 <span class="sd">    """</span>
 
@@ -3823,11 +3823,11 @@ The list contains dictionaries with two keys (and values): "id" and "score"</p>
     <span class="n">scores</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span>
     <span class="n">calibration</span><span class="p">:</span> <span class="nb">str</span>
     <span class="n">model</span><span class="p">:</span> <span class="n">ModelMetadata</span>
-    <span class="n">authenticity_reference</span><span class="p">:</span> <span class="nb">float</span>
-    <span class="n">input_audio_duration_reference</span><span class="p">:</span> <span class="nb">float</span>
-    <span class="n">net_speech_duration_reference</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">authenticity_to_evaluate</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">input_audio_duration_to_evaluate</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">net_speech_duration_to_evaluate</span><span class="p">:</span> <span class="nb">float</span>
 
-    <span class="nd">@field_validator</span><span class="p">(</span><span class="s2">"authenticity_reference"</span><span class="p">)</span>
+    <span class="nd">@field_validator</span><span class="p">(</span><span class="s2">"authenticity_to_evaluate"</span><span class="p">)</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">round_value</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
         <span class="k">return</span> <span class="nb">round</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
@@ -4411,13 +4411,13 @@ with the audio content</p>
       </thead>
       <tbody>
           <tr class="doc-section-item">
-            <td><code><span title="vericlient.daspeak.models.CompareCredential2CredentialsInput.credential_reference">credential_reference</span></code></td>
+            <td><code><span title="vericlient.daspeak.models.CompareCredential2CredentialsInput.credential_to_evaluate">credential_to_evaluate</span></code></td>
             <td>
                   <code><span title="str">str</span></code>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>The reference credential</p>
+                <p>The credential to evaluate against the credential list</p>
               </div>
             </td>
           </tr>
@@ -4474,13 +4474,13 @@ The list contains touples with two strings: the id and the credential</p>
 <span class="w">    </span><span class="sd">"""Input class for the identification credential to credentials endpoint.</span>
 
 <span class="sd">    Attributes:</span>
-<span class="sd">        credential_reference: The reference credential</span>
+<span class="sd">        credential_to_evaluate: The credential to evaluate against the credential list</span>
 <span class="sd">        credential_list: The credentials to compare the audio with.</span>
 <span class="sd">            The list contains touples with two strings: the id and the credential</span>
 
 <span class="sd">    """</span>
 
-    <span class="n">credential_reference</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">credential_to_evaluate</span><span class="p">:</span> <span class="nb">str</span>
     <span class="n">credential_list</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span>
 
     <span class="nd">@field_validator</span><span class="p">(</span><span class="s2">"credential_list"</span><span class="p">)</span>
@@ -4585,17 +4585,6 @@ The list contains dictionaries with two keys (and values): "id" and "score"</p>
               </div>
             </td>
           </tr>
-          <tr class="doc-section-item">
-            <td><code><span title="vericlient.daspeak.models.CompareCredential2CredentialsOutput.model">model</span></code></td>
-            <td>
-                  <code><span title="str">str</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>The model used to generate the credential</p>
-              </div>
-            </td>
-          </tr>
       </tbody>
     </table>
 
@@ -4622,8 +4611,7 @@ The list contains dictionaries with two keys (and values): "id" and "score"</p>
 <span class="normal">363</span>
 <span class="normal">364</span>
 <span class="normal">365</span>
-<span class="normal">366</span>
-<span class="normal">367</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">CompareCredential2CredentialsOutput</span><span class="p">(</span><span class="n">DaspeakResponse</span><span class="p">):</span>
+<span class="normal">366</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">CompareCredential2CredentialsOutput</span><span class="p">(</span><span class="n">DaspeakResponse</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Output class for the identification credential to credentials endpoint.</span>
 
 <span class="sd">    Attributes:</span>
@@ -4632,7 +4620,6 @@ The list contains dictionaries with two keys (and values): "id" and "score"</p>
 <span class="sd">        scores: The whole list of scores for each credential.</span>
 <span class="sd">            The list contains dictionaries with two keys (and values): "id" and "score"</span>
 <span class="sd">        calibration: The calibration used</span>
-<span class="sd">        model: The model used to generate the credential</span>
 
 <span class="sd">    """</span>
 
