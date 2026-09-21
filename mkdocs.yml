@@ -70,6 +70,9 @@ markdown_extensions:
 extra_css:
   - stylesheets/extra.css
 
+extra_javascript:
+  - javascripts/external-links.js
+
 extra:
   social:
     - icon: fontawesome/brands/github

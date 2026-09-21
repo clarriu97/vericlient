@@ -1,8 +1,11 @@
 # Changelog
 
+Notable changes to `vericlient`, newest first. Dates are the day the version was released.
+The project follows [semantic versioning](https://semver.org/).
+
 ## Unreleased
 
-## 0.2.0
+## [0.2.0] — 2026-09-21
 
 First release after a long gap. It carries breaking changes, all of them correcting
 behaviour that was either wrong or impossible to use.
@@ -43,6 +46,8 @@ behaviour that was either wrong or impossible to use.
 
 ### Added
 
+- **The VCSP client reaches PyPI for the first time.** It was written between 0.1.6 and this
+  release but never published, so every 0.1.x on PyPI carries das-Peak only.
 - **das-Peak is now fully covered**: `get_model_metadata`, `get_model_calibrations` and
   `get_model_metadata_from_credential` complete the eleven endpoints in the specification.
   Three of them had entries in `DaspeakEndpoints` but no method, while the README claimed
@@ -77,3 +82,41 @@ behaviour that was either wrong or impossible to use.
 - CI rebuilt: matrix over 3.11–3.14, `ruff format --check`, and a `pip-audit` stage that
   reports into the run summary.
 - Weekly automated dependency updates, verified before they reach a pull request.
+
+## [0.1.6] — 2024-09-12
+
+## [0.1.5] — 2024-09-12
+
+## [0.1.4] — 2024-09-12
+
+## [0.1.3] — 2024-09-12
+
+## [0.1.2] — 2024-09-12
+
+## [0.1.1] — 2024-09-12
+
+Six releases in one afternoon, all of them the same library. Each one changed only
+`.github/workflows/ci.yml` and the version number while the automated release pipeline was
+being worked out: artifact naming, the release job, and the PyPI upload step. Nothing in
+`src/` differs between 0.1.1 and 0.1.6.
+
+## [0.1.0] — 2024-09-12
+
+First release, never published to PyPI. It shipped the das-Peak client and the pieces
+everything else is built on:
+
+- `Client`, the shared request, error and target handling
+- `DaspeakClient` with the alive, models, credential generation, similarity and
+  identification endpoints
+- Configuration through `VERICLIENT_` environment variables
+- The `Environments` and `Locations` enums for cloud targets, and a `url` argument for
+  self-hosted deployments
+
+[0.2.0]: https://github.com/clarriu97/vericlient/releases/tag/v0.2.0
+[0.1.6]: https://github.com/clarriu97/vericlient/releases/tag/v0.1.6
+[0.1.5]: https://github.com/clarriu97/vericlient/releases/tag/v0.1.5
+[0.1.4]: https://github.com/clarriu97/vericlient/releases/tag/v0.1.4
+[0.1.3]: https://github.com/clarriu97/vericlient/releases/tag/v0.1.3
+[0.1.2]: https://github.com/clarriu97/vericlient/releases/tag/v0.1.2
+[0.1.1]: https://github.com/clarriu97/vericlient/releases/tag/v0.1.1
+[0.1.0]: https://github.com/clarriu97/vericlient/releases/tag/v0.1.0
