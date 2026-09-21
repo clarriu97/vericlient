@@ -172,7 +172,7 @@ class DaspeakClient(Client):
 
         """
         response = self._get(endpoint=DaspeakEndpoints.MODELS.value)
-        return ModelsOutput(status_code=response.status_code, **response.json())
+        return ModelsOutput(**response.json())
 
     def get_model_metadata(self, data_model: GetModelMetadataInput) -> GetModelMetadataOutput:
         """Get the metadata of a biometrics model.
@@ -191,7 +191,7 @@ class DaspeakClient(Client):
             endpoint=DaspeakEndpoints.MODELS_METADATA.value,
             data={"hash": data_model.hash},
         )
-        return GetModelMetadataOutput(status_code=response.status_code, **response.json())
+        return GetModelMetadataOutput(**response.json())
 
     def get_model_calibrations(self, data_model: GetModelCalibrationsInput) -> GetModelCalibrationsOutput:
         """Get the calibration modes a biometrics model supports.
@@ -213,7 +213,7 @@ class DaspeakClient(Client):
             endpoint=DaspeakEndpoints.MODELS_CALIBRATION.value,
             data={"hash": data_model.hash},
         )
-        return GetModelCalibrationsOutput(status_code=response.status_code, **response.json())
+        return GetModelCalibrationsOutput(**response.json())
 
     def get_model_metadata_from_credential(
         self,
@@ -238,7 +238,7 @@ class DaspeakClient(Client):
             endpoint=DaspeakEndpoints.MODELS_METADATA_FROM_CREDENTIAL.value,
             data={"credential": data_model.credential},
         )
-        return GetModelMetadataFromCredentialOutput(status_code=response.status_code, **response.json())
+        return GetModelMetadataFromCredentialOutput(**response.json())
 
     def generate_credential(self, data_model: GenerateCredentialInput) -> GenerateCredentialOutput:
         """Generate a credential from a WAV file.
@@ -273,7 +273,7 @@ class DaspeakClient(Client):
             "calibration": data_model.calibration,
         }
         response = self._post(endpoint=endpoint, data=data, files=files)
-        return GenerateCredentialOutput(status_code=response.status_code, **response.json())
+        return GenerateCredentialOutput(**response.json())
 
     def compare(  # noqa: D417
         self,
@@ -341,7 +341,7 @@ class DaspeakClient(Client):
             "calibration": data_model.calibration,
         }
         response = self._post(endpoint=endpoint, data=data, files=files)
-        return CompareCredential2AudioOutput(status_code=response.status_code, **response.json())
+        return CompareCredential2AudioOutput(**response.json())
 
     def _compare_audio2audio(self, data_model: CompareAudio2AudioInput) -> CompareAudio2AudioOutput:
         """Compare two audio files.
@@ -366,7 +366,7 @@ class DaspeakClient(Client):
             "calibration": data_model.calibration,
         }
         response = self._post(endpoint=endpoint, data=data, files=files)
-        return CompareAudio2AudioOutput(status_code=response.status_code, **response.json())
+        return CompareAudio2AudioOutput(**response.json())
 
     def _compare_credential2credential(
         self,
@@ -388,7 +388,7 @@ class DaspeakClient(Client):
             "calibration": data_model.calibration,
         }
         response = self._post(endpoint=endpoint, data=data)
-        return CompareCredential2CredentialOutput(status_code=response.status_code, **response.json())
+        return CompareCredential2CredentialOutput(**response.json())
 
     def _compare_audio2credentials(
         self,
@@ -415,7 +415,7 @@ class DaspeakClient(Client):
             "calibration": data_model.calibration,
         }
         response = self._post(endpoint=endpoint, data=data, files=files)
-        return CompareAudio2CredentialsOutput(status_code=response.status_code, **response.json())
+        return CompareAudio2CredentialsOutput(**response.json())
 
     def _compare_credential2credentials(
         self,
@@ -429,4 +429,4 @@ class DaspeakClient(Client):
             "calibration": data_model.calibration,
         }
         response = self._post(endpoint=endpoint, data=data)
-        return CompareCredential2CredentialsOutput(status_code=response.status_code, **response.json())
+        return CompareCredential2CredentialsOutput(**response.json())

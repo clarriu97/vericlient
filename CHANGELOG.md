@@ -5,6 +5,13 @@ The project follows [semantic versioning](https://semver.org/).
 
 ## Unreleased
 
+### Breaking
+
+- **Responses no longer carry `status_code`.** An HTTP status code is a transport detail,
+  and surfacing it on a client's return value invites callers to branch on it instead of
+  relying on the exceptions the client already raises. `DaspeakResponse` keeps `version`;
+  `VcspResponse` now carries no fields and exists only as a shared type.
+
 ## [0.2.0] — 2026-09-21
 
 First release after a long gap. It carries breaking changes, all of them correcting

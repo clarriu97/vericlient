@@ -7,12 +7,9 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 class VcspResponse(BaseModel):
     """Base class for the VCSP API responses.
 
-    Attributes:
-        status_code: The status code of the response
-
+    Carries no fields of its own: it exists so every VCSP response shares a type, and so
+    anything the API starts returning across the board has somewhere to go.
     """
-
-    status_code: int
 
 
 class CredentialConfigurationsOutput(VcspResponse):

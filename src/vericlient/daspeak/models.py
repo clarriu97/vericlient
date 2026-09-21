@@ -9,12 +9,10 @@ class DaspeakResponse(BaseModel):
 
     Attributes:
         version: The version of the API
-        status_code: The status code of the response
 
     """
 
     version: str
-    status_code: int
 
 
 class ModelsOutput(DaspeakResponse):
