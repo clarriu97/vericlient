@@ -985,7 +985,7 @@ specifications rather than against memory.</p>
 <tr>
 <td>VCSP</td>
 <td><a href="https://docs.veridas.com/vcsp_echo/cloud/v1.17/api/definition/">v1.17</a></td>
-<td><strong>27 / 31</strong></td>
+<td><strong>31 / 31</strong></td>
 </tr>
 <tr>
 <td>das-Face</td>
@@ -1052,7 +1052,7 @@ specifications rather than against memory.</p>
 </tbody>
 </table>
 <h2 id="vcsp">VCSP<a class="headerlink" href="#vcsp" title="Link to this section">&para;</a></h2>
-<p>Work in progress, tracked in <a href="https://github.com/clarriu97/vericlient/issues/3">issue #3</a>.</p>
+<p>Fully covered.</p>
 <table>
 <thead>
 <tr>
@@ -1099,7 +1099,7 @@ specifications rather than against memory.</p>
 </tr>
 <tr>
 <td><code>PATCH /v1/accounts/{subject_id}/credentials/{credential_id}/tags</code></td>
-<td>—</td>
+<td><code>modify_credential_tags()</code></td>
 </tr>
 <tr>
 <td><code>GET /v1/credentials</code></td>
@@ -1123,7 +1123,7 @@ specifications rather than against memory.</p>
 </tr>
 <tr>
 <td><code>PATCH /v1/groups/{group_name}</code></td>
-<td>—</td>
+<td><code>modify_group()</code></td>
 </tr>
 <tr>
 <td><code>DELETE /v1/groups/{group_name}</code></td>
@@ -1135,11 +1135,11 @@ specifications rather than against memory.</p>
 </tr>
 <tr>
 <td><code>POST /v1/groups/{group_name}/clustering</code></td>
-<td>—</td>
+<td><code>start_clustering()</code></td>
 </tr>
 <tr>
 <td><code>POST /v1/matchings</code></td>
-<td>—</td>
+<td><code>match()</code></td>
 </tr>
 <tr>
 <td><code>GET /v1/credential_configurations</code></td>

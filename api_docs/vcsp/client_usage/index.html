@@ -844,6 +844,50 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#matching" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Matching
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#putting-credentials-into-a-group" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Putting credentials into a group
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#changing-a-credentials-tags" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Changing a credential's tags
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#clustering-a-group" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Clustering a group
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1199,6 +1243,50 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#matching" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Matching
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#putting-credentials-into-a-group" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Putting credentials into a group
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#changing-a-credentials-tags" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Changing a credential's tags
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#clustering-a-group" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Clustering a group
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1523,6 +1611,124 @@ service adds later does not break deserialisation.</p>
 <p class="admonition-title">Tasks expire on their own</p>
 <p>The service drops a task and its result after thirty days. <code>delete_task</code> is there for
 callers that would rather not wait.</p>
+</div>
+<h2 id="matching">Matching<a class="headerlink" href="#matching" title="Link to this section">&para;</a></h2>
+<p>Matching is what the stored credentials are for. Pass a <code>SubjectClaimant</code> to check a sample
+against one subject, or a <code>GroupClaimant</code> to search a whole group.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">vericlient</span><span class="w"> </span><span class="kn">import</span> <span class="n">VcspClient</span>
+</span><span id="__span-17-2"><a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">vericlient.vcsp.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">GroupClaimant</span><span class="p">,</span> <span class="n">MatchingInput</span><span class="p">,</span> <span class="n">SubjectClaimant</span>
+</span><span id="__span-17-3"><a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a>
+</span><span id="__span-17-4"><a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a><span class="n">client</span> <span class="o">=</span> <span class="n">VcspClient</span><span class="p">(</span><span class="n">apikey</span><span class="o">=</span><span class="s2">"your_api_key"</span><span class="p">)</span>
+</span><span id="__span-17-5"><a id="__codelineno-17-5" name="__codelineno-17-5" href="#__codelineno-17-5"></a><span class="n">method</span> <span class="o">=</span> <span class="s2">"urn:vcsp:assurance_methods:matching:biometric_threshold:v1"</span>
+</span><span id="__span-17-6"><a id="__codelineno-17-6" name="__codelineno-17-6" href="#__codelineno-17-6"></a>
+</span><span id="__span-17-7"><a id="__codelineno-17-7" name="__codelineno-17-7" href="#__codelineno-17-7"></a><span class="c1"># 1:1 — is this the person they claim to be?</span>
+</span><span id="__span-17-8"><a id="__codelineno-17-8" name="__codelineno-17-8" href="#__codelineno-17-8"></a><span class="n">result</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">match</span><span class="p">(</span>
+</span><span id="__span-17-9"><a id="__codelineno-17-9" name="__codelineno-17-9" href="#__codelineno-17-9"></a>    <span class="n">MatchingInput</span><span class="p">(</span>
+</span><span id="__span-17-10"><a id="__codelineno-17-10" name="__codelineno-17-10" href="#__codelineno-17-10"></a>        <span class="n">sample</span><span class="o">=</span><span class="s2">"/path/to/caller.wav"</span><span class="p">,</span>
+</span><span id="__span-17-11"><a id="__codelineno-17-11" name="__codelineno-17-11" href="#__codelineno-17-11"></a>        <span class="n">claimant</span><span class="o">=</span><span class="n">SubjectClaimant</span><span class="p">(</span>
+</span><span id="__span-17-12"><a id="__codelineno-17-12" name="__codelineno-17-12" href="#__codelineno-17-12"></a>            <span class="n">subject_id</span><span class="o">=</span><span class="s2">"alice"</span><span class="p">,</span>
+</span><span id="__span-17-13"><a id="__codelineno-17-13" name="__codelineno-17-13" href="#__codelineno-17-13"></a>            <span class="n">credential_configuration_urn</span><span class="o">=</span><span class="n">configuration</span><span class="p">,</span>
+</span><span id="__span-17-14"><a id="__codelineno-17-14" name="__codelineno-17-14" href="#__codelineno-17-14"></a>            <span class="n">assurance_method_urn</span><span class="o">=</span><span class="n">method</span><span class="p">,</span>
+</span><span id="__span-17-15"><a id="__codelineno-17-15" name="__codelineno-17-15" href="#__codelineno-17-15"></a>            <span class="n">assurance</span><span class="o">=</span><span class="p">{</span><span class="s2">"biometric_threshold"</span><span class="p">:</span> <span class="mf">0.5</span><span class="p">},</span>
+</span><span id="__span-17-16"><a id="__codelineno-17-16" name="__codelineno-17-16" href="#__codelineno-17-16"></a>        <span class="p">),</span>
+</span><span id="__span-17-17"><a id="__codelineno-17-17" name="__codelineno-17-17" href="#__codelineno-17-17"></a>    <span class="p">),</span>
+</span><span id="__span-17-18"><a id="__codelineno-17-18" name="__codelineno-17-18" href="#__codelineno-17-18"></a><span class="p">)</span>
+</span><span id="__span-17-19"><a id="__codelineno-17-19" name="__codelineno-17-19" href="#__codelineno-17-19"></a><span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">match_status</span><span class="p">)</span>  <span class="c1"># HIT or MISS</span>
+</span><span id="__span-17-20"><a id="__codelineno-17-20" name="__codelineno-17-20" href="#__codelineno-17-20"></a><span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">biometrics_score</span><span class="p">)</span>  <span class="c1"># 0.0 to 1.0</span>
+</span><span id="__span-17-21"><a id="__codelineno-17-21" name="__codelineno-17-21" href="#__codelineno-17-21"></a>
+</span><span id="__span-17-22"><a id="__codelineno-17-22" name="__codelineno-17-22" href="#__codelineno-17-22"></a><span class="c1"># 1:N — who in this group is it?</span>
+</span><span id="__span-17-23"><a id="__codelineno-17-23" name="__codelineno-17-23" href="#__codelineno-17-23"></a><span class="n">result</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">match</span><span class="p">(</span>
+</span><span id="__span-17-24"><a id="__codelineno-17-24" name="__codelineno-17-24" href="#__codelineno-17-24"></a>    <span class="n">MatchingInput</span><span class="p">(</span>
+</span><span id="__span-17-25"><a id="__codelineno-17-25" name="__codelineno-17-25" href="#__codelineno-17-25"></a>        <span class="n">sample</span><span class="o">=</span><span class="s2">"/path/to/caller.wav"</span><span class="p">,</span>
+</span><span id="__span-17-26"><a id="__codelineno-17-26" name="__codelineno-17-26" href="#__codelineno-17-26"></a>        <span class="n">claimant</span><span class="o">=</span><span class="n">GroupClaimant</span><span class="p">(</span>
+</span><span id="__span-17-27"><a id="__codelineno-17-27" name="__codelineno-17-27" href="#__codelineno-17-27"></a>            <span class="n">group_name</span><span class="o">=</span><span class="s2">"support_agents"</span><span class="p">,</span>
+</span><span id="__span-17-28"><a id="__codelineno-17-28" name="__codelineno-17-28" href="#__codelineno-17-28"></a>            <span class="n">assurance_method_urn</span><span class="o">=</span><span class="n">method</span><span class="p">,</span>
+</span><span id="__span-17-29"><a id="__codelineno-17-29" name="__codelineno-17-29" href="#__codelineno-17-29"></a>            <span class="n">assurance</span><span class="o">=</span><span class="p">{</span><span class="s2">"biometric_threshold"</span><span class="p">:</span> <span class="mf">0.5</span><span class="p">},</span>
+</span><span id="__span-17-30"><a id="__codelineno-17-30" name="__codelineno-17-30" href="#__codelineno-17-30"></a>            <span class="n">limit</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+</span><span id="__span-17-31"><a id="__codelineno-17-31" name="__codelineno-17-31" href="#__codelineno-17-31"></a>            <span class="nb">filter</span><span class="o">=</span><span class="p">{</span><span class="s2">"AND"</span><span class="p">:</span> <span class="p">[{</span><span class="s2">"tag"</span><span class="p">:</span> <span class="s2">"role:employee"</span><span class="p">}]},</span>
+</span><span id="__span-17-32"><a id="__codelineno-17-32" name="__codelineno-17-32" href="#__codelineno-17-32"></a>        <span class="p">),</span>
+</span><span id="__span-17-33"><a id="__codelineno-17-33" name="__codelineno-17-33" href="#__codelineno-17-33"></a>    <span class="p">),</span>
+</span><span id="__span-17-34"><a id="__codelineno-17-34" name="__codelineno-17-34" href="#__codelineno-17-34"></a><span class="p">)</span>
+</span><span id="__span-17-35"><a id="__codelineno-17-35" name="__codelineno-17-35" href="#__codelineno-17-35"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">nhits</span><span class="si">}</span><span class="s2"> hits out of </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">results</span><span class="p">)</span><span class="si">}</span><span class="s2"> candidates"</span><span class="p">)</span>
+</span></code></pre></div>
+<p><code>result.sample</code> carries what the service made of the recording — its type, the media type it
+was read as, and quality figures such as <code>net_speech_duration</code>.</p>
+<div class="admonition note">
+<p class="admonition-title">A large 1:N runs asynchronously</p>
+<p>The service may accept the work instead of answering. <code>match</code> then returns a
+<code>TaskCreatedOutput</code> rather than a <code>MatchingOutput</code>, to follow with <code>wait_for_task</code>.</p>
+</div>
+<h2 id="putting-credentials-into-a-group">Putting credentials into a group<a class="headerlink" href="#putting-credentials-into-a-group" title="Link to this section">&para;</a></h2>
+<p>A credential does not join a group at enrolment: it is added afterwards, by subject or by
+tag.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-18-1"><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">vericlient.vcsp.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">GroupAction</span><span class="p">,</span> <span class="n">GroupMembershipSource</span><span class="p">,</span> <span class="n">ModifyGroupInput</span>
+</span><span id="__span-18-2"><a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a>
+</span><span id="__span-18-3"><a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a><span class="c1"># By subject</span>
+</span><span id="__span-18-4"><a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a><span class="n">client</span><span class="o">.</span><span class="n">modify_group</span><span class="p">(</span>
+</span><span id="__span-18-5"><a id="__codelineno-18-5" name="__codelineno-18-5" href="#__codelineno-18-5"></a>    <span class="n">ModifyGroupInput</span><span class="p">(</span>
+</span><span id="__span-18-6"><a id="__codelineno-18-6" name="__codelineno-18-6" href="#__codelineno-18-6"></a>        <span class="n">name</span><span class="o">=</span><span class="s2">"support_agents"</span><span class="p">,</span>
+</span><span id="__span-18-7"><a id="__codelineno-18-7" name="__codelineno-18-7" href="#__codelineno-18-7"></a>        <span class="n">action</span><span class="o">=</span><span class="n">GroupAction</span><span class="o">.</span><span class="n">POPULATE</span><span class="p">,</span>
+</span><span id="__span-18-8"><a id="__codelineno-18-8" name="__codelineno-18-8" href="#__codelineno-18-8"></a>        <span class="n">from_</span><span class="o">=</span><span class="n">GroupMembershipSource</span><span class="p">(</span><span class="n">subjects</span><span class="o">=</span><span class="p">[</span><span class="s2">"alice"</span><span class="p">,</span> <span class="s2">"bob"</span><span class="p">]),</span>
+</span><span id="__span-18-9"><a id="__codelineno-18-9" name="__codelineno-18-9" href="#__codelineno-18-9"></a>    <span class="p">),</span>
+</span><span id="__span-18-10"><a id="__codelineno-18-10" name="__codelineno-18-10" href="#__codelineno-18-10"></a><span class="p">)</span>
+</span><span id="__span-18-11"><a id="__codelineno-18-11" name="__codelineno-18-11" href="#__codelineno-18-11"></a>
+</span><span id="__span-18-12"><a id="__codelineno-18-12" name="__codelineno-18-12" href="#__codelineno-18-12"></a><span class="c1"># Or by tag, which scales better</span>
+</span><span id="__span-18-13"><a id="__codelineno-18-13" name="__codelineno-18-13" href="#__codelineno-18-13"></a><span class="n">client</span><span class="o">.</span><span class="n">modify_group</span><span class="p">(</span>
+</span><span id="__span-18-14"><a id="__codelineno-18-14" name="__codelineno-18-14" href="#__codelineno-18-14"></a>    <span class="n">ModifyGroupInput</span><span class="p">(</span>
+</span><span id="__span-18-15"><a id="__codelineno-18-15" name="__codelineno-18-15" href="#__codelineno-18-15"></a>        <span class="n">name</span><span class="o">=</span><span class="s2">"support_agents"</span><span class="p">,</span>
+</span><span id="__span-18-16"><a id="__codelineno-18-16" name="__codelineno-18-16" href="#__codelineno-18-16"></a>        <span class="n">action</span><span class="o">=</span><span class="n">GroupAction</span><span class="o">.</span><span class="n">POPULATE</span><span class="p">,</span>
+</span><span id="__span-18-17"><a id="__codelineno-18-17" name="__codelineno-18-17" href="#__codelineno-18-17"></a>        <span class="n">from_</span><span class="o">=</span><span class="n">GroupMembershipSource</span><span class="p">(</span><span class="n">tags</span><span class="o">=</span><span class="p">[</span><span class="s2">"role:employee"</span><span class="p">]),</span>
+</span><span id="__span-18-18"><a id="__codelineno-18-18" name="__codelineno-18-18" href="#__codelineno-18-18"></a>        <span class="n">credential_ttl</span><span class="o">=</span><span class="s2">"P30D"</span><span class="p">,</span>
+</span><span id="__span-18-19"><a id="__codelineno-18-19" name="__codelineno-18-19" href="#__codelineno-18-19"></a>    <span class="p">),</span>
+</span><span id="__span-18-20"><a id="__codelineno-18-20" name="__codelineno-18-20" href="#__codelineno-18-20"></a><span class="p">)</span>
+</span><span id="__span-18-21"><a id="__codelineno-18-21" name="__codelineno-18-21" href="#__codelineno-18-21"></a>
+</span><span id="__span-18-22"><a id="__codelineno-18-22" name="__codelineno-18-22" href="#__codelineno-18-22"></a><span class="c1"># Taking them out again</span>
+</span><span id="__span-18-23"><a id="__codelineno-18-23" name="__codelineno-18-23" href="#__codelineno-18-23"></a><span class="n">client</span><span class="o">.</span><span class="n">modify_group</span><span class="p">(</span>
+</span><span id="__span-18-24"><a id="__codelineno-18-24" name="__codelineno-18-24" href="#__codelineno-18-24"></a>    <span class="n">ModifyGroupInput</span><span class="p">(</span>
+</span><span id="__span-18-25"><a id="__codelineno-18-25" name="__codelineno-18-25" href="#__codelineno-18-25"></a>        <span class="n">name</span><span class="o">=</span><span class="s2">"support_agents"</span><span class="p">,</span>
+</span><span id="__span-18-26"><a id="__codelineno-18-26" name="__codelineno-18-26" href="#__codelineno-18-26"></a>        <span class="n">action</span><span class="o">=</span><span class="n">GroupAction</span><span class="o">.</span><span class="n">REMOVE</span><span class="p">,</span>
+</span><span id="__span-18-27"><a id="__codelineno-18-27" name="__codelineno-18-27" href="#__codelineno-18-27"></a>        <span class="n">from_</span><span class="o">=</span><span class="n">GroupMembershipSource</span><span class="p">(</span><span class="n">subjects</span><span class="o">=</span><span class="p">[</span><span class="s2">"bob"</span><span class="p">]),</span>
+</span><span id="__span-18-28"><a id="__codelineno-18-28" name="__codelineno-18-28" href="#__codelineno-18-28"></a>    <span class="p">),</span>
+</span><span id="__span-18-29"><a id="__codelineno-18-29" name="__codelineno-18-29" href="#__codelineno-18-29"></a><span class="p">)</span>
+</span></code></pre></div>
+<p>The argument is <code>from_</code>, because <code>from</code> is a reserved word in Python; it is sent as <code>from</code>.
+A small change answers with the group, a large population is accepted as a task.</p>
+<h2 id="changing-a-credentials-tags">Changing a credential's tags<a class="headerlink" href="#changing-a-credentials-tags" title="Link to this section">&para;</a></h2>
+<p>The tags must already exist — create them with <code>create_tags</code> first.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-19-1"><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">vericlient.vcsp.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">CredentialTagAction</span><span class="p">,</span> <span class="n">ModifyCredentialTagsInput</span>
+</span><span id="__span-19-2"><a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a>
+</span><span id="__span-19-3"><a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a><span class="n">credential</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">modify_credential_tags</span><span class="p">(</span>
+</span><span id="__span-19-4"><a id="__codelineno-19-4" name="__codelineno-19-4" href="#__codelineno-19-4"></a>    <span class="n">ModifyCredentialTagsInput</span><span class="p">(</span>
+</span><span id="__span-19-5"><a id="__codelineno-19-5" name="__codelineno-19-5" href="#__codelineno-19-5"></a>        <span class="n">subject_id</span><span class="o">=</span><span class="s2">"alice"</span><span class="p">,</span>
+</span><span id="__span-19-6"><a id="__codelineno-19-6" name="__codelineno-19-6" href="#__codelineno-19-6"></a>        <span class="n">credential_id</span><span class="o">=</span><span class="n">credential_id</span><span class="p">,</span>
+</span><span id="__span-19-7"><a id="__codelineno-19-7" name="__codelineno-19-7" href="#__codelineno-19-7"></a>        <span class="n">action</span><span class="o">=</span><span class="n">CredentialTagAction</span><span class="o">.</span><span class="n">ADD</span><span class="p">,</span>
+</span><span id="__span-19-8"><a id="__codelineno-19-8" name="__codelineno-19-8" href="#__codelineno-19-8"></a>        <span class="n">tags</span><span class="o">=</span><span class="p">[</span><span class="s2">"region:eu"</span><span class="p">],</span>
+</span><span id="__span-19-9"><a id="__codelineno-19-9" name="__codelineno-19-9" href="#__codelineno-19-9"></a>    <span class="p">),</span>
+</span><span id="__span-19-10"><a id="__codelineno-19-10" name="__codelineno-19-10" href="#__codelineno-19-10"></a><span class="p">)</span>
+</span><span id="__span-19-11"><a id="__codelineno-19-11" name="__codelineno-19-11" href="#__codelineno-19-11"></a><span class="nb">print</span><span class="p">(</span><span class="n">credential</span><span class="o">.</span><span class="n">tags</span><span class="p">)</span>
+</span></code></pre></div>
+<h2 id="clustering-a-group">Clustering a group<a class="headerlink" href="#clustering-a-group" title="Link to this section">&para;</a></h2>
+<p>Clustering groups similar credentials together, to find duplicates or related enrolments. It
+runs as a task.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-20-1"><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">vericlient.vcsp.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">ClusteringInput</span><span class="p">,</span> <span class="n">TaskInput</span>
+</span><span id="__span-20-2"><a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a>
+</span><span id="__span-20-3"><a id="__codelineno-20-3" name="__codelineno-20-3" href="#__codelineno-20-3"></a><span class="n">task</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">start_clustering</span><span class="p">(</span>
+</span><span id="__span-20-4"><a id="__codelineno-20-4" name="__codelineno-20-4" href="#__codelineno-20-4"></a>    <span class="n">ClusteringInput</span><span class="p">(</span>
+</span><span id="__span-20-5"><a id="__codelineno-20-5" name="__codelineno-20-5" href="#__codelineno-20-5"></a>        <span class="n">name</span><span class="o">=</span><span class="s2">"onboarding_faces"</span><span class="p">,</span>
+</span><span id="__span-20-6"><a id="__codelineno-20-6" name="__codelineno-20-6" href="#__codelineno-20-6"></a>        <span class="n">assurance_method_urn</span><span class="o">=</span><span class="s2">"urn:vcsp:assurance_methods:clustering:thresholds:v1"</span><span class="p">,</span>
+</span><span id="__span-20-7"><a id="__codelineno-20-7" name="__codelineno-20-7" href="#__codelineno-20-7"></a>        <span class="n">properties</span><span class="o">=</span><span class="p">{</span><span class="s2">"similarity_threshold"</span><span class="p">:</span> <span class="mf">0.5</span><span class="p">,</span> <span class="s2">"mode"</span><span class="p">:</span> <span class="s2">"similarity_based"</span><span class="p">},</span>
+</span><span id="__span-20-8"><a id="__codelineno-20-8" name="__codelineno-20-8" href="#__codelineno-20-8"></a>    <span class="p">),</span>
+</span><span id="__span-20-9"><a id="__codelineno-20-9" name="__codelineno-20-9" href="#__codelineno-20-9"></a><span class="p">)</span>
+</span><span id="__span-20-10"><a id="__codelineno-20-10" name="__codelineno-20-10" href="#__codelineno-20-10"></a><span class="n">client</span><span class="o">.</span><span class="n">wait_for_task</span><span class="p">(</span><span class="n">TaskInput</span><span class="p">(</span><span class="n">task_id</span><span class="o">=</span><span class="n">task</span><span class="o">.</span><span class="n">task_id</span><span class="p">))</span>
+</span></code></pre></div>
+<div class="admonition warning">
+<p class="admonition-title">Face credentials only</p>
+<p>A group of voice credentials is rejected with <code>ClusteringNotSupportedError</code>.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">The field is <code>properties</code>, not <code>assurance</code></p>
+<p>Every other endpoint calls the values an assurance method requires <code>assurance</code>.
+Clustering calls them <code>properties</code>.</p>
 </div>
 
 
