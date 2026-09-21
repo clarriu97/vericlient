@@ -48,9 +48,12 @@ from vericlient.vcsp.models import (
     CreateGroupOutput,
     CreateTagsInput,
     CreateTagsOutput,
+    CredentialConfigurationInput,
+    CredentialConfigurationOutput,
     CredentialConfigurationsOutput,
     DeleteAccountInput,
     DeleteCredentialInput,
+    DeleteCredentialsInput,
     DeleteGroupInput,
     DeleteTagInput,
     EnrollmentInput,
@@ -59,6 +62,8 @@ from vericlient.vcsp.models import (
     GetAccountOutput,
     GetCredentialInput,
     GetCredentialOutput,
+    GetCredentialSampleInput,
+    GetCredentialSampleOutput,
     GetCredentialsInput,
     GetCredentialsOutput,
     GetGroupInput,
@@ -68,6 +73,8 @@ from vericlient.vcsp.models import (
     GetGroupsInput,
     GetGroupsOutput,
     GetTagsOutput,
+    ListCredentialsInput,
+    ListCredentialsOutput,
 )
 
 
@@ -158,6 +165,86 @@ class VcspClient(Client):
 
         handler = self._exceptions[exception]
         raise handler()
+
+    def list_credentials(self, data_model: ListCredentialsInput | None = None) -> ListCredentialsOutput:
+        """List credentials across the whole system, optionally filtered.
+
+        Unlike `get_all_subject_credentials`, this is not scoped to one account. Deployments
+        hold a lot of credentials, so filter and page rather than walking everything.
+
+        Args:
+            data_model: The filters to apply. Omit it to list without filtering
+
+        Returns:
+            ListCredentialsOutput: A page of credentials
+
+        """
+        data_model = data_model or ListCredentialsInput()
+        response = self._get(
+            endpoint=VcspEndpoints.ALL_CREDENTIALS.value,
+            params=data_model.model_dump(exclude_none=True),
+        )
+        return ListCredentialsOutput(**response.json())
+
+    def delete_credentials(self, data_model: DeleteCredentialsInput) -> None:
+        """Delete every credential in a group.
+
+        Irreversible. The credentials are removed from any other group they belong to, and
+        with `delete_empty_accounts` the accounts left holding nothing go too.
+
+        Args:
+            data_model: The group to empty, and whether to remove the accounts left behind
+
+        Raises:
+            GroupNotFoundError: If no group exists with that name
+
+        """
+        self._delete(
+            endpoint=VcspEndpoints.ALL_CREDENTIALS.value,
+            json_=data_model.model_dump(),
+        )
+
+    def get_credential_sample(self, data_model: GetCredentialSampleInput) -> GetCredentialSampleOutput:
+        """Get the sample a credential was created from.
+
+        The service answers with the raw bytes rather than JSON, so the media type comes
+        from the response header.
+
+        Args:
+            data_model: The subject and credential to retrieve the sample of
+
+        Returns:
+            GetCredentialSampleOutput: The sample and its media type
+
+        Raises:
+            AccountNotFoundError: If the account is not found
+            CredentialNotFoundError: If the credential is not found
+
+        """
+        endpoint = VcspEndpoints.CREDENTIAL_SAMPLE.value.replace("<subject_id>", data_model.subject_id)
+        endpoint = endpoint.replace("<credential_id>", data_model.credential_id)
+        response = self._get(endpoint=endpoint)
+        return GetCredentialSampleOutput(
+            content=response.content,
+            content_type=response.headers.get("content-type", DEFAULT_CONTENT_TYPE),
+        )
+
+    def get_credential_configuration(self, data_model: CredentialConfigurationInput) -> CredentialConfigurationOutput:
+        """Get one credential configuration, including the schema its claims must satisfy.
+
+        Args:
+            data_model: The urn of the credential configuration
+
+        Returns:
+            CredentialConfigurationOutput: The configuration and its claims schema
+
+        Raises:
+            InvalidCredentialConfigurationUrnError: If no configuration exists with that urn
+
+        """
+        endpoint = VcspEndpoints.CREDENTIAL_CONFIGURATION_URN.value.replace("<urn>", data_model.urn)
+        response = self._get(endpoint=endpoint)
+        return CredentialConfigurationOutput(**response.json())
 
     def get_credential_configurations(self) -> CredentialConfigurationsOutput:
         """Get all credential configurations.

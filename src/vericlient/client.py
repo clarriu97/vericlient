@@ -106,9 +106,9 @@ class Client(ABC):
     def _handle_error_response(self, response: requests.Response) -> None:
         """Handle error responses from the API."""
 
-    def _get(self, endpoint: str) -> requests.Response:
+    def _get(self, endpoint: str, params: dict | None = None) -> requests.Response:
         """Make a GET request to the API."""
-        response = self._session.get(f"{self._url}/{endpoint}", timeout=self._timeout)
+        response = self._session.get(f"{self._url}/{endpoint}", params=params, timeout=self._timeout)
         if not response.ok:
             self._handle_authorization_error(response)
             self._handle_error_response(response)
@@ -134,9 +134,9 @@ class Client(ABC):
             self._handle_error_response(response)
         return response
 
-    def _delete(self, endpoint: str) -> requests.Response:
+    def _delete(self, endpoint: str, json_: dict | None = None) -> requests.Response:
         """Make a DELETE request to the API."""
-        response = self._session.delete(f"{self._url}/{endpoint}", timeout=self._timeout)
+        response = self._session.delete(f"{self._url}/{endpoint}", json=json_, timeout=self._timeout)
         if not response.ok:
             self._handle_authorization_error(response)
             self._handle_error_response(response)

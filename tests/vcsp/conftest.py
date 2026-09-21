@@ -47,6 +47,7 @@ from vericlient.vcsp.models import (
     DeleteTagInput,
     EnrollmentInput,
     GetGroupsInput,
+    ListCredentialsInput,
 )
 
 logger = get_logger(__name__)
@@ -230,6 +231,7 @@ def enrollment_assurance_method(vcsp_client, mock_server) -> str:
 def temp_subject(
     real_writes,
     resource_tracker,
+    shared_test_tag,
     audio_file_path,
     voice_credential_configuration,
     enrollment_assurance_method,
@@ -247,6 +249,8 @@ def temp_subject(
                 credential_configuration_urn=voice_credential_configuration,
                 assurance_method_urn=enrollment_assurance_method,
                 assurance={"authenticity_threshold": 0.5},
+                # Tagging is what lets the sweeper find this account if teardown never runs.
+                tags=[shared_test_tag],
             ),
         ),
     )
@@ -258,23 +262,48 @@ def temp_subject(
     return subject_id, enrollment.credential_id
 
 
+@pytest.fixture(scope="session")
+def shared_test_tag(vcsp_client, mock_server, writes_allowed) -> str:
+    """Make sure the tag that marks test credentials exists.
+
+    A credential can only carry a tag the service already knows about, so this runs once per
+    session. The sweeper removes it at the end.
+    """
+    if not mock_server and writes_allowed:
+        with contextlib.suppress(Exception):
+            vcsp_client.create_tags(data_model=CreateTagsInput(tags=[TEST_TAG]))
+    return TEST_TAG
+
+
 @pytest.fixture(scope="session", autouse=True)
 def sweep_leftovers(vcsp_client, mock_server, writes_allowed, keep_resources) -> Generator[None, None, None]:
     """Remove anything a previous run left behind, before and after this one.
 
     Per-test teardown does not survive a crash, so this is what actually makes the suite
-    repeatable. It only ever touches names carrying the test prefixes, because the sandbox
-    is shared with real subscriptions.
+    repeatable. It only ever touches resources carrying the test prefixes, because the
+    sandbox is shared with real subscriptions.
+
+    Accounts are found through the test tag. The deployment holds far too many credentials
+    to walk, but filtering by tag narrows it to the ones this suite created.
     """
 
     def sweep(when: str) -> None:
         if mock_server or not writes_allowed or keep_resources:
             return
+
+        with contextlib.suppress(Exception):
+            leaked = vcsp_client.list_credentials(ListCredentialsInput(tags=[TEST_TAG])).items
+            for subject_id in {credential.subject_id for credential in leaked}:
+                with contextlib.suppress(Exception):
+                    vcsp_client.delete_account(DeleteAccountInput(subject_id=subject_id))
+                    logger.info("swept_account", subject_id=subject_id, when=when)
+
         for group in vcsp_client.get_groups(GetGroupsInput()).items:
             if group.name.startswith(GROUP_PREFIX):
                 with contextlib.suppress(Exception):
                     vcsp_client.delete_group(DeleteGroupInput(name=group.name))
                     logger.info("swept_group", name=group.name, when=when)
+
         for tag in vcsp_client.get_tags().items:
             if tag.name == TEST_TAG:
                 with contextlib.suppress(Exception):

@@ -216,3 +216,68 @@ client.delete_group(DeleteGroupInput(name="support_agents"))
 
     Creating one past the limit raises `GroupsLimitExceededError`. The limit is part of the
     subscription, not something the client controls.
+
+## Finding credentials across the whole system
+
+`get_all_subject_credentials` is scoped to one account. `list_credentials` is not: it walks
+everything, so filter and page rather than asking for the lot.
+
+```python
+from vericlient import VcspClient
+from vericlient.vcsp.models import ListCredentialsInput
+
+client = VcspClient(apikey="your_api_key")
+
+page = client.list_credentials(ListCredentialsInput(tags=["role:employee"], size=50))
+print(f"{page.total} credentials over {page.pages} pages")
+for credential in page.items:
+    print(f"{credential.id} belongs to {credential.subject_id}")
+```
+
+Each item carries `subject_id`, which the per-account endpoints do not return — that is what
+makes the listing useful for finding an account you only know a tag for.
+
+## Retrieving the sample behind a credential
+
+The service answers with the raw bytes it was enrolled with, not with JSON.
+
+```python
+from vericlient.vcsp.models import GetCredentialSampleInput
+
+sample = client.get_credential_sample(
+    GetCredentialSampleInput(subject_id="user-1", credential_id=credential_id),
+)
+with open("recovered.wav", "wb") as f:
+    f.write(sample.content)
+print(sample.content_type)  # audio/wav
+```
+
+## Deleting credentials in bulk
+
+```python
+from vericlient.vcsp.models import DeleteCredentialsInput
+
+client.delete_credentials(
+    DeleteCredentialsInput(group_name="support_agents", delete_empty_accounts=True),
+)
+```
+
+!!! danger "Irreversible, and a group is the only filter"
+
+    Credentials in the group are deleted and removed from every other group they belong to.
+    With `delete_empty_accounts`, accounts left holding nothing go too. There is no way to
+    scope this by tag or by account.
+
+## Inspecting one credential configuration
+
+`get_credential_configurations` lists the URNs; this returns the schema that an enrolment's
+`claims` must satisfy for a given one.
+
+```python
+from vericlient.vcsp.models import CredentialConfigurationInput
+
+configuration = client.get_credential_configuration(
+    CredentialConfigurationInput(urn="urn:vcsp:credential_configurations:voice_telephone:v1"),
+)
+print(configuration.claims_schema)
+```

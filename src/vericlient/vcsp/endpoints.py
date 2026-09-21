@@ -12,6 +12,8 @@ class VcspEndpoints(Enum):  # noqa: D101
     ACCOUNTS = "accounts/<subject_id>"
     CREDENTIALS = "accounts/<subject_id>/credentials"
     CREDENTIAL_ID = "accounts/<subject_id>/credentials/<credential_id>"
+    CREDENTIAL_SAMPLE = "accounts/<subject_id>/credentials/<credential_id>/sample"
+    ALL_CREDENTIALS = "credentials"
     GROUPS = "groups"
     GROUP_NAME = "groups/<group_name>"
     GROUP_MEMBERS = "groups/<group_name>/credentials"
