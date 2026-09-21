@@ -9,6 +9,7 @@ from vericlient.vcsp.exceptions import (
     AccountNotFoundError,
     AssuranceMethodNotFoundError,
     ClusteringNotSupportedError,
+    CredentialNotFoundError,
     InvalidBatchFileError,
     TaskNotFoundError,
     UnsupportedMediaTypeError,
@@ -905,4 +906,26 @@ def test_real_clustering_is_refused_for_a_voice_group(
                 assurance_method_urn=clustering_assurance_method,
                 properties={"similarity_threshold": 0.5, "mode": "similarity_based"},
             ),
+        )
+
+
+@pytest.mark.vcsp
+def test_real_deleting_a_credential_leaves_the_account(real_writes, temp_subject):
+    """Deleting one credential removes it without taking the account with it.
+
+    The distinction matters: `delete_account` removes everything, this does not, and the
+    mocked test could not tell the difference because it never looked at the account after.
+    """
+    subject_id, credential_id = temp_subject
+
+    real_writes.delete_credential(
+        data_model=DeleteCredentialInput(subject_id=subject_id, credential_id=credential_id),
+    )
+
+    account = real_writes.get_account(data_model=GetAccountInput(subject_id=subject_id))
+    assert credential_id not in account.credentials
+
+    with pytest.raises(CredentialNotFoundError):
+        real_writes.get_credential(
+            data_model=GetCredentialInput(subject_id=subject_id, credential_id=credential_id),
         )

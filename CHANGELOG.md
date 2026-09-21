@@ -7,6 +7,8 @@ The project follows [semantic versioning](https://semver.org/).
 
 ### Added
 
+- Every public `VcspClient` method is exercised against real infrastructure, guarded by a
+  test that fails if one is added without it.
 - **VCSP is now fully covered**: `match` for 1:1 and 1:N biometric matching, `modify_group`
   to populate or empty a group, `modify_credential_tags`, and `start_clustering`. All 31
   endpoints in the specification are reachable.
