@@ -1,7 +1,12 @@
 site_name: vericlient
-site_url: https://clarriu97.github.io/vericlient/
+site_description: A Python client for the Veridas APIs — voice and face biometrics, without writing the plumbing.
+site_author: Carlos Larriu
+site_url: https://vericlient.larri.dev/
 repo_url: https://github.com/clarriu97/vericlient
 repo_name: clarriu97/vericlient
+edit_uri: edit/master/docs/
+copyright: Released under the MIT licence.
+
 nav:
   - Get started: index.md
   - Supported endpoints: supported_endpoints.md
@@ -24,56 +29,95 @@ plugins:
             docstring_style: google
             show_root_heading: true
             show_source: true
+            show_symbol_type_heading: true
+            show_symbol_type_toc: true
+            separate_signature: true
+            signature_crossrefs: true
+            members_order: source
+            filters: ["!^_"]
 
 markdown_extensions:
+  - abbr
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - md_in_html
+  - meta
+  - tables
   - toc:
       permalink: true
-  - admonition
-  - tables
-  - codehilite
-  - footnotes
-  - meta
+      permalink_title: Link to this section
   - pymdownx.details
+  - pymdownx.inlinehilite
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
   - pymdownx.superfences
-  - pymdownx.tabbed
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  # Lets docs/CHANGELOG.md pull in the repository's CHANGELOG.md, so there is one to maintain.
+  - pymdownx.snippets:
+      base_path: ["."]
+      check_paths: true
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
 
 extra_css:
   - stylesheets/extra.css
 
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/clarriu97/vericlient
+      name: vericlient on GitHub
+    - icon: fontawesome/brands/python
+      link: https://pypi.org/project/vericlient/
+      name: vericlient on PyPI
 
 theme:
   name: material
   language: en
+  icon:
+    logo: material/waveform
+    repo: fontawesome/brands/github
   palette:
     # Follow the reader's system setting, and let them override it.
     - media: "(prefers-color-scheme: light)"
       scheme: default
-      primary: pink
-      accent: pink
+      primary: custom
+      accent: custom
       toggle:
         icon: material/weather-night
         name: Switch to dark mode
     - media: "(prefers-color-scheme: dark)"
       scheme: slate
-      primary: pink
-      accent: pink
+      primary: custom
+      accent: custom
       toggle:
         icon: material/weather-sunny
         name: Switch to light mode
   font:
-    text: Roboto
-    code: Roboto Mono
+    text: Inter
+    code: JetBrains Mono
   features:
     - navigation.instant
+    - navigation.instant.progress
+    - navigation.tabs
+    - navigation.tabs.sticky
     - navigation.sections
     - navigation.top
+    - navigation.tracking
     - navigation.footer
-    - content.code.copy
-    - navigation.tabs
-    - search.highlight
-    - search.share
     - toc.follow
+    - search.highlight
+    - search.suggest
+    - search.share
+    - content.code.copy
     - content.code.annotate
     - content.tabs.link
-    - content.tabs.expand
-    - header.autohide
+    - content.action.edit

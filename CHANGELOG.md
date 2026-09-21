@@ -53,6 +53,12 @@ behaviour that was either wrong or impossible to use.
 
 ### Documentation
 
+- Documentation moved to **https://vericlient.larri.dev**, and the project URLs, README and
+  badges follow it.
+- The changelog is no longer duplicated: the documentation includes this file directly.
+- A `py.typed` marker ships with the package, so type checkers use the annotations that were
+  already there.
+
 - A real quickstart on the home page, which previously held a `pip install` line and a link.
 - **Supported endpoints** page, with per-API coverage checked against the OpenAPI
   specifications rather than claimed from memory.

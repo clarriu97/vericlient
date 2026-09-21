@@ -15,7 +15,7 @@ requires-python = ">=3.11"
 readme = "README.md"
 license = { file = "LICENSE" }
 classifiers = [
-    "Development Status :: 1 - Planning",
+    "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python",
@@ -24,14 +24,16 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: 3.14",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Typing :: Typed",
 ]
 
 [project.urls]
-Homepage = "https://clarriu97.github.io/vericlient/"
-Documentation = "https://clarriu97.github.io/vericlient/api_docs/vericlient/"
+Homepage = "https://vericlient.larri.dev/"
+Documentation = "https://vericlient.larri.dev/"
 Repository = "https://github.com/clarriu97/vericlient"
 Issues = "https://github.com/clarriu97/vericlient/issues"
-Changelog = "https://github.com/clarriu97/vericlient/blob/master/CHANGELOG.md"
+Changelog = "https://vericlient.larri.dev/CHANGELOG/"
 
 [dependency-groups]
 dev = [
