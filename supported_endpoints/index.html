@@ -985,7 +985,7 @@ specifications rather than against memory.</p>
 <tr>
 <td>VCSP</td>
 <td><a href="https://docs.veridas.com/vcsp_echo/cloud/v1.17/api/definition/">v1.17</a></td>
-<td><strong>10 / 31</strong></td>
+<td><strong>18 / 31</strong></td>
 </tr>
 <tr>
 <td>das-Face</td>
@@ -1111,15 +1111,15 @@ specifications rather than against memory.</p>
 </tr>
 <tr>
 <td><code>POST /v1/groups</code></td>
-<td>—</td>
+<td><code>create_group()</code></td>
 </tr>
 <tr>
 <td><code>GET /v1/groups</code></td>
-<td>—</td>
+<td><code>get_groups()</code></td>
 </tr>
 <tr>
 <td><code>GET /v1/groups/{group_name}</code></td>
-<td>—</td>
+<td><code>get_group()</code></td>
 </tr>
 <tr>
 <td><code>PATCH /v1/groups/{group_name}</code></td>
@@ -1127,11 +1127,11 @@ specifications rather than against memory.</p>
 </tr>
 <tr>
 <td><code>DELETE /v1/groups/{group_name}</code></td>
-<td>—</td>
+<td><code>delete_group()</code></td>
 </tr>
 <tr>
 <td><code>GET /v1/groups/{group_name}/credentials</code></td>
-<td>—</td>
+<td><code>get_group_members()</code></td>
 </tr>
 <tr>
 <td><code>POST /v1/groups/{group_name}/clustering</code></td>
@@ -1159,15 +1159,15 @@ specifications rather than against memory.</p>
 </tr>
 <tr>
 <td><code>POST /v1/tags</code></td>
-<td>—</td>
+<td><code>create_tags()</code></td>
 </tr>
 <tr>
 <td><code>GET /v1/tags</code></td>
-<td>—</td>
+<td><code>get_tags()</code></td>
 </tr>
 <tr>
 <td><code>DELETE /v1/tags/{tag_name}</code></td>
-<td>—</td>
+<td><code>delete_tag()</code></td>
 </tr>
 <tr>
 <td><code>GET /v1/tasks</code></td>

@@ -829,6 +829,17 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#added" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Added
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#breaking" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -879,7 +890,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#added" class="md-nav__link">
+  <a href="#added_1" class="md-nav__link">
     <span class="md-ellipsis">
       
         Added
@@ -1040,6 +1051,17 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#added" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Added
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#breaking" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1090,7 +1112,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#added" class="md-nav__link">
+  <a href="#added_1" class="md-nav__link">
     <span class="md-ellipsis">
       
         Added
@@ -1233,6 +1255,18 @@
 <p>Notable changes to <code>vericlient</code>, newest first. Dates are the day the version was released.
 The project follows <a href="https://semver.org/">semantic versioning</a>.</p>
 <h2 id="unreleased">Unreleased<a class="headerlink" href="#unreleased" title="Link to this section">&para;</a></h2>
+<h3 id="added">Added<a class="headerlink" href="#added" title="Link to this section">&para;</a></h3>
+<ul>
+<li><strong>VCSP groups and tags</strong>: <code>create_group</code>, <code>get_groups</code>, <code>get_group</code>, <code>delete_group</code>,
+  <code>get_group_members</code>, <code>create_tags</code>, <code>get_tags</code> and <code>delete_tag</code>. Coverage goes from 10 to
+  18 of the 31 endpoints in the specification.</li>
+<li>Exceptions for the new failure modes: <code>GroupNotFoundError</code>, <code>GroupAlreadyExistsError</code>,
+  <code>GroupsLimitExceededError</code>, <code>TagAlreadyExistsError</code>, <code>TagsLimitExceededError</code>,
+  <code>TagListEmptyError</code> and <code>EnrollmentsLimitExceededError</code>.</li>
+<li>The VCSP suite now creates and destroys real resources against a sandbox, with a session
+  sweeper that recovers from a run that died before its teardown, and a <code>--keep-resources</code>
+  flag for debugging.</li>
+</ul>
 <h3 id="breaking">Breaking<a class="headerlink" href="#breaking" title="Link to this section">&para;</a></h3>
 <ul>
 <li><strong>Responses no longer carry <code>status_code</code>.</strong> An HTTP status code is a transport detail,
@@ -1277,7 +1311,7 @@ behaviour that was either wrong or impossible to use.</p>
 <li>The getting-started example in the documentation imported a <code>DasfaceClient</code> that does not
   exist.</li>
 </ul>
-<h3 id="added">Added<a class="headerlink" href="#added" title="Link to this section">&para;</a></h3>
+<h3 id="added_1">Added<a class="headerlink" href="#added_1" title="Link to this section">&para;</a></h3>
 <ul>
 <li><strong>The VCSP client reaches PyPI for the first time.</strong> It was written between 0.1.6 and this
   release but never published, so every 0.1.x on PyPI carries das-Peak only.</li>

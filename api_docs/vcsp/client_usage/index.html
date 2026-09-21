@@ -756,6 +756,28 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#tags" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tags
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#groups" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Groups
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1023,6 +1045,28 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#tags" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tags
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#groups" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Groups
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1158,6 +1202,72 @@ answers 500 rather than a 4xx when the declared type does not match what it rece
 </span><span id="__span-7-11"><a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a>    <span class="nb">print</span><span class="p">(</span><span class="s2">"No such subject"</span><span class="p">)</span>
 </span></code></pre></div>
 <p>The full list is in <a href="../../../errors/">Error handling</a>.</p>
+<h2 id="tags">Tags<a class="headerlink" href="#tags" title="Link to this section">&para;</a></h2>
+<p>Tags label credentials so they can be filtered later. A tag must exist before a credential
+can carry it, and its name must be <code>key:value</code> with alphanumerics only —
+<code>^[a-zA-Z0-9]+:[a-zA-Z0-9]+$</code>, so <code>role:employee</code> is valid and <code>role-employee</code> is not.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">vericlient</span><span class="w"> </span><span class="kn">import</span> <span class="n">VcspClient</span>
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">vericlient.vcsp.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">CreateTagsInput</span><span class="p">,</span> <span class="n">DeleteTagInput</span>
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>
+</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="n">client</span> <span class="o">=</span> <span class="n">VcspClient</span><span class="p">(</span><span class="n">apikey</span><span class="o">=</span><span class="s2">"your_api_key"</span><span class="p">)</span>
+</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>
+</span><span id="__span-8-6"><a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a><span class="n">client</span><span class="o">.</span><span class="n">create_tags</span><span class="p">(</span><span class="n">CreateTagsInput</span><span class="p">(</span><span class="n">tags</span><span class="o">=</span><span class="p">[</span><span class="s2">"role:employee"</span><span class="p">,</span> <span class="s2">"region:eu"</span><span class="p">]))</span>
+</span><span id="__span-8-7"><a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a>
+</span><span id="__span-8-8"><a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a><span class="k">for</span> <span class="n">tag</span> <span class="ow">in</span> <span class="n">client</span><span class="o">.</span><span class="n">get_tags</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">:</span>
+</span><span id="__span-8-9"><a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">tag</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> (created </span><span class="si">{</span><span class="n">tag</span><span class="o">.</span><span class="n">created_at</span><span class="si">}</span><span class="s2">)"</span><span class="p">)</span>
+</span><span id="__span-8-10"><a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a>
+</span><span id="__span-8-11"><a id="__codelineno-8-11" name="__codelineno-8-11" href="#__codelineno-8-11"></a><span class="n">client</span><span class="o">.</span><span class="n">delete_tag</span><span class="p">(</span><span class="n">DeleteTagInput</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">"region:eu"</span><span class="p">))</span>
+</span></code></pre></div>
+<p>Once a tag exists, pass it when enrolling:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="n">Applicant</span><span class="p">(</span>
+</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>    <span class="n">subject_id</span><span class="o">=</span><span class="s2">"user-1"</span><span class="p">,</span>
+</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>    <span class="n">credential_configuration_urn</span><span class="o">=</span><span class="n">configuration</span><span class="p">,</span>
+</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>    <span class="n">assurance_method_urn</span><span class="o">=</span><span class="n">method</span><span class="p">,</span>
+</span><span id="__span-9-5"><a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>    <span class="n">assurance</span><span class="o">=</span><span class="p">{</span><span class="s2">"authenticity_threshold"</span><span class="p">:</span> <span class="mf">0.5</span><span class="p">},</span>
+</span><span id="__span-9-6"><a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a>    <span class="n">tags</span><span class="o">=</span><span class="p">[</span><span class="s2">"role:employee"</span><span class="p">],</span>
+</span><span id="__span-9-7"><a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a><span class="p">)</span>
+</span></code></pre></div>
+<h2 id="groups">Groups<a class="headerlink" href="#groups" title="Link to this section">&para;</a></h2>
+<p>Groups are how a set of credentials is referred to for 1:N matching. A group name must match
+<code>^[a-zA-Z_][a-zA-Z0-9_]{2,63}$</code> — letters, digits and underscores, starting with a letter or
+an underscore. Hyphens are rejected.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">vericlient</span><span class="w"> </span><span class="kn">import</span> <span class="n">VcspClient</span>
+</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">vericlient.vcsp.models</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>    <span class="n">CreateGroupInput</span><span class="p">,</span>
+</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a>    <span class="n">DeleteGroupInput</span><span class="p">,</span>
+</span><span id="__span-10-5"><a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a>    <span class="n">GetGroupInput</span><span class="p">,</span>
+</span><span id="__span-10-6"><a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a>    <span class="n">GetGroupMembersInput</span><span class="p">,</span>
+</span><span id="__span-10-7"><a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a>    <span class="n">GetGroupsInput</span><span class="p">,</span>
+</span><span id="__span-10-8"><a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a><span class="p">)</span>
+</span><span id="__span-10-9"><a id="__codelineno-10-9" name="__codelineno-10-9" href="#__codelineno-10-9"></a>
+</span><span id="__span-10-10"><a id="__codelineno-10-10" name="__codelineno-10-10" href="#__codelineno-10-10"></a><span class="n">client</span> <span class="o">=</span> <span class="n">VcspClient</span><span class="p">(</span><span class="n">apikey</span><span class="o">=</span><span class="s2">"your_api_key"</span><span class="p">)</span>
+</span><span id="__span-10-11"><a id="__codelineno-10-11" name="__codelineno-10-11" href="#__codelineno-10-11"></a><span class="n">configuration</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">client</span><span class="o">.</span><span class="n">get_credential_configurations</span><span class="p">()</span><span class="o">.</span><span class="n">credential_configurations</span> <span class="k">if</span> <span class="s2">"voice"</span> <span class="ow">in</span> <span class="n">c</span><span class="p">)</span>
+</span><span id="__span-10-12"><a id="__codelineno-10-12" name="__codelineno-10-12" href="#__codelineno-10-12"></a>
+</span><span id="__span-10-13"><a id="__codelineno-10-13" name="__codelineno-10-13" href="#__codelineno-10-13"></a><span class="n">group</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">create_group</span><span class="p">(</span>
+</span><span id="__span-10-14"><a id="__codelineno-10-14" name="__codelineno-10-14" href="#__codelineno-10-14"></a>    <span class="n">CreateGroupInput</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">"support_agents"</span><span class="p">,</span> <span class="n">credential_configuration_urn</span><span class="o">=</span><span class="n">configuration</span><span class="p">),</span>
+</span><span id="__span-10-15"><a id="__codelineno-10-15" name="__codelineno-10-15" href="#__codelineno-10-15"></a><span class="p">)</span>
+</span><span id="__span-10-16"><a id="__codelineno-10-16" name="__codelineno-10-16" href="#__codelineno-10-16"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">group</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> holds </span><span class="si">{</span><span class="n">group</span><span class="o">.</span><span class="n">size</span><span class="si">}</span><span class="s2"> credentials, expiring </span><span class="si">{</span><span class="n">group</span><span class="o">.</span><span class="n">expired_at</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+</span><span id="__span-10-17"><a id="__codelineno-10-17" name="__codelineno-10-17" href="#__codelineno-10-17"></a>
+</span><span id="__span-10-18"><a id="__codelineno-10-18" name="__codelineno-10-18" href="#__codelineno-10-18"></a><span class="k">for</span> <span class="n">g</span> <span class="ow">in</span> <span class="n">client</span><span class="o">.</span><span class="n">get_groups</span><span class="p">(</span><span class="n">GetGroupsInput</span><span class="p">())</span><span class="o">.</span><span class="n">items</span><span class="p">:</span>
+</span><span id="__span-10-19"><a id="__codelineno-10-19" name="__codelineno-10-19" href="#__codelineno-10-19"></a>    <span class="nb">print</span><span class="p">(</span><span class="n">g</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+</span><span id="__span-10-20"><a id="__codelineno-10-20" name="__codelineno-10-20" href="#__codelineno-10-20"></a>
+</span><span id="__span-10-21"><a id="__codelineno-10-21" name="__codelineno-10-21" href="#__codelineno-10-21"></a><span class="n">members</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">get_group_members</span><span class="p">(</span><span class="n">GetGroupMembersInput</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">"support_agents"</span><span class="p">))</span>
+</span><span id="__span-10-22"><a id="__codelineno-10-22" name="__codelineno-10-22" href="#__codelineno-10-22"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">members</span><span class="o">.</span><span class="n">total</span><span class="si">}</span><span class="s2"> members"</span><span class="p">)</span>
+</span><span id="__span-10-23"><a id="__codelineno-10-23" name="__codelineno-10-23" href="#__codelineno-10-23"></a>
+</span><span id="__span-10-24"><a id="__codelineno-10-24" name="__codelineno-10-24" href="#__codelineno-10-24"></a><span class="n">client</span><span class="o">.</span><span class="n">delete_group</span><span class="p">(</span><span class="n">DeleteGroupInput</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">"support_agents"</span><span class="p">))</span>
+</span></code></pre></div>
+<div class="admonition warning">
+<p class="admonition-title"><code>expired_at</code> is a duration going in and a date coming out</p>
+<p><code>CreateGroupInput.expired_at</code> takes an <strong>ISO 8601 duration</strong> — a retention period such as
+<code>P1Y</code> or <code>P30D</code>, not a date. The service applies it and answers with the resulting
+timestamp in <code>CreateGroupOutput.expired_at</code>. Leave it out and credentials are retained
+for five years.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Subscriptions cap the number of groups</p>
+<p>Creating one past the limit raises <code>GroupsLimitExceededError</code>. The limit is part of the
+subscription, not something the client controls.</p>
+</div>
 
 
 
