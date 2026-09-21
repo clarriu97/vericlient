@@ -180,12 +180,6 @@ def audio_file() -> bytes:
 
 
 @pytest.fixture(scope="session")
-def audio_spoof_file() -> bytes:
-    with open("tests/daspeak/resources/audio_spoof.wav", "rb") as f:
-        return f.read()
-
-
-@pytest.fixture(scope="session")
 def audio_not_enough_speech_file() -> bytes:
     with open("tests/daspeak/resources/audio_not_enough_speech.wav", "rb") as f:
         return f.read()

@@ -17,6 +17,12 @@ from vericlient.daspeak.models import (
 )
 
 
+def _sent_body(mock_server) -> str:
+    """Return the last request body as text, tolerating raw audio in a multipart body."""
+    body = mock_server.last_request.body
+    return body.decode("latin-1") if isinstance(body, bytes) else body
+
+
 @pytest.mark.daspeak
 def test_daspeak_alive(mock_server, daspeak_alive_parameters):
     for param in daspeak_alive_parameters:
@@ -363,8 +369,8 @@ def test_daspeak_compare_audio2audio(
             model = daspeak_client.get_models().models[-1]
 
         input_model = CompareAudio2AudioInput(
-            audio_to_evaluate=audio_file,
             audio_reference=audio_file,
+            audio_to_evaluate=audio_file,
             hash=model,
         )
         response = daspeak_client.compare(input_model)
@@ -427,11 +433,16 @@ def test_daspeak_compare_audio2credentials(
             credential_list = [("id1", credential), ("id2", credential)]
 
         input_model = CompareAudio2CredentialsInput(
-            audio_reference=audio_file,
+            audio_to_evaluate=audio_file,
             credential_list=credential_list,
         )
         response = daspeak_client.compare(input_model)
         assert isinstance(response, CompareAudio2CredentialsOutput)
+
+        if mock_server:
+            # The API names this field `audio_to_evaluate`; sending `audio_reference`
+            # returns 400 NoAudioException, which no URL-only mock would catch.
+            assert 'name="audio_to_evaluate"' in _sent_body(mock_server)
 
 
 @pytest.mark.daspeak
@@ -460,11 +471,15 @@ def test_daspeak_client_compare_credential2credentials(
 
         response = daspeak_client.compare(
             CompareCredential2CredentialsInput(
-                credential_reference=credential,
+                credential_to_evaluate=credential,
                 credential_list=credential_list,
             )
         )
         assert isinstance(response, CompareCredential2CredentialsOutput)
+
+        if mock_server:
+            # Likewise: the API names this field `credential_to_evaluate`.
+            assert "credential_to_evaluate" in _sent_body(mock_server)
 
 
 @pytest.mark.daspeak

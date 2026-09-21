@@ -110,7 +110,7 @@ def daspeak_compare_audio2credentials_response():
             "mode": "fake-mode",
         },
         "calibration": "fake-calibration",
-        "authenticity_reference": 0.99,
+        "authenticity_to_evaluate": 0.99,
         "scores": [
             {
                 "id": "fake-id1",
@@ -125,8 +125,8 @@ def daspeak_compare_audio2credentials_response():
             "id": "fake-id1",
             "score": 0.99,
         },
-        "input_audio_duration_reference": 5.00,
-        "net_speech_duration_reference": 4.50,
+        "input_audio_duration_to_evaluate": 5.00,
+        "net_speech_duration_to_evaluate": 4.50,
     }
 
 
