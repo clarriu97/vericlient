@@ -62,7 +62,7 @@ class DaspeakClient(Client):
             headers: The headers to be used in the requests
 
         """
-        api = APIs.DASPEAK.value
+        api = APIs.DASPEAK
         super().__init__(
             api=api,
             apikey=apikey,
@@ -119,7 +119,7 @@ class DaspeakClient(Client):
 
     def _handle_error_response(self, response: Response) -> None:
         """Handle error responses from the API."""
-        response_json = response.json()
+        response_json = self._error_payload(response)
 
         exception = response_json.get("exception")
         if not exception or exception not in self._exceptions:

@@ -135,11 +135,16 @@ class EnrollmentInput(BaseModel):
             It can be a path to a file or a bytes object
             with the audio content
         applicant: The applicant to enroll
+        content_type: The media type to declare for the sample, such as `audio/wav` or
+            `image/jpeg`. Optional: it is inferred from the file extension for a path and
+            from the magic bytes for a bytes object. Set it when the guess would be wrong,
+            since VCSP answers with a 500 if the declared type does not match the content
 
     """
 
     sample: str | bytes
     applicant: Applicant
+    content_type: str | None = None
 
     @field_validator("sample")
     def must_be_str_or_bytes(cls, value: object):

@@ -38,10 +38,10 @@ with the Veridas APIs.
 Example:
 
 ```python
-from vericlient import DaspeakClient, DasfaceClient
+from vericlient import DaspeakClient, VcspClient
 
 daspeak_client = DaspeakClient()
-dasface_client = DasfaceClient()
+vcsp_client = VcspClient()
 ```
 
 ## Configuration
