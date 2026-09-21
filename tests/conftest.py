@@ -7,13 +7,19 @@ from vericlient.environments import Environments, Locations
 
 # pytest hooks
 
+
 def pytest_addoption(parser):
     parser.addoption(
-        "--mock", action="store_true", default=False, help="Run tests with mock server responses",
+        "--mock",
+        action="store_true",
+        default=False,
+        help="Run tests with mock server responses",
     )
     parser.addoption(
-        "--env", action="store", default=None, help=\
-            "Specify the environment to run tests against (e.g., EU_SANDBOX, US_PRODUCTION)",
+        "--env",
+        action="store",
+        default=None,
+        help="Specify the environment to run tests against (e.g., EU_SANDBOX, US_PRODUCTION)",
     )
 
 
@@ -31,6 +37,7 @@ us_production_test_env = "US_PRODUCTION"
 
 
 # general fixtures
+
 
 @pytest.fixture(scope="session")
 def mock_option(request):
@@ -64,15 +71,15 @@ def all_environments():
 
 
 def provide_testing_parameters(
-        test_environment: str,
-        all_environments: list,
-        mock_option: bool,      # noqa: FBT001
-        endpoint: str,
-        response: dict,
-        status_code: int,
-        exception: Exception,
-        service_name: str,
-    ) -> list:
+    test_environment: str,
+    all_environments: list,
+    mock_option: bool,  # noqa: FBT001
+    endpoint: str,
+    response: dict,
+    status_code: int,
+    exception: Exception,
+    service_name: str,
+) -> list:
     """Provide the parameters necessary for service testing depending on the test environment.
 
     Those parameters are:
@@ -85,22 +92,57 @@ def provide_testing_parameters(
     The parameters are returned as a list of tuples, each tuple containing the parameters for a specific environment.
 
     """
-    ue_sandbox = (f"{eu_sandbox_url}/{endpoint}", response, status_code, None, \
-        Environments.SANDBOX.value, Locations.EU.value, exception)
-    ue_production = (f"{ue_production_url}/{endpoint}", response, status_code, None, \
-        Environments.PRODUCTION.value, Locations.EU.value, exception)
-    us_sandbox = (f"{us_sandbox_url}/{endpoint}", response, status_code, None, \
-        Environments.SANDBOX.value, Locations.US.value, exception)
-    us_production = (f"{us_production_url}/{endpoint}", response, status_code, None, \
-        Environments.PRODUCTION.value, Locations.US.value, exception)
+    ue_sandbox = (
+        f"{eu_sandbox_url}/{endpoint}",
+        response,
+        status_code,
+        None,
+        Environments.SANDBOX.value,
+        Locations.EU.value,
+        exception,
+    )
+    ue_production = (
+        f"{ue_production_url}/{endpoint}",
+        response,
+        status_code,
+        None,
+        Environments.PRODUCTION.value,
+        Locations.EU.value,
+        exception,
+    )
+    us_sandbox = (
+        f"{us_sandbox_url}/{endpoint}",
+        response,
+        status_code,
+        None,
+        Environments.SANDBOX.value,
+        Locations.US.value,
+        exception,
+    )
+    us_production = (
+        f"{us_production_url}/{endpoint}",
+        response,
+        status_code,
+        None,
+        Environments.PRODUCTION.value,
+        Locations.US.value,
+        exception,
+    )
     if mock_option:
         parameters = [
             ue_sandbox,
             ue_production,
             us_sandbox,
             us_production,
-            (f"https://custom-{service_name}-url.com/{endpoint}", response, status_code, \
-                f"https://custom-{service_name}-url.com/{service_name}/v1", None, None, exception),
+            (
+                f"https://custom-{service_name}-url.com/{endpoint}",
+                response,
+                status_code,
+                f"https://custom-{service_name}-url.com/{service_name}/v1",
+                None,
+                None,
+                exception,
+            ),
         ]
     elif test_environment not in all_environments:
         pytest.fail(f"Invalid environment specified. Use one of {all_environments}")
@@ -124,6 +166,7 @@ def temp_dir():
 ######################
 # RESOURCES FIXTURES #
 ######################
+
 
 @pytest.fixture(scope="session")
 def audio_file_path() -> str:

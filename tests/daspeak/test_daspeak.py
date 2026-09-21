@@ -87,8 +87,10 @@ def test_daspeak_generate_credential(mock_server, daspeak_generate_credential_pa
         assert isinstance(response, GenerateCredentialOutput)
 
 
-def _test_error(        # noqa: ANN202
-    mock_server, daspeak_generate_credential_error_response_parameters, audio_file,
+def _test_error(  # noqa: ANN202
+    mock_server,
+    daspeak_generate_credential_error_response_parameters,
+    audio_file,
 ):
     for param in daspeak_generate_credential_error_response_parameters:
         endpoint, mock_response, mock_status_code, url, environment, location, exception = param
@@ -114,7 +116,9 @@ def _test_error(        # noqa: ANN202
 
 @pytest.mark.daspeak
 def test_daspeak_generate_credential_too_many_audio_channels_error(
-    mock_server, daspeak_generate_credential_channels_error_response_parameters, audio_too_many_channels_file,
+    mock_server,
+    daspeak_generate_credential_channels_error_response_parameters,
+    audio_too_many_channels_file,
 ):
     _test_error(
         mock_server,
@@ -125,7 +129,9 @@ def test_daspeak_generate_credential_too_many_audio_channels_error(
 
 @pytest.mark.daspeak
 def test_daspeak_generate_credential_sample_rate_error(
-    mock_server, daspeak_generate_credential_sample_rate_error_response_parameters, audio_invalid_sample_rate_file,
+    mock_server,
+    daspeak_generate_credential_sample_rate_error_response_parameters,
+    audio_invalid_sample_rate_file,
 ):
     _test_error(
         mock_server,
@@ -136,7 +142,9 @@ def test_daspeak_generate_credential_sample_rate_error(
 
 @pytest.mark.daspeak
 def test_daspeak_generate_credential_net_speech_error(
-    mock_server, daspeak_generate_credential_net_speech_duration_error_response_parameters, audio_not_enough_speech_file,
+    mock_server,
+    daspeak_generate_credential_net_speech_duration_error_response_parameters,
+    audio_not_enough_speech_file,
 ):
     _test_error(
         mock_server,
@@ -147,7 +155,9 @@ def test_daspeak_generate_credential_net_speech_error(
 
 @pytest.mark.daspeak
 def test_daspeak_generate_credential_bad_snr_error(
-    mock_server, daspeak_generate_credential_bad_snr_error_response_parameters, audio_bad_snr_file,
+    mock_server,
+    daspeak_generate_credential_bad_snr_error_response_parameters,
+    audio_bad_snr_file,
 ):
     _test_error(
         mock_server,
@@ -158,7 +168,9 @@ def test_daspeak_generate_credential_bad_snr_error(
 
 @pytest.mark.daspeak
 def test_daspeak_generate_credential_audio_too_long_error(
-    mock_server, daspeak_generate_credential_audio_too_long_error_response_parameters, audio_too_long_file,
+    mock_server,
+    daspeak_generate_credential_audio_too_long_error_response_parameters,
+    audio_too_long_file,
 ):
     _test_error(
         mock_server,
@@ -169,7 +181,9 @@ def test_daspeak_generate_credential_audio_too_long_error(
 
 @pytest.mark.daspeak
 def test_daspeak_generate_credentail_codec_error(
-    mock_server, daspeak_generate_credential_codec_error_response_parameters, audio_codec_error_file,
+    mock_server,
+    daspeak_generate_credential_codec_error_response_parameters,
+    audio_codec_error_file,
 ):
     _test_error(
         mock_server,
@@ -180,7 +194,9 @@ def test_daspeak_generate_credentail_codec_error(
 
 @pytest.mark.daspeak
 def test_daspeak_generate_credential_insufficient_quality_error(
-    mock_server, daspeak_generate_credential_insufficient_quality_error_response_parameters, audio_insufficient_quality_file,
+    mock_server,
+    daspeak_generate_credential_insufficient_quality_error_response_parameters,
+    audio_insufficient_quality_file,
 ):
     _test_error(
         mock_server,
@@ -191,7 +207,9 @@ def test_daspeak_generate_credential_insufficient_quality_error(
 
 @pytest.mark.daspeak
 def test_daspeak_generate_credential_invalid_specified_channel_error(
-    mock_server, daspeak_generate_credential_invalid_specified_channel_error_response_parameters, audio_file,
+    mock_server,
+    daspeak_generate_credential_invalid_specified_channel_error_response_parameters,
+    audio_file,
 ):
     for param in daspeak_generate_credential_invalid_specified_channel_error_response_parameters:
         endpoint, mock_response, mock_status_code, url, environment, location, exception = param
@@ -218,7 +236,9 @@ def test_daspeak_generate_credential_invalid_specified_channel_error(
 
 @pytest.mark.daspeak
 def test_daspeak_generate_credential_calibration_not_available_error(
-    mock_server, daspeak_generate_credential_calibration_not_available_error_response_parameters, audio_file,
+    mock_server,
+    daspeak_generate_credential_calibration_not_available_error_response_parameters,
+    audio_file,
 ):
     for param in daspeak_generate_credential_calibration_not_available_error_response_parameters:
         endpoint, mock_response, mock_status_code, url, environment, location, exception = param
@@ -245,7 +265,9 @@ def test_daspeak_generate_credential_calibration_not_available_error(
 
 @pytest.mark.daspeak
 def test_daspeak_generate_credential_unsupported_media_type_error(
-    mock_server, daspeak_generate_credential_unsupported_media_type_error_response_parameters, audio_unsupported_file,
+    mock_server,
+    daspeak_generate_credential_unsupported_media_type_error_response_parameters,
+    audio_unsupported_file,
 ):
     _test_error(
         mock_server,
@@ -256,7 +278,9 @@ def test_daspeak_generate_credential_unsupported_media_type_error(
 
 @pytest.mark.daspeak
 def test_daspeak_server_error(
-    mock_server, daspeak_server_error_response_parameters, audio_file,
+    mock_server,
+    daspeak_server_error_response_parameters,
+    audio_file,
 ):
     for param in daspeak_server_error_response_parameters:
         endpoint, mock_response, mock_status_code, url, environment, location, exception = param
@@ -280,7 +304,10 @@ def test_daspeak_server_error(
 
 @pytest.mark.daspeak
 def test_daspeak_compare_credential2audio(
-    mock_server, daspeak_compare_credential2audio_parameters, audio_file_path, audio_file,
+    mock_server,
+    daspeak_compare_credential2audio_parameters,
+    audio_file_path,
+    audio_file,
 ):
     for param in daspeak_compare_credential2audio_parameters:
         endpoint, mock_response, mock_status_code, url, environment, location, _ = param
@@ -317,7 +344,9 @@ def test_daspeak_compare_credential2audio(
 
 @pytest.mark.daspeak
 def test_daspeak_compare_audio2audio(
-    mock_server, daspeak_compare_audio2audio_parameters, audio_file,
+    mock_server,
+    daspeak_compare_audio2audio_parameters,
+    audio_file,
 ):
     for param in daspeak_compare_audio2audio_parameters:
         endpoint, mock_response, mock_status_code, url, environment, location, _ = param
@@ -344,7 +373,9 @@ def test_daspeak_compare_audio2audio(
 
 @pytest.mark.daspeak
 def test_daspeak_compare_credential2credential(
-    mock_server, daspeak_compare_credential2credential_parameters, audio_file,
+    mock_server,
+    daspeak_compare_credential2credential_parameters,
+    audio_file,
 ):
     for param in daspeak_compare_credential2credential_parameters:
         endpoint, mock_response, mock_status_code, url, environment, location, _ = param
@@ -374,7 +405,9 @@ def test_daspeak_compare_credential2credential(
 
 @pytest.mark.daspeak
 def test_daspeak_compare_audio2credentials(
-    mock_server, daspeak_compare_audio2credentials_parameters, audio_file,
+    mock_server,
+    daspeak_compare_audio2credentials_parameters,
+    audio_file,
 ):
     for param in daspeak_compare_audio2credentials_parameters:
         endpoint, mock_response, mock_status_code, url, environment, location, _ = param
@@ -403,7 +436,9 @@ def test_daspeak_compare_audio2credentials(
 
 @pytest.mark.daspeak
 def test_daspeak_client_compare_credential2credentials(
-    mock_server, daspeak_compare_credential2credentials_parameters, audio_file,
+    mock_server,
+    daspeak_compare_credential2credentials_parameters,
+    audio_file,
 ):
     for param in daspeak_compare_credential2credentials_parameters:
         endpoint, mock_response, mock_status_code, url, environment, location, _ = param
@@ -423,10 +458,12 @@ def test_daspeak_client_compare_credential2credentials(
             credential = daspeak_client.generate_credential(GenerateCredentialInput(audio=audio_file, hash=model)).credential
             credential_list = [("id1", credential), ("id2", credential)]
 
-        response = daspeak_client.compare(CompareCredential2CredentialsInput(
-            credential_reference=credential,
-            credential_list=credential_list,
-        ))
+        response = daspeak_client.compare(
+            CompareCredential2CredentialsInput(
+                credential_reference=credential,
+                credential_list=credential_list,
+            )
+        )
         assert isinstance(response, CompareCredential2CredentialsOutput)
 
 

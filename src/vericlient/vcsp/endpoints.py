@@ -1,10 +1,11 @@
 """Module to define the endpoints for VCSP API."""
+
 from enum import Enum
 
 from vericlient.endpoints import Endpoints
 
 
-class VcspEndpoints(Enum):   # noqa: D101
+class VcspEndpoints(Enum):  # noqa: D101
     ALIVE = Endpoints.ALIVE.value
     ENROLLMENTS = "enrollments"
     ENROLLMENTS_BATCH = "enrollments/batch"

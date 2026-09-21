@@ -1,4 +1,5 @@
 """Example script to demonstrate how to use the Vcsp module."""
+
 from vericlient import VcspClient
 from vericlient.vcsp.models import (
     Applicant,
@@ -39,12 +40,12 @@ print()
 print(f"Each assurance method individually: {all_assurance_methods}")
 
 credential_configuration_urn = next(
-    credential_configuration for credential_configuration in credential_configurations.credential_configurations
+    credential_configuration
+    for credential_configuration in credential_configurations.credential_configurations
     if "telephone" in credential_configuration
 )
 assurance_method_urn = next(
-    assurance_method for assurance_method in assurance_methods.assurance_methods
-    if "enrollment:thresholds" in assurance_method
+    assurance_method for assurance_method in assurance_methods.assurance_methods if "enrollment:thresholds" in assurance_method
 )
 
 # enroll a subject specifying the subject id

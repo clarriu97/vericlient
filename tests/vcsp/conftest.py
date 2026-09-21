@@ -160,6 +160,7 @@ def test_credential_id():
 # SERVER RESPONSES #
 ####################
 
+
 @pytest.fixture(scope="session")
 def vcsp_alive_response():
     response = MagicMock()
@@ -279,7 +280,7 @@ def vcsp_get_credential_response():
             "type": "face",
             "content_type": "image/jpg",
             "analysis": {
-            "authenticity_score": 0.9,
+                "authenticity_score": 0.9,
             },
         },
         "groups": [
@@ -304,6 +305,7 @@ def vcsp_get_credential_response():
 # #################
 
 # ### 400 BAD REQUEST ###
+
 
 @pytest.fixture(scope="session")
 def vcsp_empty_file_error_response():
@@ -339,8 +341,8 @@ def vcsp_invalid_claims_error_response():
         "title": "Invalid claims",
         "reason": "Input claims don't fulfill required schema",
         "details": {
-        "input": {},
-        "required_schema": {},
+            "input": {},
+            "required_schema": {},
         },
     }
 
@@ -352,18 +354,18 @@ def vcsp_invalid_assurance_error_response():
         "title": "Invalid assurance",
         "reason": "Input assurance doesn't fulfill required schema",
         "details": {
-            "input": { },
+            "input": {},
             "required_schema": {
                 "$schema": "http://json-schema.org/draft-07/schema#",
                 "title": "Assurance method for face enrollments based on thresholds",
                 "type": "object",
                 "properties": {
-                "authenticity_threshold": {
-                "type": "number",
-                },
+                    "authenticity_threshold": {
+                        "type": "number",
+                    },
                 },
                 "required": [
-                "authenticity_threshold",
+                    "authenticity_threshold",
                 ],
                 "additionalProperties": False,
             },
@@ -372,6 +374,7 @@ def vcsp_invalid_assurance_error_response():
 
 
 # ### 404 NOT FOUND ###
+
 
 @pytest.fixture(scope="session")
 def vcsp_account_not_found_error_response():
@@ -399,6 +402,7 @@ def vcsp_credential_not_found_error_response():
 
 # ### 415 UNSUPPORTED MEDIA TYPE ###
 
+
 @pytest.fixture(scope="session")
 def vcsp_unsupported_media_type_error_response():
     return {
@@ -417,6 +421,7 @@ def vcsp_unsupported_media_type_error_response():
 
 
 # ### 422 UNPROCESSABLE ENTITY ###
+
 
 @pytest.fixture(scope="session")
 def vcsp_invalid_tags_error_response():
@@ -558,6 +563,7 @@ def vcsp_assurance_validation_error_response():
 
 # ### 500 INTERNAL SERVER ERROR ###
 
+
 @pytest.fixture(scope="session")
 def vcsp_server_error_response():
     return {
@@ -566,16 +572,18 @@ def vcsp_server_error_response():
         "reason": "An internal server error occured. Please, contact with your administrator for help",
     }
 
+
 #######################
 # PARAMETERS FIXTURES #
 #######################
 
+
 @pytest.fixture(scope="session")
 def vcsp_alive_parameters(
-        mock_option,
-        test_environment,
-        all_environments,
-        service_name,
+    mock_option,
+    test_environment,
+    all_environments,
+    service_name,
 ) -> list:
     return provide_testing_parameters(
         test_environment=test_environment,
@@ -591,11 +599,11 @@ def vcsp_alive_parameters(
 
 @pytest.fixture(scope="session")
 def vcsp_credential_configuration_parameters(
-        mock_option,
-        test_environment,
-        all_environments,
-        service_name,
-        vcsp_credential_configurations_response,
+    mock_option,
+    test_environment,
+    all_environments,
+    service_name,
+    vcsp_credential_configurations_response,
 ) -> list:
     return provide_testing_parameters(
         test_environment=test_environment,
@@ -611,11 +619,11 @@ def vcsp_credential_configuration_parameters(
 
 @pytest.fixture(scope="session")
 def vcsp_assurance_methods_parameters(
-        mock_option,
-        test_environment,
-        all_environments,
-        service_name,
-        vcsp_assurance_methods_response,
+    mock_option,
+    test_environment,
+    all_environments,
+    service_name,
+    vcsp_assurance_methods_response,
 ) -> list:
     return provide_testing_parameters(
         test_environment=test_environment,
@@ -631,12 +639,12 @@ def vcsp_assurance_methods_parameters(
 
 @pytest.fixture(scope="session")
 def vcsp_assurance_method_info_parameters(
-        mock_option,
-        test_environment,
-        all_environments,
-        service_name,
-        vcsp_assurance_method_response,
-        valid_assurance_method_urn,
+    mock_option,
+    test_environment,
+    all_environments,
+    service_name,
+    vcsp_assurance_method_response,
+    valid_assurance_method_urn,
 ) -> list:
     return provide_testing_parameters(
         test_environment=test_environment,
@@ -652,11 +660,11 @@ def vcsp_assurance_method_info_parameters(
 
 @pytest.fixture(scope="session")
 def vcsp_assurance_method_not_found_parameters(
-        mock_option,
-        test_environment,
-        all_environments,
-        service_name,
-        vcsp_assurance_method_not_found_error_response,
+    mock_option,
+    test_environment,
+    all_environments,
+    service_name,
+    vcsp_assurance_method_not_found_error_response,
 ) -> list:
     invalid_assurance_method_urn = "urn:vcsp:assurance_methods:invalid:method:v1"
     return provide_testing_parameters(
@@ -673,11 +681,11 @@ def vcsp_assurance_method_not_found_parameters(
 
 @pytest.fixture(scope="session")
 def vcsp_enrollment_parameters(
-        mock_option,
-        test_environment,
-        all_environments,
-        service_name,
-        vcsp_enrollment_response,
+    mock_option,
+    test_environment,
+    all_environments,
+    service_name,
+    vcsp_enrollment_response,
 ) -> list:
     return provide_testing_parameters(
         test_environment=test_environment,
@@ -693,29 +701,29 @@ def vcsp_enrollment_parameters(
 
 @pytest.fixture(scope="session")
 def vcsp_enrollment_exception_parameters(
-        mock_option,
-        test_environment,
-        all_environments,
-        service_name,
-        vcsp_empty_file_error_response,
-        vcsp_request_validation_error_response,
-        vcsp_invalid_claims_error_response,
-        vcsp_invalid_assurance_error_response,
-        vcsp_unsupported_media_type_error_response,
-        vcsp_invalid_tags_error_response,
-        vcsp_invalid_credential_configuration_urn_error_response,
-        vcsp_invalid_assurance_method_urn_error_response,
-        vcsp_credential_configuration_already_assigned_error_response,
-        vcsp_invalid_audio_format_error_response,
-        vcsp_invalid_signal_noise_ratio_error_response,
-        vcsp_voice_duration_not_enough_error_response,
-        vcsp_insufficient_quality_error_response,
-        vcsp_face_not_found_error_response,
-        vcsp_more_than_one_face_error_response,
-        vcsp_face_too_small_error_response,
-        vcsp_face_alignment_error_response,
-        vcsp_assurance_validation_error_response,
-        vcsp_server_error_response,
+    mock_option,
+    test_environment,
+    all_environments,
+    service_name,
+    vcsp_empty_file_error_response,
+    vcsp_request_validation_error_response,
+    vcsp_invalid_claims_error_response,
+    vcsp_invalid_assurance_error_response,
+    vcsp_unsupported_media_type_error_response,
+    vcsp_invalid_tags_error_response,
+    vcsp_invalid_credential_configuration_urn_error_response,
+    vcsp_invalid_assurance_method_urn_error_response,
+    vcsp_credential_configuration_already_assigned_error_response,
+    vcsp_invalid_audio_format_error_response,
+    vcsp_invalid_signal_noise_ratio_error_response,
+    vcsp_voice_duration_not_enough_error_response,
+    vcsp_insufficient_quality_error_response,
+    vcsp_face_not_found_error_response,
+    vcsp_more_than_one_face_error_response,
+    vcsp_face_too_small_error_response,
+    vcsp_face_alignment_error_response,
+    vcsp_assurance_validation_error_response,
+    vcsp_server_error_response,
 ) -> list[list]:
     four_hundred_responses = [
         (vcsp_empty_file_error_response, EmptyFileError),
@@ -736,16 +744,18 @@ def vcsp_enrollment_exception_parameters(
         )
         for response, exception in four_hundred_responses
     ]
-    unsupported_media_type_response = [provide_testing_parameters(
-        test_environment=test_environment,
-        all_environments=all_environments,
-        mock_option=mock_option,
-        endpoint="vcsp/v1/enrollments",
-        response=vcsp_unsupported_media_type_error_response,
-        status_code=415,
-        exception=UnsupportedMediaTypeError,
-        service_name=service_name,
-    )]
+    unsupported_media_type_response = [
+        provide_testing_parameters(
+            test_environment=test_environment,
+            all_environments=all_environments,
+            mock_option=mock_option,
+            endpoint="vcsp/v1/enrollments",
+            response=vcsp_unsupported_media_type_error_response,
+            status_code=415,
+            exception=UnsupportedMediaTypeError,
+            service_name=service_name,
+        )
+    ]
     four_hundred_twenty_two_responses = [
         (vcsp_invalid_tags_error_response, InvalidTagsError),
         (vcsp_invalid_credential_configuration_urn_error_response, InvalidCredentialConfigurationUrnError),
@@ -774,27 +784,29 @@ def vcsp_enrollment_exception_parameters(
         )
         for response, exception in four_hundred_twenty_two_responses
     ]
-    server_error_response = [provide_testing_parameters(
-        test_environment=test_environment,
-        all_environments=all_environments,
-        mock_option=mock_option,
-        endpoint="vcsp/v1/enrollments",
-        response=vcsp_server_error_response,
-        status_code=500,
-        exception=ServerError,
-        service_name=service_name,
-    )]
+    server_error_response = [
+        provide_testing_parameters(
+            test_environment=test_environment,
+            all_environments=all_environments,
+            mock_option=mock_option,
+            endpoint="vcsp/v1/enrollments",
+            response=vcsp_server_error_response,
+            status_code=500,
+            exception=ServerError,
+            service_name=service_name,
+        )
+    ]
     return four_hundred_responses + unsupported_media_type_response + four_hundred_twenty_two_responses + server_error_response
 
 
 @pytest.fixture(scope="session")
 def vcsp_get_account_parameters(
-        mock_option,
-        test_environment,
-        all_environments,
-        service_name,
-        vcsp_get_account_response,
-        test_subject_id,
+    mock_option,
+    test_environment,
+    all_environments,
+    service_name,
+    vcsp_get_account_response,
+    test_subject_id,
 ) -> list:
     return provide_testing_parameters(
         test_environment=test_environment,
@@ -810,11 +822,11 @@ def vcsp_get_account_parameters(
 
 @pytest.fixture(scope="session")
 def vcsp_delete_account_parameters(
-        mock_option,
-        test_environment,
-        all_environments,
-        service_name,
-        test_subject_id,
+    mock_option,
+    test_environment,
+    all_environments,
+    service_name,
+    test_subject_id,
 ) -> list:
     return provide_testing_parameters(
         test_environment=test_environment,
@@ -830,12 +842,12 @@ def vcsp_delete_account_parameters(
 
 @pytest.fixture(scope="session")
 def vcsp_get_all_credentials_parameters(
-        mock_option,
-        test_environment,
-        all_environments,
-        service_name,
-        vcsp_get_all_credentials_response,
-        test_subject_id,
+    mock_option,
+    test_environment,
+    all_environments,
+    service_name,
+    vcsp_get_all_credentials_response,
+    test_subject_id,
 ) -> list:
     return provide_testing_parameters(
         test_environment=test_environment,
@@ -851,13 +863,13 @@ def vcsp_get_all_credentials_parameters(
 
 @pytest.fixture(scope="session")
 def vcsp_get_credential_parameters(
-        mock_option,
-        test_environment,
-        all_environments,
-        service_name,
-        vcsp_get_credential_response,
-        test_subject_id,
-        test_credential_id,
+    mock_option,
+    test_environment,
+    all_environments,
+    service_name,
+    vcsp_get_credential_response,
+    test_subject_id,
+    test_credential_id,
 ) -> list:
     return provide_testing_parameters(
         test_environment=test_environment,
@@ -873,12 +885,12 @@ def vcsp_get_credential_parameters(
 
 @pytest.fixture(scope="session")
 def vcsp_delete_credential_parameters(
-        mock_option,
-        test_environment,
-        all_environments,
-        service_name,
-        test_subject_id,
-        test_credential_id,
+    mock_option,
+    test_environment,
+    all_environments,
+    service_name,
+    test_subject_id,
+    test_credential_id,
 ) -> list:
     return provide_testing_parameters(
         test_environment=test_environment,

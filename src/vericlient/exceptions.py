@@ -1,4 +1,5 @@
 """General exceptions for the VeriClient package."""
+
 from requests.models import Response
 
 

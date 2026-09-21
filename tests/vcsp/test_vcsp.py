@@ -1,4 +1,3 @@
-
 import pytest
 
 from vericlient.vcsp.exceptions import (
@@ -29,9 +28,10 @@ def test_vcsp_alive(vcsp_client, mock_server, vcsp_alive_parameters):
 
 @pytest.mark.vcsp
 def test_get_credential_configurations(
-        vcsp_client, mock_server,
-        vcsp_credential_configurations_response,
-        vcsp_credential_configuration_parameters,
+    vcsp_client,
+    mock_server,
+    vcsp_credential_configurations_response,
+    vcsp_credential_configuration_parameters,
 ):
     if mock_server:
         for param in vcsp_credential_configuration_parameters:
@@ -48,10 +48,10 @@ def test_get_credential_configurations(
 
 @pytest.mark.vcsp
 def test_get_assurance_methods(
-        vcsp_client,
-        mock_server,
-        vcsp_assurance_methods_response,
-        vcsp_assurance_methods_parameters,
+    vcsp_client,
+    mock_server,
+    vcsp_assurance_methods_response,
+    vcsp_assurance_methods_parameters,
 ):
     if mock_server:
         for param in vcsp_assurance_methods_parameters:
@@ -68,11 +68,11 @@ def test_get_assurance_methods(
 
 @pytest.mark.vcsp
 def test_get_assurance_method_info_success(
-        vcsp_client,
-        mock_server,
-        vcsp_assurance_method_response,
-        vcsp_assurance_method_info_parameters,
-        valid_assurance_method_urn,
+    vcsp_client,
+    mock_server,
+    vcsp_assurance_method_response,
+    vcsp_assurance_method_info_parameters,
+    valid_assurance_method_urn,
 ):
 
     if mock_server:
@@ -101,9 +101,9 @@ def test_get_assurance_method_info_success(
 
 @pytest.mark.vcsp
 def test_get_assurance_method_info_not_found(
-        vcsp_client,
-        mock_server,
-        vcsp_assurance_method_not_found_parameters,
+    vcsp_client,
+    mock_server,
+    vcsp_assurance_method_not_found_parameters,
 ):
     invalid_urn = "urn:vcsp:assurance_methods:invalid:method:v1"
 

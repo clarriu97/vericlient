@@ -1,4 +1,5 @@
 """Implementation of the client for the VCSP service."""
+
 import json
 import mimetypes
 import os
@@ -53,14 +54,14 @@ class VcspClient(Client):
     """Class to interact with the VCSP API."""
 
     def __init__(
-            self,
-            api: str = APIs.VCSP.value,
-            apikey: str | None = None,
-            timeout: int | None = None,
-            environment: str | None = None,
-            location: str | None = None,
-            url: str | None = None,
-            headers: dict | None = None,
+        self,
+        api: str = APIs.VCSP.value,
+        apikey: str | None = None,
+        timeout: int | None = None,
+        environment: str | None = None,
+        location: str | None = None,
+        url: str | None = None,
+        headers: dict | None = None,
     ) -> None:
         """Create the VcspClient class.
 

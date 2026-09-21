@@ -107,6 +107,9 @@ extend-exclude = ["docs/_build", "site"]
 fixable = ["ALL"]
 select = ["ALL"]
 ignore = [
+    # Conflicts with `ruff format`; the formatter already handles both.
+    "COM812",   # Trailing comma missing
+    "ISC001",   # Implicitly concatenated string literals on one line
     "CPY001",   # Missing copyright notice at top of file
     "D107",     # Missing docstring in `__init__`
     "D106",     # Missing docstring in public nested class

@@ -1,4 +1,5 @@
 """Configuration for the application."""
+
 import os
 
 from dynaconf import Dynaconf

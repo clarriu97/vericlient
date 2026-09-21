@@ -1,4 +1,5 @@
 """Module to define the models for the VCSP API."""
+
 # ruff: noqa: N805, D102, ANN201
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
@@ -56,7 +57,7 @@ class AssuranceMethodSchema(BaseModel):
     type: str
     properties: dict
     required: list[str] | None = None
-    additionalProperties: bool      # noqa: N815
+    additionalProperties: bool  # noqa: N815
 
 
 class AssuranceMethodInput(BaseModel):

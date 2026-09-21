@@ -1,4 +1,5 @@
 """Defines the common endpoints for the whole APIs."""
+
 from enum import Enum
 
 

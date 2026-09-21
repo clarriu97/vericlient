@@ -1,10 +1,11 @@
 """Module to define the endpoints for Daspeak API."""
+
 from enum import Enum
 
 from vericlient.endpoints import Endpoints
 
 
-class DaspeakEndpoints(Enum):   # noqa: D101
+class DaspeakEndpoints(Enum):  # noqa: D101
     ALIVE = Endpoints.ALIVE.value
     MODELS = "models"
     MODELS_METADATA = "models/metadata"

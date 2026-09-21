@@ -1,4 +1,5 @@
 """Example script to demonstrate how to use the daspeak module."""
+
 from vericlient import DaspeakClient
 from vericlient.daspeak.models import (
     CompareAudio2AudioInput,
@@ -55,7 +56,7 @@ print(f"Authenticity of the virtual file: {compare_output.authenticity_to_evalua
 print(f"Net speech duration of the virtual file: {compare_output.net_speech_duration_to_evaluate}")
 
 # compare two audio files, no matter if they are virtual or real
-with open ("/home/audio.wav", "rb") as f:
+with open("/home/audio.wav", "rb") as f:
     compare_input = CompareAudio2AudioInput(
         audio_reference="/home/audio.wav",
         audio_to_evaluate=f.read(),
