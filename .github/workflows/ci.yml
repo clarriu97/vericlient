@@ -52,7 +52,12 @@ jobs:
       matrix:
         python-version: ['3.11', '3.12', '3.13', '3.14']
     steps:
+      # The audio fixtures live in Git LFS and checkout skips them by default, which
+      # leaves pointer files on disk and makes anything that inspects audio content
+      # silently wrong.
       - uses: actions/checkout@v7
+        with:
+          lfs: true
 
       - uses: pdm-project/setup-pdm@v4
         with:
