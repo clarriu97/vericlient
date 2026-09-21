@@ -1,6 +1,7 @@
 import pytest
 
 from vericlient import DaspeakClient
+from vericlient.daspeak.exceptions import ModelNotAvailableError
 from vericlient.daspeak.models import (
     CompareAudio2AudioInput,
     CompareAudio2AudioOutput,
@@ -14,6 +15,12 @@ from vericlient.daspeak.models import (
     CompareCredential2CredentialsOutput,
     GenerateCredentialInput,
     GenerateCredentialOutput,
+    GetModelCalibrationsInput,
+    GetModelCalibrationsOutput,
+    GetModelMetadataFromCredentialInput,
+    GetModelMetadataFromCredentialOutput,
+    GetModelMetadataInput,
+    GetModelMetadataOutput,
 )
 
 
@@ -60,6 +67,103 @@ def test_daspeak_get_models(mock_server, daspeak_get_models_parameters):
             assert response.models == mock_response["models"]
         else:
             assert isinstance(response.models, list)
+
+
+@pytest.mark.daspeak
+def test_daspeak_get_model_metadata(mock_server, daspeak_get_model_metadata_parameters):
+    for param in daspeak_get_model_metadata_parameters:
+        endpoint, mock_response, mock_status_code, url, environment, location, _ = param
+        daspeak_client = DaspeakClient(
+            apikey="fake-apikey" if mock_server else None,
+            environment=environment,
+            location=location,
+            url=url,
+        )
+        if mock_server:
+            mock_server.post(endpoint, json=mock_response, status_code=mock_status_code)
+            model = "fake-hash"
+        else:
+            model = daspeak_client.get_models().models[-1]
+
+        response = daspeak_client.get_model_metadata(GetModelMetadataInput(hash=model))
+
+        assert isinstance(response, GetModelMetadataOutput)
+        assert response.metadata.hash == model
+        assert response.metadata.description
+
+
+@pytest.mark.daspeak
+def test_daspeak_get_model_calibrations(mock_server, daspeak_get_model_calibrations_parameters):
+    for param in daspeak_get_model_calibrations_parameters:
+        endpoint, mock_response, mock_status_code, url, environment, location, _ = param
+        daspeak_client = DaspeakClient(
+            apikey="fake-apikey" if mock_server else None,
+            environment=environment,
+            location=location,
+            url=url,
+        )
+        if mock_server:
+            mock_server.post(endpoint, json=mock_response, status_code=mock_status_code)
+            model = "fake-hash"
+        else:
+            model = daspeak_client.get_models().models[-1]
+
+        response = daspeak_client.get_model_calibrations(GetModelCalibrationsInput(hash=model))
+
+        assert isinstance(response, GetModelCalibrationsOutput)
+        assert response.calibrations
+        # Whatever the service reports has to be usable as a `calibration` argument.
+        assert "telephone-channel" in response.calibrations
+
+
+@pytest.mark.daspeak
+def test_daspeak_get_model_metadata_from_credential(
+    mock_server,
+    daspeak_get_model_metadata_from_credential_parameters,
+    audio_file,
+):
+    for param in daspeak_get_model_metadata_from_credential_parameters:
+        endpoint, mock_response, mock_status_code, url, environment, location, _ = param
+        daspeak_client = DaspeakClient(
+            apikey="fake-apikey" if mock_server else None,
+            environment=environment,
+            location=location,
+            url=url,
+        )
+        if mock_server:
+            mock_server.post(endpoint, json=mock_response, status_code=mock_status_code)
+            credential = "fake-credential"
+            model = "fake-hash"
+        else:
+            model = daspeak_client.get_models().models[-1]
+            credential = daspeak_client.generate_credential(
+                GenerateCredentialInput(audio=audio_file, hash=model),
+            ).credential
+
+        response = daspeak_client.get_model_metadata_from_credential(
+            GetModelMetadataFromCredentialInput(credential=credential),
+        )
+
+        assert isinstance(response, GetModelMetadataFromCredentialOutput)
+        # The credential was generated with that model, so the metadata must point back to it.
+        assert response.metadata.hash == model
+
+
+@pytest.mark.daspeak
+def test_daspeak_get_model_metadata_unknown_hash(mock_server, daspeak_model_not_available_parameters):
+    for param in daspeak_model_not_available_parameters:
+        endpoint, mock_response, mock_status_code, url, environment, location, exception = param
+        daspeak_client = DaspeakClient(
+            apikey="fake-apikey" if mock_server else None,
+            environment=environment,
+            location=location,
+            url=url,
+        )
+        if mock_server:
+            mock_server.post(endpoint, json=mock_response, status_code=mock_status_code)
+
+        with pytest.raises(exception or ModelNotAvailableError):
+            daspeak_client.get_model_metadata(GetModelMetadataInput(hash="not-a-real-hash"))
 
 
 @pytest.mark.daspeak

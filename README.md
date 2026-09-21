@@ -23,7 +23,7 @@ handling responses efficiently.
 | **API**  | **Status** | **Docs Link** |
 |----------|:-------------:|---|
 | [das-Peak](https://docs.veridas.com/das-peak/cloud/latest) | 🟢 | https://clarriu97.github.io/vericlient/api_docs/daspeak/client/ |
-| [VCSP](https://docs.veridas.com/vcsp/cloud/latest)         | 🟠 | None |
+| [VCSP](https://docs.veridas.com/vcsp_echo/cloud/latest)    | 🟠 | https://clarriu97.github.io/vericlient/api_docs/vcsp/client/ |
 | [das-Face](https://docs.veridas.com/das-face/cloud/latest) | 🔴 | None |
 
 # Installation

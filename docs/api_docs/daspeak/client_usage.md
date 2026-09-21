@@ -21,6 +21,52 @@ client = DaspeakClient(apikey="your_api_key")
 print(f"Biometrics models: {client.get_models().models}")
 ```
 
+## Get the metadata of a biometrics model
+
+```python
+from vericlient import DaspeakClient
+from vericlient.daspeak.models import GetModelMetadataInput
+
+client = DaspeakClient(apikey="your_api_key")
+model = client.get_models().models[-1]
+
+metadata = client.get_model_metadata(GetModelMetadataInput(hash=model)).metadata
+print(f"Model {metadata.hash} is {metadata.description}")
+```
+
+## Get the calibrations a model supports
+
+Any value returned here is valid as the `calibration` argument of `generate_credential`
+and of the comparison inputs.
+
+```python
+from vericlient import DaspeakClient
+from vericlient.daspeak.models import GetModelCalibrationsInput
+
+client = DaspeakClient(apikey="your_api_key")
+model = client.get_models().models[-1]
+
+calibrations = client.get_model_calibrations(GetModelCalibrationsInput(hash=model)).calibrations
+print(f"Supported calibrations: {calibrations}")
+```
+
+## Find out which model generated a credential
+
+Useful to check whether a credential you stored some time ago still matches a model the
+service offers today.
+
+```python
+from vericlient import DaspeakClient
+from vericlient.daspeak.models import GetModelMetadataFromCredentialInput
+
+client = DaspeakClient(apikey="your_api_key")
+
+metadata = client.get_model_metadata_from_credential(
+    GetModelMetadataFromCredentialInput(credential=stored_credential),
+).metadata
+print(f"Generated with model {metadata.hash} ({metadata.description})")
+```
+
 ## Generate a credential from an audio file
 
 The following code generates a credential from an audio file using the last model:

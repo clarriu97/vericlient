@@ -43,6 +43,11 @@ behaviour that was either wrong or impossible to use.
 
 ### Added
 
+- **das-Peak is now fully covered**: `get_model_metadata`, `get_model_calibrations` and
+  `get_model_metadata_from_credential` complete the eleven endpoints in the specification.
+  Three of them had entries in `DaspeakEndpoints` but no method, while the README claimed
+  full support.
+- `ModelNotAvailableError`, raised when a model hash does not exist.
 - `EnrollmentInput.content_type`, for when the sniffed media type will not do.
 - `utils.guess_content_type`.
 

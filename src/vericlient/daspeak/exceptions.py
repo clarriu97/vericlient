@@ -90,3 +90,11 @@ class CalibrationNotAvailableError(DaspeakError):
     def __init__(self, calibration: str) -> None:
         message = f"The calibration {calibration} is not available"
         super().__init__(message)
+
+
+class ModelNotAvailableError(DaspeakError):
+    """Exception raised when the requested biometrics model does not exist."""
+
+    def __init__(self, model_hash: str) -> None:
+        message = f"The biometrics model {model_hash} is not available"
+        super().__init__(message)
