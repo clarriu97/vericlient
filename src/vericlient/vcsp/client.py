@@ -16,6 +16,7 @@ from vericlient.vcsp.exceptions import (
     AccountNotFoundError,
     AssuranceMethodNotFoundError,
     AssuranceValidationError,
+    ClusteringNotSupportedError,
     CredentialConfigurationUrnAlreadyAssignedError,
     CredentialNotFoundError,
     EmptyFileError,
@@ -50,6 +51,7 @@ from vericlient.vcsp.models import (
     AssuranceMethodsOutput,
     BatchEnrollmentInput,
     BatchEnrollmentOutput,
+    ClusteringInput,
     CreateGroupInput,
     CreateGroupOutput,
     CreateTagsInput,
@@ -83,6 +85,11 @@ from vericlient.vcsp.models import (
     GetTasksOutput,
     ListCredentialsInput,
     ListCredentialsOutput,
+    MatchingInput,
+    MatchingOutput,
+    ModifyCredentialTagsInput,
+    ModifyGroupInput,
+    TaskCreatedOutput,
     TaskInput,
     TaskOutput,
 )
@@ -151,6 +158,7 @@ class VcspClient(Client):
             "tags_already_exist": TagAlreadyExistsError,
             "task_not_found": TaskNotFoundError,
             "invalid_batch_file": InvalidBatchFileError,
+            "clustering_not_supported": ClusteringNotSupportedError,
         }
 
     def alive(self) -> bool:
@@ -391,6 +399,118 @@ class VcspClient(Client):
                 error = f"Task {data_model.task_id} did not finish within {timeout} seconds"
                 raise TimeoutError(error)
             time.sleep(poll_interval)
+
+    def match(self, data_model: MatchingInput) -> MatchingOutput | TaskCreatedOutput:
+        """Match a sample against one subject or against a whole group.
+
+        Pass a `SubjectClaimant` for 1:1 or a `GroupClaimant` for 1:N. Small operations
+        answer straight away with a `MatchingOutput`; a large one is accepted and run
+        asynchronously, answering with a `TaskCreatedOutput` to follow with `wait_for_task`.
+
+        Args:
+            data_model: The sample and what to match it against
+
+        Returns:
+            MatchingOutput when the service answered directly, TaskCreatedOutput when it
+            queued the work
+
+        Raises:
+            AccountNotFoundError: If the subject does not exist
+            GroupNotFoundError: If the group does not exist
+            InvalidAssuranceError: If the assurance does not satisfy its method's schema
+
+        """
+        filename, sample, content_type = self._get_sample(data_model.sample, data_model.content_type)
+        data = {"claimant": json.dumps(data_model.claimant.model_dump(exclude_none=True))}
+        if data_model.sample_processing is not None:
+            data["sample_processing"] = json.dumps(data_model.sample_processing)
+
+        response = self._post(
+            endpoint=VcspEndpoints.MATCHINGS.value,
+            files={"sample": (filename, sample, content_type)},
+            data=data,
+        )
+        accepted = 202
+        if response.status_code == accepted:
+            return TaskCreatedOutput(**response.json())
+        return MatchingOutput(**response.json())
+
+    def modify_group(self, data_model: ModifyGroupInput) -> GetGroupOutput | TaskCreatedOutput:
+        """Add credentials to a group, remove them, or change the group's own details.
+
+        A small change answers directly with the group; a large population is accepted and
+        run asynchronously.
+
+        Args:
+            data_model: The group, the action, and what it applies to
+
+        Returns:
+            GetGroupOutput when the service answered directly, TaskCreatedOutput when it
+            queued the work
+
+        Raises:
+            GroupNotFoundError: If the group does not exist
+            AccountNotFoundError: If one of the subjects does not exist
+
+        """
+        endpoint = VcspEndpoints.GROUP_NAME.value.replace("<group_name>", data_model.name)
+        body = data_model.model_dump(exclude_none=True, by_alias=True, exclude={"name"})
+        response = self._patch(endpoint=endpoint, json_=body)
+        accepted = 202
+        if response.status_code == accepted:
+            return TaskCreatedOutput(**response.json())
+        return GetGroupOutput(**response.json())
+
+    def modify_credential_tags(self, data_model: ModifyCredentialTagsInput) -> GetCredentialOutput:
+        """Add or remove tags on one credential.
+
+        The tags have to exist already: create them with `create_tags` first.
+
+        Args:
+            data_model: The credential, the action, and the tags
+
+        Returns:
+            GetCredentialOutput: The credential as it now stands
+
+        Raises:
+            CredentialNotFoundError: If the credential is not found
+            AccountNotFoundError: If the account is not found
+            InvalidTagsError: If one of the tags does not exist
+
+        """
+        endpoint = VcspEndpoints.CREDENTIAL_TAGS.value.replace("<subject_id>", data_model.subject_id)
+        endpoint = endpoint.replace("<credential_id>", data_model.credential_id)
+        response = self._patch(
+            endpoint=endpoint,
+            json_={"action": data_model.action, "tags": data_model.tags},
+        )
+        return GetCredentialOutput(**response.json())
+
+    def start_clustering(self, data_model: ClusteringInput) -> TaskCreatedOutput:
+        """Start a clustering task over a group.
+
+        Only groups of face credentials can be clustered; a voice group is rejected.
+
+        Args:
+            data_model: The group and the clustering assurance method to apply
+
+        Returns:
+            TaskCreatedOutput: The task the clustering runs under
+
+        Raises:
+            GroupNotFoundError: If the group does not exist
+            ClusteringNotSupportedError: If the group does not hold face credentials
+
+        """
+        endpoint = VcspEndpoints.GROUP_CLUSTERING.value.replace("<group_name>", data_model.name)
+        response = self._post(
+            endpoint=endpoint,
+            json_={
+                "assurance_method_urn": data_model.assurance_method_urn,
+                "properties": data_model.properties,
+            },
+        )
+        return TaskCreatedOutput(**response.json())
 
     def get_credential_configurations(self) -> CredentialConfigurationsOutput:
         """Get all credential configurations.

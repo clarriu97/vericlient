@@ -39,7 +39,7 @@ is actually yours.
 | API | Status | Coverage |
 |---|:--:|---|
 | [das-Peak](https://docs.veridas.com/das-peak/cloud/latest) — voice biometrics | 🟢 | 11 / 11 endpoints |
-| [VCSP](https://docs.veridas.com/vcsp_echo/cloud/latest) — managed credential storage | 🟠 | 27 / 31 endpoints |
+| [VCSP](https://docs.veridas.com/vcsp_echo/cloud/latest) — managed credential storage | 🟢 | 31 / 31 endpoints |
 | [das-Face](https://docs.veridas.com/das-face/cloud/latest) — face biometrics | 🔴 | not started |
 
 Endpoint by endpoint in [Supported endpoints](https://vericlient.larri.dev/supported_endpoints/).

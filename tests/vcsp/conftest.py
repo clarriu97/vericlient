@@ -227,6 +227,24 @@ def enrollment_assurance_method(vcsp_client, mock_server) -> str:
     return next(m for m in methods if "enrollment:authenticity_threshold" in m)
 
 
+@pytest.fixture(scope="session")
+def matching_assurance_method(vcsp_client, mock_server) -> str:
+    """Return a matching assurance method this subscription actually offers."""
+    if mock_server:
+        return "urn:vcsp:assurance_methods:matching:biometric_threshold:v1"
+    methods = vcsp_client.get_assurance_methods().assurance_methods
+    return next(m for m in methods if "matching:biometric_threshold" in m)
+
+
+@pytest.fixture(scope="session")
+def clustering_assurance_method(vcsp_client, mock_server) -> str:
+    """Return a clustering assurance method this subscription actually offers."""
+    if mock_server:
+        return "urn:vcsp:assurance_methods:clustering:thresholds:v1"
+    methods = vcsp_client.get_assurance_methods().assurance_methods
+    return next(m for m in methods if "clustering" in m)
+
+
 @pytest.fixture
 def temp_subject(
     real_writes,

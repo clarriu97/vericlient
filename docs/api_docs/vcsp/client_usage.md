@@ -367,3 +367,139 @@ assuming. It raises `TimeoutError` if the task is still running when the timeout
 
     The service drops a task and its result after thirty days. `delete_task` is there for
     callers that would rather not wait.
+
+## Matching
+
+Matching is what the stored credentials are for. Pass a `SubjectClaimant` to check a sample
+against one subject, or a `GroupClaimant` to search a whole group.
+
+```python
+from vericlient import VcspClient
+from vericlient.vcsp.models import GroupClaimant, MatchingInput, SubjectClaimant
+
+client = VcspClient(apikey="your_api_key")
+method = "urn:vcsp:assurance_methods:matching:biometric_threshold:v1"
+
+# 1:1 — is this the person they claim to be?
+result = client.match(
+    MatchingInput(
+        sample="/path/to/caller.wav",
+        claimant=SubjectClaimant(
+            subject_id="alice",
+            credential_configuration_urn=configuration,
+            assurance_method_urn=method,
+            assurance={"biometric_threshold": 0.5},
+        ),
+    ),
+)
+print(result.results[0].match_status)  # HIT or MISS
+print(result.results[0].biometrics_score)  # 0.0 to 1.0
+
+# 1:N — who in this group is it?
+result = client.match(
+    MatchingInput(
+        sample="/path/to/caller.wav",
+        claimant=GroupClaimant(
+            group_name="support_agents",
+            assurance_method_urn=method,
+            assurance={"biometric_threshold": 0.5},
+            limit=5,
+            filter={"AND": [{"tag": "role:employee"}]},
+        ),
+    ),
+)
+print(f"{result.nhits} hits out of {len(result.results)} candidates")
+```
+
+`result.sample` carries what the service made of the recording — its type, the media type it
+was read as, and quality figures such as `net_speech_duration`.
+
+!!! note "A large 1:N runs asynchronously"
+
+    The service may accept the work instead of answering. `match` then returns a
+    `TaskCreatedOutput` rather than a `MatchingOutput`, to follow with `wait_for_task`.
+
+## Putting credentials into a group
+
+A credential does not join a group at enrolment: it is added afterwards, by subject or by
+tag.
+
+```python
+from vericlient.vcsp.models import GroupAction, GroupMembershipSource, ModifyGroupInput
+
+# By subject
+client.modify_group(
+    ModifyGroupInput(
+        name="support_agents",
+        action=GroupAction.POPULATE,
+        from_=GroupMembershipSource(subjects=["alice", "bob"]),
+    ),
+)
+
+# Or by tag, which scales better
+client.modify_group(
+    ModifyGroupInput(
+        name="support_agents",
+        action=GroupAction.POPULATE,
+        from_=GroupMembershipSource(tags=["role:employee"]),
+        credential_ttl="P30D",
+    ),
+)
+
+# Taking them out again
+client.modify_group(
+    ModifyGroupInput(
+        name="support_agents",
+        action=GroupAction.REMOVE,
+        from_=GroupMembershipSource(subjects=["bob"]),
+    ),
+)
+```
+
+The argument is `from_`, because `from` is a reserved word in Python; it is sent as `from`.
+A small change answers with the group, a large population is accepted as a task.
+
+## Changing a credential's tags
+
+The tags must already exist — create them with `create_tags` first.
+
+```python
+from vericlient.vcsp.models import CredentialTagAction, ModifyCredentialTagsInput
+
+credential = client.modify_credential_tags(
+    ModifyCredentialTagsInput(
+        subject_id="alice",
+        credential_id=credential_id,
+        action=CredentialTagAction.ADD,
+        tags=["region:eu"],
+    ),
+)
+print(credential.tags)
+```
+
+## Clustering a group
+
+Clustering groups similar credentials together, to find duplicates or related enrolments. It
+runs as a task.
+
+```python
+from vericlient.vcsp.models import ClusteringInput, TaskInput
+
+task = client.start_clustering(
+    ClusteringInput(
+        name="onboarding_faces",
+        assurance_method_urn="urn:vcsp:assurance_methods:clustering:thresholds:v1",
+        properties={"similarity_threshold": 0.5, "mode": "similarity_based"},
+    ),
+)
+client.wait_for_task(TaskInput(task_id=task.task_id))
+```
+
+!!! warning "Face credentials only"
+
+    A group of voice credentials is rejected with `ClusteringNotSupportedError`.
+
+!!! note "The field is `properties`, not `assurance`"
+
+    Every other endpoint calls the values an assurance method requires `assurance`.
+    Clustering calls them `properties`.

@@ -134,6 +134,14 @@ class Client(ABC):
             self._handle_error_response(response)
         return response
 
+    def _patch(self, endpoint: str, json_: dict | None = None) -> requests.Response:
+        """Make a PATCH request to the API."""
+        response = self._session.patch(f"{self._url}/{endpoint}", json=json_, timeout=self._timeout)
+        if not response.ok:
+            self._handle_authorization_error(response)
+            self._handle_error_response(response)
+        return response
+
     def _delete(self, endpoint: str, json_: dict | None = None) -> requests.Response:
         """Make a DELETE request to the API."""
         response = self._session.delete(f"{self._url}/{endpoint}", json=json_, timeout=self._timeout)
