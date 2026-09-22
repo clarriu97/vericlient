@@ -1369,8 +1369,9 @@ The project follows <a href="https://semver.org/">semantic versioning</a>.</p>
 <h2 id="unreleased">Unreleased<a class="headerlink" href="#unreleased" title="Link to this section">&para;</a></h2>
 <h3 id="added">Added<a class="headerlink" href="#added" title="Link to this section">&para;</a></h3>
 <ul>
-<li><strong>A das-Face client</strong>, covering <code>alive</code>, <code>get_models</code>, <code>generate_credential</code> and
-  <code>get_model_metadata_from_credential</code> — 4 of the 11 endpoints in the v3.35 specification.
+<li><strong>A das-Face client</strong>, covering <code>alive</code>, <code>get_models</code>, <code>generate_credential</code>,
+  <code>get_model_metadata_from_credential</code>, <code>verify_photo</code>, <code>verify_video</code> and
+  <code>verify_credential</code> — 7 of the 11 endpoints in the v3.35 specification.
   das-Face takes JSON with base64 images rather than multipart parts, uses camelCase fields
   and is served under <code>/v2</code>; none of that reaches the caller.</li>
 <li><code>utils.encode_base64</code>.</li>

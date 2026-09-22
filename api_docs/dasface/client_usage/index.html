@@ -756,6 +756,17 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#verifying-a-face" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Verifying a face
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1023,6 +1034,17 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#verifying-a-face" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Verifying a face
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1142,6 +1164,48 @@ map surfaces as <code>DasfaceApiError</code> carrying the service's own code and
 than disappearing into a generic server error.</p>
 </div>
 <p>The full list is in <a href="../../../errors/">Error handling</a>.</p>
+<h2 id="verifying-a-face">Verifying a face<a class="headerlink" href="#verifying-a-face" title="Link to this section">&para;</a></h2>
+<p>Three ways to ask the same question — is this the same person?</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">vericlient</span><span class="w"> </span><span class="kn">import</span> <span class="n">DasfaceClient</span>
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">vericlient.dasface.models</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>    <span class="n">VerifyCredentialInput</span><span class="p">,</span>
+</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>    <span class="n">VerifyPhotoInput</span><span class="p">,</span>
+</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>    <span class="n">VerifyVideoInput</span><span class="p">,</span>
+</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="p">)</span>
+</span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a>
+</span><span id="__span-7-8"><a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a><span class="n">client</span> <span class="o">=</span> <span class="n">DasfaceClient</span><span class="p">(</span><span class="n">apikey</span><span class="o">=</span><span class="s2">"your_api_key"</span><span class="p">)</span>
+</span><span id="__span-7-9"><a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a>
+</span><span id="__span-7-10"><a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a><span class="c1"># against another photo</span>
+</span><span id="__span-7-11"><a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a><span class="n">result</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">verify_photo</span><span class="p">(</span>
+</span><span id="__span-7-12"><a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a>    <span class="n">VerifyPhotoInput</span><span class="p">(</span><span class="n">anchor_image</span><span class="o">=</span><span class="s2">"/path/to/enrolled.jpg"</span><span class="p">,</span> <span class="n">target_image</span><span class="o">=</span><span class="s2">"/path/to/live.jpg"</span><span class="p">),</span>
+</span><span id="__span-7-13"><a id="__codelineno-7-13" name="__codelineno-7-13" href="#__codelineno-7-13"></a><span class="p">)</span>
+</span><span id="__span-7-14"><a id="__codelineno-7-14" name="__codelineno-7-14" href="#__codelineno-7-14"></a>
+</span><span id="__span-7-15"><a id="__codelineno-7-15" name="__codelineno-7-15" href="#__codelineno-7-15"></a><span class="c1"># against a video, which is what a liveness capture gives you</span>
+</span><span id="__span-7-16"><a id="__codelineno-7-16" name="__codelineno-7-16" href="#__codelineno-7-16"></a><span class="n">result</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">verify_video</span><span class="p">(</span>
+</span><span id="__span-7-17"><a id="__codelineno-7-17" name="__codelineno-7-17" href="#__codelineno-7-17"></a>    <span class="n">VerifyVideoInput</span><span class="p">(</span><span class="n">anchor_image</span><span class="o">=</span><span class="s2">"/path/to/enrolled.jpg"</span><span class="p">,</span> <span class="n">target_video</span><span class="o">=</span><span class="s2">"/path/to/capture.mp4"</span><span class="p">),</span>
+</span><span id="__span-7-18"><a id="__codelineno-7-18" name="__codelineno-7-18" href="#__codelineno-7-18"></a><span class="p">)</span>
+</span><span id="__span-7-19"><a id="__codelineno-7-19" name="__codelineno-7-19" href="#__codelineno-7-19"></a>
+</span><span id="__span-7-20"><a id="__codelineno-7-20" name="__codelineno-7-20" href="#__codelineno-7-20"></a><span class="c1"># against a stored credential, which is the everyday case</span>
+</span><span id="__span-7-21"><a id="__codelineno-7-21" name="__codelineno-7-21" href="#__codelineno-7-21"></a><span class="n">result</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">verify_credential</span><span class="p">(</span>
+</span><span id="__span-7-22"><a id="__codelineno-7-22" name="__codelineno-7-22" href="#__codelineno-7-22"></a>    <span class="n">VerifyCredentialInput</span><span class="p">(</span><span class="n">anchor_image</span><span class="o">=</span><span class="s2">"/path/to/live.jpg"</span><span class="p">,</span> <span class="n">target_credential</span><span class="o">=</span><span class="n">stored_credential</span><span class="p">),</span>
+</span><span id="__span-7-23"><a id="__codelineno-7-23" name="__codelineno-7-23" href="#__codelineno-7-23"></a><span class="p">)</span>
+</span><span id="__span-7-24"><a id="__codelineno-7-24" name="__codelineno-7-24" href="#__codelineno-7-24"></a>
+</span><span id="__span-7-25"><a id="__codelineno-7-25" name="__codelineno-7-25" href="#__codelineno-7-25"></a><span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">confidence</span><span class="p">)</span>
+</span></code></pre></div>
+<p><code>verify_credential</code> is the one most integrations want: the credential is generated once at
+enrolment, and every later check compares a fresh photo against it without keeping the
+original around.</p>
+<p>Against a real service, the same face scores about <strong>0.99995</strong> and two different faces about
+<strong>0.027</strong>, so the two cases are not close together.</p>
+<p><code>verify_photo</code> also takes a <code>mode</code>, to pin the model mode rather than let the service choose:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="n">VerifyPhotoInput</span><span class="p">(</span><span class="n">anchor_image</span><span class="o">=</span><span class="n">enrolled</span><span class="p">,</span> <span class="n">target_image</span><span class="o">=</span><span class="n">live</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">"document-mode"</span><span class="p">)</span>
+</span></code></pre></div>
+<div class="admonition warning">
+<p class="admonition-title"><code>rotatePhotos</code> does not exist</p>
+<p>The v3.26 specification documents a <code>rotatePhotos</code> field on this endpoint. The service
+rejects it — <code>Unknown field name 'rotatePhotos'</code> — and v3.35 has dropped it. This client
+does not offer it. See <a href="https://github.com/clarriu97/vericlient/issues/30">#30</a>.</p>
+</div>
 
 
 
