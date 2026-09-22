@@ -11,6 +11,7 @@ class DasfaceEndpoints(Enum):  # noqa: D101
     MODELS_METADATA_FROM_CREDENTIAL = "models/metadata/from-credential"
     MODEL_CREDENTIAL_PHOTO = "models/<hash>/<mode>/credential/photo"
     DEFAULT_CREDENTIAL_PHOTO = "models/inemex/default-mode/credential/photo"
+    INEMEX_CREDENTIAL_PHOTO = "inemex/models/<hash>/<mode>/credential/photo"
     VERIFICATION_PHOTO = "verification/photo"
     VERIFICATION_VIDEO = "verification/video"
     VERIFICATION_CREDENTIAL = "verification/credential"

@@ -63,6 +63,8 @@ class GenerateCredentialInput(BaseModel):
         image: The photo, as a path or as bytes
         hash: The hash of the model to use
         mode: The mode to use. Required when `hash` is given
+        inemex: Use the INE Mexico variant of the endpoint. It needs a specific agreement
+            with Veridas, and a `hash` and `mode`
 
     """
 
@@ -71,6 +73,7 @@ class GenerateCredentialInput(BaseModel):
     image: str | bytes
     hash: str | None = None
     mode: str | None = None
+    inemex: bool = False
 
     @field_validator("image")
     def image_must_be_str_or_bytes(cls, value: object) -> object:  # noqa: N805
@@ -89,6 +92,9 @@ class GenerateCredentialInput(BaseModel):
         """
         if self.hash and not self.mode:
             error = "mode is required when hash is given"
+            raise ValueError(error)
+        if self.inemex and not self.hash:
+            error = "hash and mode are required when inemex is set"
             raise ValueError(error)
         return self
 

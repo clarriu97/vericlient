@@ -203,3 +203,18 @@ somebody else scores high on `authenticity` and low on `similarity`.
     little of the frame is **refused** with `FaceTooSmallForIasError`, not scored low — which
     means very different things to a caller. Against the real service a 450x600 photo passes
     and a 50x63 one is rejected.
+
+## The INE Mexico variant
+
+das-Face exposes a separate credential endpoint for INE Mexico. It takes the same photo and
+answers with the same shape, but lives under its own path and needs a specific agreement with
+Veridas, so it is not enabled on every subscription.
+
+```python
+credential = client.generate_credential(
+    GenerateCredentialInput(image="/path/to/face.jpg", hash=model.hash, mode=model.mode, inemex=True),
+)
+```
+
+There is no default-model form of it, so `hash` and `mode` are required. Leaving them out is
+rejected before any request is made.
