@@ -68,11 +68,13 @@ def test_generate_credential_sends_a_base64_json_body(
         pytest.skip("Covered against the real service by test_real_generate_credential")
 
     mock_server.post(
-        f"{SANDBOX_EU}/models/inemex/default-mode/credential/photo",
+        f"{SANDBOX_EU}/models/a-hash/default-mode/credential/photo",
         json=dasface_credential_response,
     )
 
-    response = dasface_client.generate_credential(GenerateCredentialInput(image=face_image))
+    response = dasface_client.generate_credential(
+        GenerateCredentialInput(image=face_image, hash="a-hash", mode="default-mode"),
+    )
 
     assert isinstance(response, GenerateCredentialOutput)
     assert response.credential == "fake-credential"
@@ -102,10 +104,24 @@ def test_generate_credential_with_a_pinned_model(
 
 
 @pytest.mark.dasface
-def test_a_hash_without_a_mode_is_rejected_before_any_request(face_image):
+@pytest.mark.parametrize("model", [{"hash": "a-hash"}, {"mode": "default-mode"}])
+def test_half_a_model_key_is_rejected_before_any_request(face_image, model):
     """The model key is hash and mode together, so half of it is not enough."""
-    with pytest.raises(ValueError, match="mode is required"):
-        GenerateCredentialInput(image=face_image, hash="a-hash")
+    with pytest.raises(ValueError, match="go together"):
+        GenerateCredentialInput(image=face_image, **model)
+
+
+@pytest.mark.dasface
+def test_a_credential_cannot_be_generated_without_naming_a_model(face_image):
+    """There is no endpoint that lets the service choose the model.
+
+    `POST /v2/credential/photo` did that, and the specification deprecated it in v3.26 and
+    dropped it in v3.35; `work`/`eu` does not route it. The only model-less form left is the
+    INE Mexico one, so asking for a credential without a model has to fail here rather than
+    silently generate one against whichever model an arbitrary endpoint happens to resolve to.
+    """
+    with pytest.raises(ValueError, match="required"):
+        GenerateCredentialInput(image=face_image)
 
 
 @pytest.mark.dasface
@@ -134,10 +150,12 @@ def test_error_codes_become_exceptions(dasface_client, mock_server, request, res
         pytest.skip("These are mocked error bodies")
 
     body = request.getfixturevalue(response_fixture)
-    mock_server.post(f"{SANDBOX_EU}/models/inemex/default-mode/credential/photo", json=body, status_code=400)
+    mock_server.post(f"{SANDBOX_EU}/models/a-hash/default-mode/credential/photo", json=body, status_code=400)
 
     with pytest.raises(expected):
-        dasface_client.generate_credential(GenerateCredentialInput(image=face_image))
+        dasface_client.generate_credential(
+            GenerateCredentialInput(image=face_image, hash="a-hash", mode="default-mode"),
+        )
 
 
 @pytest.mark.dasface
@@ -146,13 +164,15 @@ def test_an_unknown_code_carries_it_through(dasface_client, mock_server, dasface
         pytest.skip("This is a mocked error body")
 
     mock_server.post(
-        f"{SANDBOX_EU}/models/inemex/default-mode/credential/photo",
+        f"{SANDBOX_EU}/models/a-hash/default-mode/credential/photo",
         json=dasface_unknown_code_response,
         status_code=400,
     )
 
     with pytest.raises(DasfaceApiError) as raised:
-        dasface_client.generate_credential(GenerateCredentialInput(image=face_image))
+        dasface_client.generate_credential(
+            GenerateCredentialInput(image=face_image, hash="a-hash", mode="default-mode"),
+        )
 
     assert raised.value.code == "SomethingNobodyHasSeenYet"
     assert "who knows" in str(raised.value)
@@ -198,33 +218,26 @@ def test_real_get_models(real_dasface):
 
 
 @pytest.mark.dasface
-def test_real_generate_credential(real_dasface, face_image_path, face_image):
-    """A credential comes back for the default model, from a path and from bytes alike."""
-    from_path = real_dasface.generate_credential(GenerateCredentialInput(image=face_image_path))
+def test_real_generate_credential(real_dasface, real_model, face_image_path, face_image):
+    """A credential comes back from a path and from bytes alike, for the model asked for."""
+    from_path = real_dasface.generate_credential(
+        GenerateCredentialInput(image=face_image_path, hash=real_model.hash, mode=real_model.mode),
+    )
     assert from_path.credential
-    assert from_path.model.hash
-    assert from_path.model.mode == "default-mode"
+    assert from_path.model.hash == real_model.hash
+    assert from_path.model.mode == real_model.mode
 
-    from_bytes = real_dasface.generate_credential(GenerateCredentialInput(image=face_image))
+    from_bytes = real_dasface.generate_credential(
+        GenerateCredentialInput(image=face_image, hash=real_model.hash, mode=real_model.mode),
+    )
     assert from_bytes.model.hash == from_path.model.hash
 
 
 @pytest.mark.dasface
-def test_real_generate_credential_with_a_pinned_model(real_dasface, face_image_path):
-    """Pinning a model is honoured, and the response says which one was used."""
-    model = next(m for m in real_dasface.get_models().models if m.mode == "default-mode")
-
+def test_real_model_metadata_points_back_at_the_generating_model(real_dasface, real_model, face_image_path):
     credential = real_dasface.generate_credential(
-        GenerateCredentialInput(image=face_image_path, hash=model.hash, mode=model.mode),
+        GenerateCredentialInput(image=face_image_path, hash=real_model.hash, mode=real_model.mode),
     )
-
-    assert credential.model.hash == model.hash
-    assert credential.model.mode == model.mode
-
-
-@pytest.mark.dasface
-def test_real_model_metadata_points_back_at_the_generating_model(real_dasface, face_image_path):
-    credential = real_dasface.generate_credential(GenerateCredentialInput(image=face_image_path))
 
     metadata = real_dasface.get_model_metadata_from_credential(
         GetModelMetadataFromCredentialInput(credential=credential.credential),
@@ -381,10 +394,10 @@ def test_real_verify_photo_with_a_mode(real_dasface, face_image_path):
 
 
 @pytest.mark.dasface
-def test_real_verify_credential(real_dasface, face_image_path):
+def test_real_verify_credential(real_dasface, real_model, face_image_path):
     """The everyday flow: enrol once into a credential, then verify fresh photos against it."""
     credential = real_dasface.generate_credential(
-        GenerateCredentialInput(image=face_image_path),
+        GenerateCredentialInput(image=face_image_path, hash=real_model.hash, mode=real_model.mode),
     ).credential
 
     response = real_dasface.verify_credential(
@@ -502,24 +515,48 @@ def test_inemex_uses_its_own_path(dasface_client, mock_server, dasface_credentia
 
 
 @pytest.mark.dasface
-def test_inemex_needs_a_model(face_image):
-    """There is no default-model form of the INE Mexico endpoint, so the hash is required."""
-    with pytest.raises(ValidationError, match="hash and mode are required"):
-        GenerateCredentialInput(image=face_image, inemex=True)
+def test_inemex_without_a_model_uses_its_default_model_path(
+    dasface_client,
+    mock_server,
+    dasface_credential_response,
+    face_image,
+):
+    """The INE Mexico endpoint is the only one with a default-model form."""
+    if not mock_server:
+        pytest.skip("Covered against the real service by test_real_generate_credential_with_inemex_default_model")
+
+    mock_server.post(f"{SANDBOX_EU}/models/inemex/default-mode/credential/photo", json=dasface_credential_response)
+
+    dasface_client.generate_credential(GenerateCredentialInput(image=face_image, inemex=True))
+
+    assert mock_server.last_request.path.endswith("/models/inemex/default-mode/credential/photo")
 
 
 @pytest.mark.dasface
-def test_real_generate_credential_with_inemex(real_dasface, face_image_path):
+def test_real_generate_credential_with_inemex_default_model(real_dasface, real_model, face_image_path):
+    """Its default model is a specific one, and not the newest the service offers.
+
+    Worth asserting: the endpoint reads as a generic default, and it is not. It resolves to
+    an older model than `get_models()` leads with, so a credential made here does not compare
+    against one made with the current model.
+    """
+    credential = real_dasface.generate_credential(GenerateCredentialInput(image=face_image_path, inemex=True))
+
+    assert credential.credential
+    assert credential.model.mode == "default-mode"
+    assert credential.model.hash != real_model.hash
+
+
+@pytest.mark.dasface
+def test_real_generate_credential_with_inemex(real_dasface, real_model, face_image_path):
     """The INE Mexico variant answers with a credential from the model that was asked for.
 
     It needs a specific agreement with Veridas, so it may not be enabled everywhere; it is on
     the subscription this runs against.
     """
-    model = next(m for m in real_dasface.get_models().models if m.mode == "default-mode")
-
     credential = real_dasface.generate_credential(
-        GenerateCredentialInput(image=face_image_path, hash=model.hash, mode=model.mode, inemex=True),
+        GenerateCredentialInput(image=face_image_path, hash=real_model.hash, mode=real_model.mode, inemex=True),
     )
 
     assert credential.credential
-    assert credential.model.hash == model.hash
+    assert credential.model.hash == real_model.hash
