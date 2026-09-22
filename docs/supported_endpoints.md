@@ -7,7 +7,7 @@ specifications rather than against memory.
 |---|---|---|
 | das-Peak | [v2.33](https://docs.veridas.com/das-peak/cloud/v2.33/api/definition/) | **11 / 11** |
 | VCSP | [v1.17](https://docs.veridas.com/vcsp_echo/cloud/v1.17/api/definition/) | **31 / 31** |
-| das-Face | [v2](https://docs.veridas.com/das-face/cloud/v3.35/api/definition/) | **7 / 11** |
+| das-Face | [v2](https://docs.veridas.com/das-face/cloud/v3.35/api/definition/) | **9 / 11** |
 
 ---
 
@@ -86,8 +86,8 @@ v3.35 — see [#30](https://github.com/clarriu97/vericlient/issues/30).
 | `POST /v2/verification/photo` | `verify_photo()` |
 | `POST /v2/verification/video` | `verify_video()` |
 | `POST /v2/verification/credential` | `verify_credential()` |
-| `POST /v2/authenticity/photo` | — |
-| `POST /v2/authenticity/video/photo` | — |
+| `POST /v2/authenticity/photo` | `check_photo_authenticity()` |
+| `POST /v2/authenticity/video/photo` | `check_video_authenticity()` |
 
 das-Face is served under `/v2`, unlike the other two, and takes JSON with base64 images
 rather than multipart parts.

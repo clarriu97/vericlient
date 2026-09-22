@@ -144,5 +144,15 @@ def dasface_verification_response():
 
 
 @pytest.fixture(scope="session")
+def dasface_photo_authenticity_response():
+    return {"confidence": 0.8765}
+
+
+@pytest.fixture(scope="session")
+def dasface_video_authenticity_response():
+    return {"authenticity": 0.86, "similarity": 0.99}
+
+
+@pytest.fixture(scope="session")
 def dasface_unknown_code_response():
     return {"code": "SomethingNobodyHasSeenYet", "message": "who knows", "status": "error"}

@@ -40,7 +40,7 @@ is actually yours.
 |---|:--:|---|
 | [das-Peak](https://docs.veridas.com/das-peak/cloud/latest) — voice biometrics | 🟢 | 11 / 11 endpoints |
 | [VCSP](https://docs.veridas.com/vcsp_echo/cloud/latest) — managed credential storage | 🟢 | 31 / 31 endpoints |
-| [das-Face](https://docs.veridas.com/das-face/cloud/latest) — face biometrics | 🟠 | 7 / 11 endpoints |
+| [das-Face](https://docs.veridas.com/das-face/cloud/latest) — face biometrics | 🟠 | 9 / 11 endpoints |
 
 Endpoint by endpoint in [Supported endpoints](https://vericlient.larri.dev/supported_endpoints/).
 

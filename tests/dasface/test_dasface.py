@@ -16,9 +16,11 @@ from vericlient.dasface.models import (
     GenerateCredentialOutput,
     GetModelMetadataFromCredentialInput,
     ModelsOutput,
+    PhotoAuthenticityInput,
     VerifyCredentialInput,
     VerifyPhotoInput,
     VerifyVideoInput,
+    VideoAuthenticityInput,
 )
 from vericlient.exceptions import InvalidCredentialError
 
@@ -407,3 +409,78 @@ def test_real_a_video_that_is_not_a_video_is_reported(real_dasface, face_image_p
         real_dasface.verify_video(
             VerifyVideoInput(anchor_image=face_image_path, target_video=b"x" * 5000),
         )
+
+
+# ---------------------------------------------------------------------------
+# Authenticity
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.dasface
+def test_check_photo_authenticity_sends_the_image_as_target(
+    dasface_client,
+    mock_server,
+    dasface_photo_authenticity_response,
+    face_image,
+):
+    if not mock_server:
+        pytest.skip("Covered against the real service by test_real_check_photo_authenticity")
+
+    mock_server.post(f"{SANDBOX_EU}/authenticity/photo", json=dasface_photo_authenticity_response)
+
+    response = dasface_client.check_photo_authenticity(PhotoAuthenticityInput(image=face_image))
+
+    assert response.confidence == 0.8765
+    sent = mock_server.last_request.json()
+    assert list(sent) == ["targetImage"]
+    assert base64.b64decode(sent["targetImage"]) == face_image
+
+
+@pytest.mark.dasface
+def test_check_video_authenticity_returns_both_figures(
+    dasface_client,
+    mock_server,
+    dasface_video_authenticity_response,
+    face_image,
+    face_video,
+):
+    if not mock_server:
+        pytest.skip("Covered against the real service by test_real_check_video_authenticity")
+
+    mock_server.post(f"{SANDBOX_EU}/authenticity/video/photo", json=dasface_video_authenticity_response)
+
+    response = dasface_client.check_video_authenticity(
+        VideoAuthenticityInput(anchor_image=face_image, target_video=face_video),
+    )
+
+    assert response.authenticity == 0.86
+    assert response.similarity == 0.99
+
+
+@pytest.mark.dasface
+def test_real_check_photo_authenticity(real_dasface, face_image_path):
+    """A genuine photo of a face scores high."""
+    response = real_dasface.check_photo_authenticity(PhotoAuthenticityInput(image=face_image_path))
+    assert response.confidence > 0.5
+
+
+@pytest.mark.dasface
+def test_real_authenticity_rejects_a_face_that_is_too_small(real_dasface, other_face_image_path):
+    """Too small a face is refused outright rather than scored low.
+
+    Worth pinning: a low score and a refusal mean different things to a caller, and this is
+    the one place in das-Face where image size alone decides.
+    """
+    with pytest.raises(FaceTooSmallForIasError):
+        real_dasface.check_photo_authenticity(PhotoAuthenticityInput(image=other_face_image_path))
+
+
+@pytest.mark.dasface
+def test_real_check_video_authenticity(real_dasface, face_image_path, face_video_path):
+    """Authenticity and similarity are independent, and both come back."""
+    response = real_dasface.check_video_authenticity(
+        VideoAuthenticityInput(anchor_image=face_image_path, target_video=face_video_path),
+    )
+
+    assert response.authenticity > 0.5
+    assert response.similarity > 0.9

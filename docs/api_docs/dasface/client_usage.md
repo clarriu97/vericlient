@@ -172,3 +172,34 @@ VerifyPhotoInput(anchor_image=enrolled, target_image=live, mode="document-mode")
     The v3.26 specification documents a `rotatePhotos` field on this endpoint. The service
     rejects it — `Unknown field name 'rotatePhotos'` — and v3.35 has dropped it. This client
     does not offer it. See [#30](https://github.com/clarriu97/vericlient/issues/30).
+
+## Checking authenticity
+
+Verification answers "is this the same person?". Authenticity answers a different question:
+"is this a real capture, or a photo of a screen?". A presentation attack passes verification
+perfectly — it is the same face, after all — so the two checks go together.
+
+```python
+from vericlient.dasface.models import PhotoAuthenticityInput, VideoAuthenticityInput
+
+# A selfie
+result = client.check_photo_authenticity(PhotoAuthenticityInput(image="/path/to/selfie.jpg"))
+print(result.confidence)
+
+# A video, which answers both questions at once
+result = client.check_video_authenticity(
+    VideoAuthenticityInput(anchor_image="/path/to/enrolled.jpg", target_video="/path/to/capture.mp4"),
+)
+print(result.authenticity)  # is the recording genuine
+print(result.similarity)  # is it the right person
+```
+
+The two figures from a video are independent, and that is the point: a genuine recording of
+somebody else scores high on `authenticity` and low on `similarity`.
+
+!!! warning "The face has to be big enough"
+
+    Authenticity is the one place where image size alone decides. A face that occupies too
+    little of the frame is **refused** with `FaceTooSmallForIasError`, not scored low — which
+    means very different things to a caller. Against the real service a 450x600 photo passes
+    and a 50x63 one is rejected.
