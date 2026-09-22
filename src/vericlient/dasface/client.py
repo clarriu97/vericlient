@@ -156,6 +156,9 @@ class DasfaceClient(Client):
         compared later. With no `hash` and `mode` the service picks its current default
         model, which is what you want unless you are pinning one deliberately.
 
+        Setting `inemex` uses the INE Mexico variant of the endpoint, which needs a specific
+        agreement with Veridas.
+
         Args:
             data_model: The photo, and optionally the model to use
 
@@ -168,11 +171,14 @@ class DasfaceClient(Client):
             FormValidationError: If the photo cannot be read
 
         """
-        if data_model.hash:
-            endpoint = DasfaceEndpoints.MODEL_CREDENTIAL_PHOTO.value.replace("<hash>", data_model.hash)
-            endpoint = endpoint.replace("<mode>", data_model.mode)
+        if data_model.inemex:
+            endpoint = DasfaceEndpoints.INEMEX_CREDENTIAL_PHOTO.value
+        elif data_model.hash:
+            endpoint = DasfaceEndpoints.MODEL_CREDENTIAL_PHOTO.value
         else:
             endpoint = DasfaceEndpoints.DEFAULT_CREDENTIAL_PHOTO.value
+        if data_model.hash:
+            endpoint = endpoint.replace("<hash>", data_model.hash).replace("<mode>", data_model.mode)
 
         response = self._post(
             endpoint=endpoint,

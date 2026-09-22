@@ -484,3 +484,42 @@ def test_real_check_video_authenticity(real_dasface, face_image_path, face_video
 
     assert response.authenticity > 0.5
     assert response.similarity > 0.9
+
+
+@pytest.mark.dasface
+def test_inemex_uses_its_own_path(dasface_client, mock_server, dasface_credential_response, face_image):
+    """The INE Mexico variant lives under a different prefix, not a different body."""
+    if not mock_server:
+        pytest.skip("Covered against the real service by test_real_generate_credential_with_inemex")
+
+    mock_server.post(f"{SANDBOX_EU}/inemex/models/a-hash/default-mode/credential/photo", json=dasface_credential_response)
+
+    dasface_client.generate_credential(
+        GenerateCredentialInput(image=face_image, hash="a-hash", mode="default-mode", inemex=True),
+    )
+
+    assert mock_server.last_request.path.endswith("/inemex/models/a-hash/default-mode/credential/photo")
+
+
+@pytest.mark.dasface
+def test_inemex_needs_a_model(face_image):
+    """There is no default-model form of the INE Mexico endpoint, so the hash is required."""
+    with pytest.raises(ValidationError, match="hash and mode are required"):
+        GenerateCredentialInput(image=face_image, inemex=True)
+
+
+@pytest.mark.dasface
+def test_real_generate_credential_with_inemex(real_dasface, face_image_path):
+    """The INE Mexico variant answers with a credential from the model that was asked for.
+
+    It needs a specific agreement with Veridas, so it may not be enabled everywhere; it is on
+    the subscription this runs against.
+    """
+    model = next(m for m in real_dasface.get_models().models if m.mode == "default-mode")
+
+    credential = real_dasface.generate_credential(
+        GenerateCredentialInput(image=face_image_path, hash=model.hash, mode=model.mode, inemex=True),
+    )
+
+    assert credential.credential
+    assert credential.model.hash == model.hash

@@ -7,7 +7,7 @@ specifications rather than against memory.
 |---|---|---|
 | das-Peak | [v2.33](https://docs.veridas.com/das-peak/cloud/v2.33/api/definition/) | **11 / 11** |
 | VCSP | [v1.17](https://docs.veridas.com/vcsp_echo/cloud/v1.17/api/definition/) | **31 / 31** |
-| das-Face | [v2](https://docs.veridas.com/das-face/cloud/v3.35/api/definition/) | **9 / 11** |
+| das-Face | [v2](https://docs.veridas.com/das-face/cloud/v3.35/api/definition/) | **10 / 11** |
 
 ---
 
@@ -82,7 +82,7 @@ v3.35 — see [#30](https://github.com/clarriu97/vericlient/issues/30).
 | `POST /v2/models/{hash}/{mode}/credential/photo` | `generate_credential()` |
 | `POST /v2/models/inemex/default-mode/credential/photo` | `generate_credential()` |
 | `POST /v2/models/metadata/from-credential` | `get_model_metadata_from_credential()` |
-| `POST /v2/inemex/models/{hash}/{mode}/credential/photo` | — |
+| `POST /v2/inemex/models/{hash}/{mode}/credential/photo` | `generate_credential(inemex=True)` |
 | `POST /v2/verification/photo` | `verify_photo()` |
 | `POST /v2/verification/video` | `verify_video()` |
 | `POST /v2/verification/credential` | `verify_credential()` |
