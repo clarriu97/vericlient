@@ -825,14 +825,25 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Unreleased">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#030-2026-09-22" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.3.0 — 2026-09-22
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="0.3.0 — 2026-09-22">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#added" class="md-nav__link">
+  <a href="#breaking" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Added
+        Breaking
       
     </span>
   </a>
@@ -840,10 +851,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#breaking" class="md-nav__link">
+  <a href="#added" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Breaking
+        Added
       
     </span>
   </a>
@@ -1047,14 +1058,25 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Unreleased">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#030-2026-09-22" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.3.0 — 2026-09-22
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="0.3.0 — 2026-09-22">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#added" class="md-nav__link">
+  <a href="#breaking" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Added
+        Breaking
       
     </span>
   </a>
@@ -1062,10 +1084,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#breaking" class="md-nav__link">
+  <a href="#added" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Breaking
+        Added
       
     </span>
   </a>
@@ -1255,6 +1277,16 @@
 <p>Notable changes to <code>vericlient</code>, newest first. Dates are the day the version was released.
 The project follows <a href="https://semver.org/">semantic versioning</a>.</p>
 <h2 id="unreleased">Unreleased<a class="headerlink" href="#unreleased" title="Link to this section">&para;</a></h2>
+<h2 id="030-2026-09-22"><a href="https://github.com/clarriu97/vericlient/releases/tag/v0.3.0">0.3.0</a> — 2026-09-22<a class="headerlink" href="#030-2026-09-22" title="Link to this section">&para;</a></h2>
+<p>VCSP goes from a third of its API to all of it, and the client stops leaking HTTP details
+into its return values.</p>
+<h3 id="breaking">Breaking<a class="headerlink" href="#breaking" title="Link to this section">&para;</a></h3>
+<ul>
+<li><strong>Responses no longer carry <code>status_code</code>.</strong> An HTTP status code is a transport detail,
+  and surfacing it on a client's return value invites callers to branch on it instead of
+  relying on the exceptions the client already raises. <code>DaspeakResponse</code> keeps <code>version</code>;
+  <code>VcspResponse</code> now carries no fields and exists only as a shared type.</li>
+</ul>
 <h3 id="added">Added<a class="headerlink" href="#added" title="Link to this section">&para;</a></h3>
 <ul>
 <li>Every public <code>VcspClient</code> method is exercised against real infrastructure, guarded by a
@@ -1278,13 +1310,6 @@ The project follows <a href="https://semver.org/">semantic versioning</a>.</p>
 <li>The VCSP suite now creates and destroys real resources against a sandbox, with a session
   sweeper that recovers from a run that died before its teardown, and a <code>--keep-resources</code>
   flag for debugging.</li>
-</ul>
-<h3 id="breaking">Breaking<a class="headerlink" href="#breaking" title="Link to this section">&para;</a></h3>
-<ul>
-<li><strong>Responses no longer carry <code>status_code</code>.</strong> An HTTP status code is a transport detail,
-  and surfacing it on a client's return value invites callers to branch on it instead of
-  relying on the exceptions the client already raises. <code>DaspeakResponse</code> keeps <code>version</code>;
-  <code>VcspResponse</code> now carries no fields and exists only as a shared type.</li>
 </ul>
 <h2 id="020-2026-09-21"><a href="https://github.com/clarriu97/vericlient/releases/tag/v0.2.0">0.2.0</a> — 2026-09-21<a class="headerlink" href="#020-2026-09-21" title="Link to this section">&para;</a></h2>
 <p>First release after a long gap. It carries breaking changes, all of them correcting
