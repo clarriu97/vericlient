@@ -43,6 +43,17 @@ def real_dasface(dasface_client, mock_server):
     return dasface_client
 
 
+@pytest.fixture
+def real_model(real_dasface):
+    """Return the model the real tests generate credentials with.
+
+    There is no endpoint that lets the service pick one, so every credential test has to
+    name a model; the newest `default-mode` one is the sensible choice.
+    """
+    models = [model for model in real_dasface.get_models().models if model.mode == "default-mode"]
+    return max(models, key=lambda model: model.tag)
+
+
 ####################
 # RESOURCE FIXTURES #
 ####################

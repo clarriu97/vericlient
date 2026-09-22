@@ -41,36 +41,45 @@ for model in client.get_models().models:
 A credential is the biometric representation of a face: it is what you store, and what you
 compare against later.
 
+The model is part of the credential, so you have to say which one to use. Take it from
+`get_models()`:
+
 ```python
 from vericlient import DasfaceClient
 from vericlient.dasface.models import GenerateCredentialInput
 
 client = DasfaceClient(apikey="your_api_key")
 
-credential = client.generate_credential(GenerateCredentialInput(image="/path/to/face.jpg"))
-print(credential.credential)
-print(f"generated with {credential.model.hash} in {credential.model.mode}")
-```
-
-With no `hash` and `mode` the service picks its current default model, which is what you want
-unless you are pinning one deliberately:
-
-```python
-model = next(m for m in client.get_models().models if m.mode == "document-mode")
+model = max(
+    (m for m in client.get_models().models if m.mode == "default-mode"),
+    key=lambda m: m.tag,
+)
 
 credential = client.generate_credential(
     GenerateCredentialInput(image="/path/to/face.jpg", hash=model.hash, mode=model.mode),
 )
+print(credential.credential)
+print(f"generated with {credential.model.hash} in {credential.model.mode}")
 ```
 
 A hash on its own is not enough — the model is identified by hash *and* mode together, and
 passing one without the other is rejected before any request is made.
 
+!!! warning "There is no endpoint that picks a model for you"
+
+    das-Face used to have one, `POST /v2/credential/photo`. The v3.26 specification marks it
+    deprecated in favour of `/v2/models/{hash}/{mode}/credential/photo`, v3.35 drops it, and
+    `work`/`eu` does not route it, so the client offers no model-less form outside INE Mexico.
+    Store the hash and mode alongside every credential you keep: a credential only compares
+    against another made with the same model.
+
 The photo can be a path or a `bytes` object:
 
 ```python
 with open("/path/to/face.jpg", "rb") as f:
-    credential = client.generate_credential(GenerateCredentialInput(image=f.read()))
+    credential = client.generate_credential(
+        GenerateCredentialInput(image=f.read(), hash=model.hash, mode=model.mode),
+    )
 ```
 
 ## Find out which model generated a credential
@@ -102,7 +111,9 @@ from vericlient.dasface.exceptions import (
 from vericlient.exceptions import InvalidCredentialError
 
 try:
-    client.generate_credential(GenerateCredentialInput(image=photo))
+    client.generate_credential(
+        GenerateCredentialInput(image=photo, hash=model.hash, mode=model.mode),
+    )
 except FaceNotFoundError:
     print("no face in that photo")
 except MoreThanOneFaceError:
@@ -216,5 +227,18 @@ credential = client.generate_credential(
 )
 ```
 
-There is no default-model form of it, so `hash` and `mode` are required. Leaving them out is
-rejected before any request is made.
+It is the one credential endpoint with a default-model form, so here `hash` and `mode` may be
+left out:
+
+```python
+credential = client.generate_credential(
+    GenerateCredentialInput(image="/path/to/face.jpg", inemex=True),
+)
+```
+
+!!! warning "Its default model is not the newest one"
+
+    `POST /v2/models/inemex/default-mode/credential/photo` reads like a generic default and is
+    not: against `work`/`eu` it resolves to an older model than `get_models()` leads with. Use
+    it only if you mean the INE Mexico model, and read `credential.model` to see which one you
+    got.

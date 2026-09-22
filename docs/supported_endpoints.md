@@ -72,15 +72,16 @@ Fully covered.
 Work in progress, tracked in [issue #4](https://github.com/clarriu97/vericlient/issues/4).
 
 Counted against the **v3.35** specification, which describes 11 endpoints. The older v3.26
-page lists 14, but two of its extras are not deployed and the other two are absent from
-v3.35 — see [#30](https://github.com/clarriu97/vericlient/issues/30).
+page, still served, lists 14: one of its extras it marks deprecated itself, another is not
+deployed, and the `challenges` pair responds but is gone from v3.35 — see
+[#30](https://github.com/clarriu97/vericlient/issues/30).
 
 | Endpoint | Client |
 |---|---|
 | `GET /v2/alive` | `alive()` |
 | `GET /v2/models` | `get_models()` |
 | `POST /v2/models/{hash}/{mode}/credential/photo` | `generate_credential()` |
-| `POST /v2/models/inemex/default-mode/credential/photo` | `generate_credential()` |
+| `POST /v2/models/inemex/default-mode/credential/photo` | `generate_credential(inemex=True)` |
 | `POST /v2/models/metadata/from-credential` | `get_model_metadata_from_credential()` |
 | `POST /v2/inemex/models/{hash}/{mode}/credential/photo` | `generate_credential(inemex=True)` |
 | `POST /v2/verification/photo` | `verify_photo()` |

@@ -153,14 +153,15 @@ class DasfaceClient(Client):
         """Generate a credential from a photo.
 
         A credential is the biometric representation of a face, and what gets stored and
-        compared later. With no `hash` and `mode` the service picks its current default
-        model, which is what you want unless you are pinning one deliberately.
+        compared later. The model is part of it, so `hash` and `mode` are required: take
+        them from `get_models()`. The service has no endpoint that picks a model for you.
 
         Setting `inemex` uses the INE Mexico variant of the endpoint, which needs a specific
-        agreement with Veridas.
+        agreement with Veridas. That one does have a default-model form, so with `inemex`
+        set the model may be left out.
 
         Args:
-            data_model: The photo, and optionally the model to use
+            data_model: The photo and the model to use
 
         Returns:
             GenerateCredentialOutput: The credential and the model behind it
@@ -171,12 +172,12 @@ class DasfaceClient(Client):
             FormValidationError: If the photo cannot be read
 
         """
-        if data_model.inemex:
-            endpoint = DasfaceEndpoints.INEMEX_CREDENTIAL_PHOTO.value
-        elif data_model.hash:
+        if not data_model.inemex:
             endpoint = DasfaceEndpoints.MODEL_CREDENTIAL_PHOTO.value
+        elif data_model.hash:
+            endpoint = DasfaceEndpoints.INEMEX_MODEL_CREDENTIAL_PHOTO.value
         else:
-            endpoint = DasfaceEndpoints.DEFAULT_CREDENTIAL_PHOTO.value
+            endpoint = DasfaceEndpoints.INEMEX_DEFAULT_CREDENTIAL_PHOTO.value
         if data_model.hash:
             endpoint = endpoint.replace("<hash>", data_model.hash).replace("<mode>", data_model.mode)
 

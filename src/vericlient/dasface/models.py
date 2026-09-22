@@ -56,15 +56,19 @@ class ModelMetadata(BaseModel):
 class GenerateCredentialInput(BaseModel):
     """Input class for generating a credential from a photo.
 
-    Leave `hash` and `mode` out to use the service's current default model, which is the
-    usual case; set them to pin a specific one.
+    The model is part of the credential: two credentials only compare if they were
+    generated with the same one. The service does not pick a model on its own, so `hash`
+    and `mode` are required. Take them from `get_models()`.
+
+    The only exception is the INE Mexico variant, which does have a default-model form:
+    with `inemex` set, leaving `hash` and `mode` out uses it.
 
     Attributes:
         image: The photo, as a path or as bytes
-        hash: The hash of the model to use
-        mode: The mode to use. Required when `hash` is given
+        hash: The hash of the model to use, from `get_models()`
+        mode: The mode to use, from `get_models()`
         inemex: Use the INE Mexico variant of the endpoint. It needs a specific agreement
-            with Veridas, and a `hash` and `mode`
+            with Veridas
 
     """
 
@@ -84,17 +88,21 @@ class GenerateCredentialInput(BaseModel):
         return value
 
     @model_validator(mode="after")
-    def mode_required_with_hash(self) -> "GenerateCredentialInput":
-        """Require the mode whenever a hash is given: the model key is both together.
+    def model_must_be_named_in_full(self) -> "GenerateCredentialInput":
+        """Require hash and mode together, and require them at all outside INE Mexico.
+
+        A model key is the pair, so half of it is always an error. Only the INE Mexico
+        endpoint has a default-model form, so everywhere else the pair is mandatory:
+        there is no endpoint that lets the service choose.
 
         A model validator rather than a field one, because pydantic does not run field
         validators over a field left at its default, which is exactly the case being caught.
         """
-        if self.hash and not self.mode:
-            error = "mode is required when hash is given"
+        if bool(self.hash) != bool(self.mode):
+            error = "hash and mode go together: give both or neither"
             raise ValueError(error)
-        if self.inemex and not self.hash:
-            error = "hash and mode are required when inemex is set"
+        if not self.inemex and not self.hash:
+            error = "hash and mode are required: take them from get_models()"
             raise ValueError(error)
         return self
 
