@@ -1,6 +1,6 @@
 [project]
 name = "vericlient"
-version = "0.2.0"
+version = "0.3.0"
 description = "Provides a simple and robust interaction with Veridas APIs."
 authors = [
     {name = "Carlos Larriu", email = "larriucarlos@gmail.com"},

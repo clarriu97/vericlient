@@ -5,6 +5,18 @@ The project follows [semantic versioning](https://semver.org/).
 
 ## Unreleased
 
+## [0.3.0] — 2026-09-22
+
+VCSP goes from a third of its API to all of it, and the client stops leaking HTTP details
+into its return values.
+
+### Breaking
+
+- **Responses no longer carry `status_code`.** An HTTP status code is a transport detail,
+  and surfacing it on a client's return value invites callers to branch on it instead of
+  relying on the exceptions the client already raises. `DaspeakResponse` keeps `version`;
+  `VcspResponse` now carries no fields and exists only as a shared type.
+
 ### Added
 
 - Every public `VcspClient` method is exercised against real infrastructure, guarded by a
@@ -28,13 +40,6 @@ The project follows [semantic versioning](https://semver.org/).
 - The VCSP suite now creates and destroys real resources against a sandbox, with a session
   sweeper that recovers from a run that died before its teardown, and a `--keep-resources`
   flag for debugging.
-
-### Breaking
-
-- **Responses no longer carry `status_code`.** An HTTP status code is a transport detail,
-  and surfacing it on a client's return value invites callers to branch on it instead of
-  relying on the exceptions the client already raises. `DaspeakResponse` keeps `version`;
-  `VcspResponse` now carries no fields and exists only as a shared type.
 
 ## [0.2.0] — 2026-09-21
 
@@ -143,6 +148,7 @@ everything else is built on:
 - The `Environments` and `Locations` enums for cloud targets, and a `url` argument for
   self-hosted deployments
 
+[0.3.0]: https://github.com/clarriu97/vericlient/releases/tag/v0.3.0
 [0.2.0]: https://github.com/clarriu97/vericlient/releases/tag/v0.2.0
 [0.1.6]: https://github.com/clarriu97/vericlient/releases/tag/v0.1.6
 [0.1.5]: https://github.com/clarriu97/vericlient/releases/tag/v0.1.5
