@@ -71,6 +71,17 @@ def other_face_image(other_face_image_path) -> bytes:
         return f.read()
 
 
+@pytest.fixture(scope="session")
+def face_video_path() -> str:
+    return "tests/dasface/resources/face_video.mp4"
+
+
+@pytest.fixture(scope="session")
+def face_video(face_video_path) -> bytes:
+    with open(face_video_path, "rb") as f:
+        return f.read()
+
+
 ####################
 # SERVER RESPONSES #
 ####################
@@ -125,6 +136,11 @@ def dasface_form_validation_response():
         "message": "Incorrect parameters in VerificationPhotoRequestForm.",
         "status": "error",
     }
+
+
+@pytest.fixture(scope="session")
+def dasface_verification_response():
+    return {"confidence": 0.9876}
 
 
 @pytest.fixture(scope="session")

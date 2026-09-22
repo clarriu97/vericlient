@@ -68,6 +68,42 @@ class IncompatibleCredentialsError(DasfaceError):
         super().__init__(message)
 
 
+class ZeroLengthVideoError(DasfaceError):
+    """Exception raised when the video is empty or was corrupted in transit."""
+
+    def __init__(self) -> None:
+        message = "The video is empty or was corrupted in transit."
+        super().__init__(message)
+
+
+class NotEnoughVideoDataError(DasfaceError):
+    """Exception raised when the video holds too few usable frames to analyse."""
+
+    def __init__(self) -> None:
+        message = "The video does not hold enough usable frames to analyse."
+        super().__init__(message)
+
+
+class VideoExtractionError(DasfaceError):
+    """Exception raised when the video could not be decoded."""
+
+    def __init__(self) -> None:
+        message = "The video could not be decoded. Check its container and codec."
+        super().__init__(message)
+
+
+class InvalidVideoMetadataError(DasfaceError):
+    """Exception raised when the video's frame rate or frame count are not usable.
+
+    das-Face reports these as two separate codes, `InvalidFPSVideoError` and
+    `InvalidNumFramesVideoError`; both mean the same thing to a caller.
+    """
+
+    def __init__(self) -> None:
+        message = "The video's frame rate or frame count is not valid."
+        super().__init__(message)
+
+
 class FaceTooSmallForIasError(DasfaceError):
     """Exception raised when the face is too small for the authenticity analysis."""
 

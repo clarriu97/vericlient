@@ -9,12 +9,16 @@ from vericlient.dasface.exceptions import (
     DasfaceApiError,
     FaceTooSmallForIasError,
     FormValidationError,
+    VideoExtractionError,
 )
 from vericlient.dasface.models import (
     GenerateCredentialInput,
     GenerateCredentialOutput,
     GetModelMetadataFromCredentialInput,
     ModelsOutput,
+    VerifyCredentialInput,
+    VerifyPhotoInput,
+    VerifyVideoInput,
 )
 from vericlient.exceptions import InvalidCredentialError
 
@@ -249,4 +253,157 @@ def test_real_a_credential_that_is_not_base64_is_reported_differently(real_dasfa
     with pytest.raises(FormValidationError, match="padding"):
         real_dasface.get_model_metadata_from_credential(
             GetModelMetadataFromCredentialInput(credential="not-a-credential"),
+        )
+
+
+# ---------------------------------------------------------------------------
+# Verification
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.dasface
+def test_verify_photo_sends_both_images_base64(
+    dasface_client,
+    mock_server,
+    dasface_verification_response,
+    face_image,
+    other_face_image,
+):
+    if not mock_server:
+        pytest.skip("Covered against the real service by test_real_verify_photo")
+
+    mock_server.post(f"{SANDBOX_EU}/verification/photo", json=dasface_verification_response)
+
+    response = dasface_client.verify_photo(
+        VerifyPhotoInput(anchor_image=face_image, target_image=other_face_image),
+    )
+
+    assert response.confidence == 0.9876
+
+    sent = mock_server.last_request.json()
+    assert sorted(sent) == ["anchorImage", "targetImage"]
+    assert base64.b64decode(sent["anchorImage"]) == face_image
+    assert base64.b64decode(sent["targetImage"]) == other_face_image
+
+
+@pytest.mark.dasface
+def test_verify_photo_omits_the_mode_unless_given(
+    dasface_client,
+    mock_server,
+    dasface_verification_response,
+    face_image,
+):
+    """An absent optional field is left out rather than sent as null.
+
+    das-Face rejects fields it does not recognise, so sending a key it did not ask for is not
+    harmless — `rotatePhotos` is documented in v3.26 and refused by the service.
+    """
+    if not mock_server:
+        pytest.skip("Covered against the real service by test_real_verify_photo_with_a_mode")
+
+    mock_server.post(f"{SANDBOX_EU}/verification/photo", json=dasface_verification_response)
+
+    dasface_client.verify_photo(VerifyPhotoInput(anchor_image=face_image, target_image=face_image))
+    assert "mode" not in mock_server.last_request.json()
+
+    dasface_client.verify_photo(
+        VerifyPhotoInput(anchor_image=face_image, target_image=face_image, mode="document-mode"),
+    )
+    assert mock_server.last_request.json()["mode"] == "document-mode"
+
+
+@pytest.mark.dasface
+def test_verify_credential_sends_the_credential_verbatim(
+    dasface_client,
+    mock_server,
+    dasface_verification_response,
+    face_image,
+):
+    """The credential is already text, so it goes as-is rather than being encoded again."""
+    if not mock_server:
+        pytest.skip("Covered against the real service by test_real_verify_credential")
+
+    mock_server.post(f"{SANDBOX_EU}/verification/credential", json=dasface_verification_response)
+
+    dasface_client.verify_credential(
+        VerifyCredentialInput(anchor_image=face_image, target_credential="a-credential"),
+    )
+
+    sent = mock_server.last_request.json()
+    assert sent["targetCredential"] == "a-credential"
+    assert base64.b64decode(sent["anchorImage"]) == face_image
+
+
+@pytest.mark.dasface
+def test_verify_video_sends_the_video_base64(
+    dasface_client,
+    mock_server,
+    dasface_verification_response,
+    face_image,
+    face_video,
+):
+    if not mock_server:
+        pytest.skip("Covered against the real service by test_real_verify_video")
+
+    mock_server.post(f"{SANDBOX_EU}/verification/video", json=dasface_verification_response)
+
+    dasface_client.verify_video(VerifyVideoInput(anchor_image=face_image, target_video=face_video))
+
+    sent = mock_server.last_request.json()
+    assert sorted(sent) == ["anchorImage", "targetVideo"]
+    assert base64.b64decode(sent["targetVideo"]) == face_video
+
+
+@pytest.mark.dasface
+def test_real_verify_photo(real_dasface, face_image_path, other_face_image_path):
+    """The same face matches itself, a different face does not, by a wide margin."""
+    same = real_dasface.verify_photo(
+        VerifyPhotoInput(anchor_image=face_image_path, target_image=face_image_path),
+    )
+    different = real_dasface.verify_photo(
+        VerifyPhotoInput(anchor_image=face_image_path, target_image=other_face_image_path),
+    )
+
+    assert same.confidence > 0.9
+    assert different.confidence < 0.1
+    assert same.confidence > different.confidence
+
+
+@pytest.mark.dasface
+def test_real_verify_photo_with_a_mode(real_dasface, face_image_path):
+    """A mode is accepted. `rotatePhotos`, which v3.26 documents, is not — see #30."""
+    response = real_dasface.verify_photo(
+        VerifyPhotoInput(anchor_image=face_image_path, target_image=face_image_path, mode="default-mode"),
+    )
+    assert response.confidence > 0.9
+
+
+@pytest.mark.dasface
+def test_real_verify_credential(real_dasface, face_image_path):
+    """The everyday flow: enrol once into a credential, then verify fresh photos against it."""
+    credential = real_dasface.generate_credential(
+        GenerateCredentialInput(image=face_image_path),
+    ).credential
+
+    response = real_dasface.verify_credential(
+        VerifyCredentialInput(anchor_image=face_image_path, target_credential=credential),
+    )
+
+    assert response.confidence > 0.9
+
+
+@pytest.mark.dasface
+def test_real_verify_video(real_dasface, face_image_path, face_video_path):
+    response = real_dasface.verify_video(
+        VerifyVideoInput(anchor_image=face_image_path, target_video=face_video_path),
+    )
+    assert response.confidence > 0.9
+
+
+@pytest.mark.dasface
+def test_real_a_video_that_is_not_a_video_is_reported(real_dasface, face_image_path):
+    """Undecodable video is its own failure, not a generic bad request."""
+    with pytest.raises(VideoExtractionError):
+        real_dasface.verify_video(
+            VerifyVideoInput(anchor_image=face_image_path, target_video=b"x" * 5000),
         )
