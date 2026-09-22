@@ -186,3 +186,59 @@ class VerificationOutput(BaseModel):
     """
 
     confidence: float
+
+
+class PhotoAuthenticityInput(BaseModel):
+    """Input class for checking whether a selfie is a genuine capture.
+
+    Attributes:
+        image: The selfie to analyse, as a path or as bytes
+
+    """
+
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+
+    image: str | bytes
+
+
+class PhotoAuthenticityOutput(BaseModel):
+    """Output class for a photo authenticity check.
+
+    Attributes:
+        confidence: How confident the service is that the photo is a genuine capture rather
+            than a photo of a screen or a print, from 0 to 1
+
+    """
+
+    confidence: float
+
+
+class VideoAuthenticityInput(BaseModel):
+    """Input class for checking a video's authenticity and who is in it.
+
+    Attributes:
+        anchor_image: The photo of the person the video should show, as a path or as bytes
+        target_video: The video to analyse, as a path or as bytes
+
+    """
+
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+
+    anchor_image: str | bytes
+    target_video: str | bytes
+
+
+class VideoAuthenticityOutput(BaseModel):
+    """Output class for a video authenticity check.
+
+    Both figures matter, and they answer different questions: a genuine recording of the
+    wrong person scores high on one and low on the other.
+
+    Attributes:
+        authenticity: How confident the service is that the video is a genuine recording
+        similarity: How closely the face in the video matches the anchor photo
+
+    """
+
+    authenticity: float
+    similarity: float

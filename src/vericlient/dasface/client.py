@@ -27,10 +27,14 @@ from vericlient.dasface.models import (
     GetModelMetadataFromCredentialInput,
     GetModelMetadataFromCredentialOutput,
     ModelsOutput,
+    PhotoAuthenticityInput,
+    PhotoAuthenticityOutput,
     VerificationOutput,
     VerifyCredentialInput,
     VerifyPhotoInput,
     VerifyVideoInput,
+    VideoAuthenticityInput,
+    VideoAuthenticityOutput,
 )
 from vericlient.exceptions import InvalidCredentialError, UnsupportedMediaTypeError
 from vericlient.utils import encode_base64
@@ -277,3 +281,55 @@ class DasfaceClient(Client):
             },
         )
         return VerificationOutput(**response.json())
+
+    def check_photo_authenticity(self, data_model: PhotoAuthenticityInput) -> PhotoAuthenticityOutput:
+        """Check whether a selfie is a genuine capture rather than a photo of a screen or print.
+
+        The face has to fill enough of the frame: a small one is rejected with
+        FaceTooSmallForIasError rather than scored low.
+
+        Args:
+            data_model: The selfie to analyse
+
+        Returns:
+            PhotoAuthenticityOutput: The confidence, from 0 to 1
+
+        Raises:
+            FaceTooSmallForIasError: If the face is too small to analyse
+            FaceNotFoundError: If the photo holds no face
+            MoreThanOneFaceError: If it holds more than one
+
+        """
+        response = self._post(
+            endpoint=DasfaceEndpoints.AUTHENTICITY_PHOTO.value,
+            json_={"targetImage": encode_base64(data_model.image)},
+        )
+        return PhotoAuthenticityOutput(**response.json())
+
+    def check_video_authenticity(self, data_model: VideoAuthenticityInput) -> VideoAuthenticityOutput:
+        """Check whether a video is a genuine recording, and of the expected person.
+
+        Answers both questions at once, and they are independent: a genuine recording of
+        somebody else scores high on authenticity and low on similarity.
+
+        Args:
+            data_model: The photo of the expected person and the video to analyse
+
+        Returns:
+            VideoAuthenticityOutput: The authenticity and the similarity, each from 0 to 1
+
+        Raises:
+            FaceTooSmallForIasError: If a face is too small to analyse
+            ZeroLengthVideoError: If the video is empty or corrupted
+            VideoExtractionError: If the video cannot be decoded
+            NotEnoughVideoDataError: If it holds too few usable frames
+
+        """
+        response = self._post(
+            endpoint=DasfaceEndpoints.AUTHENTICITY_VIDEO_PHOTO.value,
+            json_={
+                "anchorImage": encode_base64(data_model.anchor_image),
+                "targetVideo": encode_base64(data_model.target_video),
+            },
+        )
+        return VideoAuthenticityOutput(**response.json())

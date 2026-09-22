@@ -8,8 +8,9 @@ The project follows [semantic versioning](https://semver.org/).
 ### Added
 
 - **A das-Face client**, covering `alive`, `get_models`, `generate_credential`,
-  `get_model_metadata_from_credential`, `verify_photo`, `verify_video` and
-  `verify_credential` — 7 of the 11 endpoints in the v3.35 specification.
+  `get_model_metadata_from_credential`, `verify_photo`, `verify_video`,
+  `verify_credential`, `check_photo_authenticity` and `check_video_authenticity` — 9 of the
+  11 endpoints in the v3.35 specification.
   das-Face takes JSON with base64 images rather than multipart parts, uses camelCase fields
   and is served under `/v2`; none of that reaches the caller.
 - `utils.encode_base64`.
