@@ -778,6 +778,17 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#the-ine-mexico-variant" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The INE Mexico variant
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1067,6 +1078,17 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#the-ine-mexico-variant" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The INE Mexico variant
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1254,6 +1276,16 @@ little of the frame is <strong>refused</strong> with <code>FaceTooSmallForIasErr
 means very different things to a caller. Against the real service a 450x600 photo passes
 and a 50x63 one is rejected.</p>
 </div>
+<h2 id="the-ine-mexico-variant">The INE Mexico variant<a class="headerlink" href="#the-ine-mexico-variant" title="Link to this section">&para;</a></h2>
+<p>das-Face exposes a separate credential endpoint for INE Mexico. It takes the same photo and
+answers with the same shape, but lives under its own path and needs a specific agreement with
+Veridas, so it is not enabled on every subscription.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="n">credential</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">generate_credential</span><span class="p">(</span>
+</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>    <span class="n">GenerateCredentialInput</span><span class="p">(</span><span class="n">image</span><span class="o">=</span><span class="s2">"/path/to/face.jpg"</span><span class="p">,</span> <span class="nb">hash</span><span class="o">=</span><span class="n">model</span><span class="o">.</span><span class="n">hash</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="n">model</span><span class="o">.</span><span class="n">mode</span><span class="p">,</span> <span class="n">inemex</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="p">)</span>
+</span></code></pre></div>
+<p>There is no default-model form of it, so <code>hash</code> and <code>mode</code> are required. Leaving them out is
+rejected before any request is made.</p>
 
 
 
