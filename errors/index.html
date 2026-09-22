@@ -584,6 +584,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#das-face" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        das-Face
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#vcsp" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -721,6 +732,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api_docs/dasface/client_usage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    das-Face
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -836,6 +875,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api_docs/dasface/client/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    das-Face
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -912,6 +979,17 @@
     <span class="md-ellipsis">
       
         das-Peak
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#das-face" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        das-Face
       
     </span>
   </a>
@@ -1068,6 +1146,63 @@ catches anything the library can throw:</p>
 recording with 2 seconds of talking in it will still be rejected. The exception message
 carries the duration the service actually detected.</p>
 </div>
+<h2 id="das-face">das-Face<a class="headerlink" href="#das-face" title="Link to this section">&para;</a></h2>
+<p>All of these inherit from <code>DasfaceError</code>. das-Face reports failures as <code>{code, message,
+status}</code>, and the codes are enumerated in the v3.35 specification — v3.26 documents none of
+them.</p>
+<table>
+<thead>
+<tr>
+<th>Exception</th>
+<th>Raised when</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>FaceNotFoundError</code></td>
+<td>No face in the image.</td>
+</tr>
+<tr>
+<td><code>MoreThanOneFaceError</code></td>
+<td>More than one face in the image.</td>
+</tr>
+<tr>
+<td><code>FaceAlignmentError</code></td>
+<td>A face was found but its key points could not be located.</td>
+</tr>
+<tr>
+<td><code>FaceTooSmallForIasError</code></td>
+<td>The face is too small for the authenticity analysis. A larger photo, or one where the face fills more of the frame, passes.</td>
+</tr>
+<tr>
+<td><code>ObsoleteCredentialModelError</code></td>
+<td>The credential was generated with a model the service has dropped. It has to be regenerated from the original photo.</td>
+</tr>
+<tr>
+<td><code>IncompatibleCredentialsError</code></td>
+<td>Two credentials come from different models and cannot be compared.</td>
+</tr>
+<tr>
+<td><code>UnknownHashAndModeError</code></td>
+<td>No model matches that hash and mode.</td>
+</tr>
+<tr>
+<td><code>FormValidationError</code></td>
+<td>The request body is not what the endpoint expects. One code covers every malformed input, so its message is passed through.</td>
+</tr>
+<tr>
+<td><code>PathNotFoundError</code></td>
+<td>The endpoint is not available on this deployment.</td>
+</tr>
+<tr>
+<td><code>DasfaceApiError</code></td>
+<td>A code this client does not map. Carries the service's <code>code</code> and message rather than losing them.</td>
+</tr>
+</tbody>
+</table>
+<p>Credentials the service cannot read raise the shared <code>InvalidCredentialError</code>: das-Face has
+three separate codes for it — <code>FormatNumberError</code>, <code>CorruptedSecretError</code> and
+<code>MetadataValidationError</code> — which all mean the same thing to a caller.</p>
 <h2 id="vcsp">VCSP<a class="headerlink" href="#vcsp" title="Link to this section">&para;</a></h2>
 <p>All of these inherit from <code>VcspError</code>.</p>
 <table>
