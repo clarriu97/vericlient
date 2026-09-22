@@ -15,9 +15,11 @@ nav:
   - Usage:
     - das-Peak: api_docs/daspeak/client_usage.md
     - VCSP: api_docs/vcsp/client_usage.md
+    - das-Face: api_docs/dasface/client_usage.md
   - API reference:
     - das-Peak: api_docs/daspeak/client.md
     - VCSP: api_docs/vcsp/client.md
+    - das-Face: api_docs/dasface/client.md
   - Changelog: CHANGELOG.md
 
 plugins:

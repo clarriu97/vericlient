@@ -1,5 +1,7 @@
 """Some general utility functions for the VeriClient."""
 
+import base64
+
 DEFAULT_CONTENT_TYPE = "application/octet-stream"
 
 _JPEG_MAGIC = b"\xff\xd8\xff"
@@ -53,3 +55,19 @@ def guess_content_type(sample: bytes) -> str:
     if sample[4:8] == b"ftyp":
         return "video/mp4"
     return DEFAULT_CONTENT_TYPE
+
+
+def encode_base64(input_file: object) -> str:
+    """Read a file or a bytes object and return it base64 encoded.
+
+    das-Face takes its images inside a JSON body rather than as multipart parts, so every
+    image has to be encoded before it is sent.
+
+    Args:
+        input_file: A path to a file, or its content as bytes
+
+    Returns:
+        The content, base64 encoded, as ASCII text
+
+    """
+    return base64.b64encode(get_virtual_file(input_file)).decode("ascii")

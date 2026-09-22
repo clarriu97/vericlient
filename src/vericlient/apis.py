@@ -13,6 +13,7 @@ class APIs(Enum):
 
     DASPEAK = ("daspeak", "v1")
     VCSP = ("vcsp", "v1")
+    DASFACE = ("dasface", "v2")
 
     def __init__(self, api_name: str, version: str) -> None:
         self.api_name = api_name

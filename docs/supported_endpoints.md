@@ -7,7 +7,7 @@ specifications rather than against memory.
 |---|---|---|
 | das-Peak | [v2.33](https://docs.veridas.com/das-peak/cloud/v2.33/api/definition/) | **11 / 11** |
 | VCSP | [v1.17](https://docs.veridas.com/vcsp_echo/cloud/v1.17/api/definition/) | **31 / 31** |
-| das-Face | [v2](https://docs.veridas.com/das-face/cloud/v3.26/api/definition/) | 0 / 14 |
+| das-Face | [v2](https://docs.veridas.com/das-face/cloud/v3.35/api/definition/) | **4 / 11** |
 
 ---
 
@@ -69,8 +69,28 @@ Fully covered.
 
 ## das-Face
 
-Not started, tracked in [issue #4](https://github.com/clarriu97/vericlient/issues/4). Note
-that das-Face is served under `/v2`, unlike the other two.
+Work in progress, tracked in [issue #4](https://github.com/clarriu97/vericlient/issues/4).
+
+Counted against the **v3.35** specification, which describes 11 endpoints. The older v3.26
+page lists 14, but two of its extras are not deployed and the other two are absent from
+v3.35 — see [#30](https://github.com/clarriu97/vericlient/issues/30).
+
+| Endpoint | Client |
+|---|---|
+| `GET /v2/alive` | `alive()` |
+| `GET /v2/models` | `get_models()` |
+| `POST /v2/models/{hash}/{mode}/credential/photo` | `generate_credential()` |
+| `POST /v2/models/inemex/default-mode/credential/photo` | `generate_credential()` |
+| `POST /v2/models/metadata/from-credential` | `get_model_metadata_from_credential()` |
+| `POST /v2/inemex/models/{hash}/{mode}/credential/photo` | — |
+| `POST /v2/verification/photo` | — |
+| `POST /v2/verification/video` | — |
+| `POST /v2/verification/credential` | — |
+| `POST /v2/authenticity/photo` | — |
+| `POST /v2/authenticity/video/photo` | — |
+
+das-Face is served under `/v2`, unlike the other two, and takes JSON with base64 images
+rather than multipart parts.
 
 ## Other Veridas APIs
 
