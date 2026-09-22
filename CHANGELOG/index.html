@@ -1374,7 +1374,10 @@ The project follows <a href="https://semver.org/">semantic versioning</a>.</p>
   <code>verify_credential</code>, <code>check_photo_authenticity</code> and <code>check_video_authenticity</code> — 10 of the
   11 endpoints in the v3.35 specification, including the INE Mexico credential variant.
   das-Face takes JSON with base64 images rather than multipart parts, uses camelCase fields
-  and is served under <code>/v2</code>; none of that reaches the caller.</li>
+  and is served under <code>/v2</code>; none of that reaches the caller.
+  <code>generate_credential</code> requires the model's <code>hash</code> and <code>mode</code>, since das-Face has no
+  endpoint that picks one: the one it used to have, <code>POST /v2/credential/photo</code>, is
+  deprecated in the v3.26 specification, absent from v3.35 and not routed on <code>work</code>/<code>eu</code>.</li>
 <li><code>utils.encode_base64</code>.</li>
 <li>The real-infrastructure coverage guard now covers every client, not just VCSP.</li>
 </ul>

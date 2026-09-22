@@ -1246,8 +1246,9 @@ specifications rather than against memory.</p>
 <h2 id="das-face">das-Face<a class="headerlink" href="#das-face" title="Link to this section">&para;</a></h2>
 <p>Work in progress, tracked in <a href="https://github.com/clarriu97/vericlient/issues/4">issue #4</a>.</p>
 <p>Counted against the <strong>v3.35</strong> specification, which describes 11 endpoints. The older v3.26
-page lists 14, but two of its extras are not deployed and the other two are absent from
-v3.35 — see <a href="https://github.com/clarriu97/vericlient/issues/30">#30</a>.</p>
+page, still served, lists 14: one of its extras it marks deprecated itself, another is not
+deployed, and the <code>challenges</code> pair responds but is gone from v3.35 — see
+<a href="https://github.com/clarriu97/vericlient/issues/30">#30</a>.</p>
 <table>
 <thead>
 <tr>
@@ -1270,7 +1271,7 @@ v3.35 — see <a href="https://github.com/clarriu97/vericlient/issues/30">#30</a
 </tr>
 <tr>
 <td><code>POST /v2/models/inemex/default-mode/credential/photo</code></td>
-<td><code>generate_credential()</code></td>
+<td><code>generate_credential(inemex=True)</code></td>
 </tr>
 <tr>
 <td><code>POST /v2/models/metadata/from-credential</code></td>
