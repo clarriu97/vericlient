@@ -52,6 +52,29 @@ from vericlient.daspeak.exceptions import AudioInputError
     recording with 2 seconds of talking in it will still be rejected. The exception message
     carries the duration the service actually detected.
 
+## das-Face
+
+All of these inherit from `DasfaceError`. das-Face reports failures as `{code, message,
+status}`, and the codes are enumerated in the v3.35 specification — v3.26 documents none of
+them.
+
+| Exception | Raised when |
+|---|---|
+| `FaceNotFoundError` | No face in the image. |
+| `MoreThanOneFaceError` | More than one face in the image. |
+| `FaceAlignmentError` | A face was found but its key points could not be located. |
+| `FaceTooSmallForIasError` | The face is too small for the authenticity analysis. A larger photo, or one where the face fills more of the frame, passes. |
+| `ObsoleteCredentialModelError` | The credential was generated with a model the service has dropped. It has to be regenerated from the original photo. |
+| `IncompatibleCredentialsError` | Two credentials come from different models and cannot be compared. |
+| `UnknownHashAndModeError` | No model matches that hash and mode. |
+| `FormValidationError` | The request body is not what the endpoint expects. One code covers every malformed input, so its message is passed through. |
+| `PathNotFoundError` | The endpoint is not available on this deployment. |
+| `DasfaceApiError` | A code this client does not map. Carries the service's `code` and message rather than losing them. |
+
+Credentials the service cannot read raise the shared `InvalidCredentialError`: das-Face has
+three separate codes for it — `FormatNumberError`, `CorruptedSecretError` and
+`MetadataValidationError` — which all mean the same thing to a caller.
+
 ## VCSP
 
 All of these inherit from `VcspError`.

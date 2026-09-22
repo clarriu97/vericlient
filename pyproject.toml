@@ -163,4 +163,5 @@ build-backend = "pdm.backend"
 markers = [
     "vcsp: marks tests as VCSP (deselect with '-m \"not vcsp\"')",
     "daspeak: marks tests as DASPEAK (deselect with '-m \"not daspeak\"')",
+    "dasface: marks tests as DASFACE (deselect with '-m \"not dasface\"')",
 ]

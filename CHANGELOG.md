@@ -5,6 +5,15 @@ The project follows [semantic versioning](https://semver.org/).
 
 ## Unreleased
 
+### Added
+
+- **A das-Face client**, covering `alive`, `get_models`, `generate_credential` and
+  `get_model_metadata_from_credential` — 4 of the 11 endpoints in the v3.35 specification.
+  das-Face takes JSON with base64 images rather than multipart parts, uses camelCase fields
+  and is served under `/v2`; none of that reaches the caller.
+- `utils.encode_base64`.
+- The real-infrastructure coverage guard now covers every client, not just VCSP.
+
 ## [0.3.0] — 2026-09-22
 
 VCSP goes from a third of its API to all of it, and the client stops leaking HTTP details
