@@ -121,3 +121,54 @@ except DasfaceApiError as error:
     than disappearing into a generic server error.
 
 The full list is in [Error handling](../../errors.md).
+
+## Verifying a face
+
+Three ways to ask the same question — is this the same person?
+
+```python
+from vericlient import DasfaceClient
+from vericlient.dasface.models import (
+    VerifyCredentialInput,
+    VerifyPhotoInput,
+    VerifyVideoInput,
+)
+
+client = DasfaceClient(apikey="your_api_key")
+
+# against another photo
+result = client.verify_photo(
+    VerifyPhotoInput(anchor_image="/path/to/enrolled.jpg", target_image="/path/to/live.jpg"),
+)
+
+# against a video, which is what a liveness capture gives you
+result = client.verify_video(
+    VerifyVideoInput(anchor_image="/path/to/enrolled.jpg", target_video="/path/to/capture.mp4"),
+)
+
+# against a stored credential, which is the everyday case
+result = client.verify_credential(
+    VerifyCredentialInput(anchor_image="/path/to/live.jpg", target_credential=stored_credential),
+)
+
+print(result.confidence)
+```
+
+`verify_credential` is the one most integrations want: the credential is generated once at
+enrolment, and every later check compares a fresh photo against it without keeping the
+original around.
+
+Against a real service, the same face scores about **0.99995** and two different faces about
+**0.027**, so the two cases are not close together.
+
+`verify_photo` also takes a `mode`, to pin the model mode rather than let the service choose:
+
+```python
+VerifyPhotoInput(anchor_image=enrolled, target_image=live, mode="document-mode")
+```
+
+!!! warning "`rotatePhotos` does not exist"
+
+    The v3.26 specification documents a `rotatePhotos` field on this endpoint. The service
+    rejects it — `Unknown field name 'rotatePhotos'` — and v3.35 has dropped it. This client
+    does not offer it. See [#30](https://github.com/clarriu97/vericlient/issues/30).

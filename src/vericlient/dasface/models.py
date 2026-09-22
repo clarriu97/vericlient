@@ -126,3 +126,63 @@ class GetModelMetadataFromCredentialOutput(BaseModel):
     """
 
     metadata: ModelMetadata
+
+
+class VerifyPhotoInput(BaseModel):
+    """Input class for comparing two photos.
+
+    Attributes:
+        anchor_image: The reference photo, as a path or as bytes
+        target_image: The photo to evaluate, as a path or as bytes
+        mode: The model mode to use, such as `document-mode`. The service picks its default
+            when omitted
+
+    """
+
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+
+    anchor_image: str | bytes
+    target_image: str | bytes
+    mode: str | None = None
+
+
+class VerifyVideoInput(BaseModel):
+    """Input class for comparing a photo against a video.
+
+    Attributes:
+        anchor_image: The reference photo, as a path or as bytes
+        target_video: The video to evaluate, as a path or as bytes
+
+    """
+
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+
+    anchor_image: str | bytes
+    target_video: str | bytes
+
+
+class VerifyCredentialInput(BaseModel):
+    """Input class for comparing a photo against a stored credential.
+
+    Attributes:
+        anchor_image: The photo, as a path or as bytes
+        target_credential: The credential to compare it with
+
+    """
+
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+
+    anchor_image: str | bytes
+    target_credential: str
+
+
+class VerificationOutput(BaseModel):
+    """Output class for a verification.
+
+    Attributes:
+        confidence: How confident the service is that both faces belong to the same person,
+            from 0 to 1
+
+    """
+
+    confidence: float

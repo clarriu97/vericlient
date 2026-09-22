@@ -12,10 +12,14 @@ from vericlient.dasface.exceptions import (
     FaceTooSmallForIasError,
     FormValidationError,
     IncompatibleCredentialsError,
+    InvalidVideoMetadataError,
     MoreThanOneFaceError,
+    NotEnoughVideoDataError,
     ObsoleteCredentialModelError,
     PathNotFoundError,
     UnknownHashAndModeError,
+    VideoExtractionError,
+    ZeroLengthVideoError,
 )
 from vericlient.dasface.models import (
     GenerateCredentialInput,
@@ -23,6 +27,10 @@ from vericlient.dasface.models import (
     GetModelMetadataFromCredentialInput,
     GetModelMetadataFromCredentialOutput,
     ModelsOutput,
+    VerificationOutput,
+    VerifyCredentialInput,
+    VerifyPhotoInput,
+    VerifyVideoInput,
 )
 from vericlient.exceptions import InvalidCredentialError, UnsupportedMediaTypeError
 from vericlient.utils import encode_base64
@@ -84,6 +92,11 @@ class DasfaceClient(Client):
             "FormatNumberError": InvalidCredentialError,
             "CorruptedSecretError": InvalidCredentialError,
             "MetadataValidationError": InvalidCredentialError,
+            "ZeroLengthVideoError": ZeroLengthVideoError,
+            "NotEnoughVideoDataError": NotEnoughVideoDataError,
+            "VideoExtractionError": VideoExtractionError,
+            "InvalidFPSVideoError": InvalidVideoMetadataError,
+            "InvalidNumFramesVideoError": InvalidVideoMetadataError,
         }
 
     def alive(self) -> bool:
@@ -187,3 +200,80 @@ class DasfaceClient(Client):
             json_={"credential": data_model.credential},
         )
         return GetModelMetadataFromCredentialOutput(**response.json())
+
+    def verify_photo(self, data_model: VerifyPhotoInput) -> VerificationOutput:
+        """Compare two photos and report how confident the service is that they match.
+
+        Args:
+            data_model: The reference photo, the photo to evaluate, and optionally a mode
+
+        Returns:
+            VerificationOutput: The confidence, from 0 to 1
+
+        Raises:
+            FaceNotFoundError: If either photo holds no face
+            MoreThanOneFaceError: If either photo holds more than one
+            FaceAlignmentError: If a face's key points could not be located
+            FormValidationError: If a photo cannot be read
+
+        """
+        body = {
+            "anchorImage": encode_base64(data_model.anchor_image),
+            "targetImage": encode_base64(data_model.target_image),
+        }
+        if data_model.mode is not None:
+            body["mode"] = data_model.mode
+
+        response = self._post(endpoint=DasfaceEndpoints.VERIFICATION_PHOTO.value, json_=body)
+        return VerificationOutput(**response.json())
+
+    def verify_video(self, data_model: VerifyVideoInput) -> VerificationOutput:
+        """Compare a photo against the face in a video.
+
+        Args:
+            data_model: The reference photo and the video to evaluate
+
+        Returns:
+            VerificationOutput: The confidence, from 0 to 1
+
+        Raises:
+            FaceNotFoundError: If no face is found
+            ZeroLengthVideoError: If the video is empty or corrupted
+            NotEnoughVideoDataError: If the video holds too few usable frames
+
+        """
+        response = self._post(
+            endpoint=DasfaceEndpoints.VERIFICATION_VIDEO.value,
+            json_={
+                "anchorImage": encode_base64(data_model.anchor_image),
+                "targetVideo": encode_base64(data_model.target_video),
+            },
+        )
+        return VerificationOutput(**response.json())
+
+    def verify_credential(self, data_model: VerifyCredentialInput) -> VerificationOutput:
+        """Compare a photo against a stored credential.
+
+        This is the usual verification: the credential was generated once at enrolment, and
+        every later check compares a fresh photo against it without needing the original.
+
+        Args:
+            data_model: The photo and the credential to compare it with
+
+        Returns:
+            VerificationOutput: The confidence, from 0 to 1
+
+        Raises:
+            InvalidCredentialError: If the credential cannot be read
+            ObsoleteCredentialModelError: If it came from a model the service has dropped
+            FaceNotFoundError: If the photo holds no face
+
+        """
+        response = self._post(
+            endpoint=DasfaceEndpoints.VERIFICATION_CREDENTIAL.value,
+            json_={
+                "anchorImage": encode_base64(data_model.anchor_image),
+                "targetCredential": data_model.target_credential,
+            },
+        )
+        return VerificationOutput(**response.json())
