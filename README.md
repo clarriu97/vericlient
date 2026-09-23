@@ -95,6 +95,19 @@ back to its own default.
 | `VERICLIENT_URL` | A self-hosted URL, which replaces the cloud entirely | none |
 | `VERICLIENT_TIMEOUT` | The request timeout in seconds | `10` |
 
+## Runnable examples
+
+One script per client in [`scripts/`](scripts), each covering every endpoint that client
+supports. They run as they stand — they default to the repository's own test media — so with
+an API key in the environment:
+
+```bash
+VERICLIENT_APIKEY=your_api_key pdm run python scripts/daspeak.py
+```
+
+The VCSP one creates an account, a group and two tags, and removes all of them before it
+ends. Run it against a sandbox.
+
 ## Contributing
 
 Issues and pull requests are welcome. The project uses [PDM](https://pdm-project.org):

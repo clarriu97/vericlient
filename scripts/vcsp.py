@@ -1,193 +1,105 @@
-"""Example script to demonstrate how to use the Vcsp module."""
+"""Example script showing how to use the VCSP client.
+
+Runnable as it stands against a sandbox: it creates an account, a group and two tags, and
+removes all of them before it ends. It needs `VERICLIENT_APIKEY` in the environment.
+
+The names are prefixed so that anything left behind by a run that died halfway is obvious.
+"""
+
+import os
+import uuid
 
 from vericlient import VcspClient
-from vericlient.vcsp.models import (
-    Applicant,
-    AssuranceMethodInput,
-    CreateGroupInput,
-    CreateTagsInput,
-    DeleteAccountInput,
-    DeleteCredentialInput,
-    DeleteGroupInput,
-    DeleteTagInput,
-    EnrollmentInput,
-    GetAccountInput,
-    GetCredentialInput,
-    GetCredentialsInput,
-    GetGroupInput,
-    GetGroupMembersInput,
-    GetGroupsInput,
-)
+from vericlient.vcsp.models import Applicant, SubjectClaimant
+
+SAMPLE = os.environ.get("SAMPLE", "tests/daspeak/resources/audio.wav")
+SUBJECT = f"vericlient-example-{uuid.uuid4().hex[:8]}"
+GROUP = f"vericlient_example_{uuid.uuid4().hex[:8]}"
+TAGS = ["example:one", "example:two"]
 
 client = VcspClient()
 
-# check if the server is alive
-print()
 print(f"Alive: {client.alive()}")
 
-# get all credential configurations
-credential_configurations = client.get_credential_configurations()
-print()
-print(f"Credential configurations: {credential_configurations.credential_configurations}")
+# Which configurations and methods this subscription offers. Both differ between
+# subscriptions, so they are read rather than hardcoded.
+configurations = client.get_credential_configurations().credential_configurations
+methods = client.get_assurance_methods().assurance_methods
+print(f"Credential configurations: {configurations}")
+print(f"Assurance methods: {methods}")
 
-# get all assurance methods
-print()
-assurance_methods = client.get_assurance_methods()
-print(f"Assurance methods: {assurance_methods.assurance_methods}")
+configuration = next(c for c in configurations if "telephone" in c)
+method = next(m for m in methods if "enrollment:thresholds" in m)
+matching_method = next(m for m in methods if "matching:biometric_threshold" in m)
+print(f"Assurance method in detail: {client.get_assurance_method_info(urn=method)}")
 
-# get an assurance method
-all_assurance_methods = []
-for assurance_method in assurance_methods.assurance_methods:
-    assurance_method_data = client.get_assurance_method_info(
-        data_model=AssuranceMethodInput(urn=assurance_method),
-    )
-    all_assurance_methods.append(assurance_method_data)
-
-print()
-print(f"Each assurance method individually: {all_assurance_methods}")
-
-credential_configuration_urn = next(
-    credential_configuration
-    for credential_configuration in credential_configurations.credential_configurations
-    if "telephone" in credential_configuration
-)
-assurance_method_urn = next(
-    assurance_method for assurance_method in assurance_methods.assurance_methods if "enrollment:thresholds" in assurance_method
-)
-
-# enroll a subject specifying the subject id
-enrollment_data = client.enroll_subject(
-    data_model=EnrollmentInput(
-        sample="tests/daspeak/resources/audio.wav",
-        applicant=Applicant(
-            subject_id="user1",
-            credential_configuration_urn=credential_configuration_urn,
-            assurance_method_urn=assurance_method_urn,
-            assurance={"authenticity_threshold": 0.5},
-        ),
+# Enrolling with a subject id of your own.
+enrollment = client.enroll_subject(
+    sample=SAMPLE,
+    applicant=Applicant(
+        subject_id=SUBJECT,
+        credential_configuration_urn=configuration,
+        assurance_method_urn=method,
+        assurance={"authenticity_threshold": 0.5},
     ),
 )
-print()
-print(f"User enrolled: {enrollment_data}")
+print(f"Enrolled {enrollment.subject_id} with credential {enrollment.credential_id}")
 
-# enroll a subject without specifying the subject id
-enrollment_data = client.enroll_subject(
-    data_model=EnrollmentInput(
-        sample="tests/daspeak/resources/audio.wav",
-        applicant=Applicant(
-            credential_configuration_urn=credential_configuration_urn,
-            assurance_method_urn=assurance_method_urn,
-            assurance={"authenticity_threshold": 0.5},
-        ),
+# Leaving it out, so VCSP generates one.
+generated = client.enroll_subject(
+    sample=SAMPLE,
+    applicant=Applicant(
+        credential_configuration_urn=configuration,
+        assurance_method_urn=method,
+        assurance={"authenticity_threshold": 0.5},
     ),
 )
-print()
-print(f"User enrolled: {enrollment_data}")
+print(f"Enrolled with a generated subject id: {generated.subject_id}")
 
-# get the account data
-account_data = client.get_account(
-    data_model=GetAccountInput(
-        subject_id="user1",
+print(f"Account: {client.get_account(subject_id=SUBJECT)}")
+
+credentials = client.get_all_subject_credentials(subject_id=SUBJECT).credentials
+print(f"Credentials held by {SUBJECT}: {credentials}")
+print(f"One of them in detail: {client.get_credential(subject_id=SUBJECT, credential_id=credentials[0].id)}")
+
+# Matching is what the credentials are for: a fresh sample against one subject.
+matching = client.match(
+    sample=SAMPLE,
+    claimant=SubjectClaimant(
+        subject_id=SUBJECT,
+        credential_configuration_urn=configuration,
+        assurance_method_urn=matching_method,
+        assurance={"biometric_threshold": 0.5},
     ),
 )
-print()
-print(f"Account data: {account_data}")
+print(f"Matched against {SUBJECT}: {matching}")
 
-# get all credentials from a subject
-credentials = client.get_all_subject_credentials(
-    data_model=GetCredentialsInput(
-        subject_id="user1",
-    ),
-)
-print()
-print(f"Credentials for user1: {credentials.credentials}")
+# Deleting a credential leaves the account; deleting the account takes everything.
+client.delete_credential(subject_id=SUBJECT, credential_id=credentials[0].id)
+print(f"Credential deleted: {credentials[0].id}")
 
-# get a credential from a subject
-credential = client.get_credential(
-    data_model=GetCredentialInput(
-        subject_id="user1",
-        credential_id=credentials.credentials[0].id,
-    ),
-)
-print()
-print(f"First credential for user1: {credential}")
+client.delete_account(subject_id=SUBJECT)
+client.delete_account(subject_id=generated.subject_id)
+print(f"Accounts deleted: {SUBJECT} and {generated.subject_id}")
 
-# delete a credential
-client.delete_credential(
-    data_model=DeleteCredentialInput(
-        subject_id="user1",
-        credential_id=credentials.credentials[0].id,
-    ),
-)
-print()
-print(f"Credential deleted for user1: {credentials.credentials[0].id}")
-
-# delete the account
-client.delete_account(
-    data_model=DeleteAccountInput(
-        subject_id="user1",
-    ),
-)
-client.delete_account(
-    data_model=DeleteAccountInput(
-        subject_id=enrollment_data.subject_id,
-    ),
-)
-print()
-print(f"Accounts deleted: {enrollment_data.subject_id} and user1")
-
-# create a group
+# Groups hold credentials for 1:N matching.
 group = client.create_group(
-    data_model=CreateGroupInput(
-        credential_configuration_urn=credential_configuration_urn,
-        name="test_group",
-        description="Test group",
-        expired_at="P1D",  # 1 day from now
-    )
+    credential_configuration_urn=configuration,
+    name=GROUP,
+    description="Created by the example script",
+    expired_at="P1D",  # an ISO 8601 duration: how long it is kept, not a date
 )
-print()
 print(f"Group created: {group}")
+print(f"Group read back: {client.get_group(name=GROUP)}")
+print(f"Group members: {client.get_group_members(name=GROUP).items}")
 
-# get the group
-group = client.get_group(data_model=GetGroupInput(name="test_group"))
-print()
-print(f"Group retrieved: {group}")
+client.delete_group(name=GROUP)
+print(f"Group deleted: {GROUP}")
+print(f"Groups now: {client.get_groups().total}")
 
-# get the group members
-group_members = client.get_group_members(data_model=GetGroupMembersInput(name="test_group"))
-print()
-print(f"Group members: {group_members.items}")
-print(f"Total group members: {group_members.total}")
-print(f"Page: {group_members.page}")
-print(f"Size: {group_members.size}")
-print(f"Pages: {group_members.pages}")
-
-# delete the group
-client.delete_group(data_model=DeleteGroupInput(name="test_group"))
-print()
-print(f"Group deleted: {group}")
-
-# get all groups
-groups = client.get_groups(data_model=GetGroupsInput(size=100, page=1))
-print()
-print(f"Groups: {groups}")
-print(f"Total groups: {groups.total}")
-print(f"Page: {groups.page}")
-print(f"Pages: {groups.pages}")
-print(f"Size: {groups.size}")
-
-# create tags
-tags = client.create_tags(data_model=CreateTagsInput(tags=["test:tag1", "test:tag2"]))
-print()
-print(f"Tags created: {tags}")
-
-# get all tags
-all_tags = client.get_tags()
-print()
-print(f"All tags: {all_tags}")
-
-# delete a tag
-client.delete_tag(data_model=DeleteTagInput(name="test:tag1"))
-client.delete_tag(data_model=DeleteTagInput(name="test:tag2"))
-print()
-print(f"Tags deleted: {tags}")
+# A credential can only carry tags the subscription already knows about.
+print(f"Tags created: {client.create_tags(tags=TAGS)}")
+print(f"All tags: {client.get_tags().total}")
+for tag in TAGS:
+    client.delete_tag(name=tag)
+print(f"Tags deleted: {TAGS}")

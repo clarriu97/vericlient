@@ -31,6 +31,12 @@ The project follows [semantic versioning](https://semver.org/).
 
 ### Documentation
 
+- **The example scripts run.** They were still showing the call style the library has
+  deprecated, and were never executed by anything, so nothing caught it. All three now
+  default to the repository's own test media and were run end to end against `work`/`eu`.
+  das-Face gained the script it never had, and the README and the quickstart link to them.
+
+
 - **Self-hosted deployments have a page section of their own.** `headers` was always
   accepted and never documented, which mattered because the apikey is the Veridas cloud's
   authentication scheme and does not apply to a deployment you run yourself — `headers` is
