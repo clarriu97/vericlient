@@ -1013,3 +1013,64 @@ def test_the_methods_advertise_their_arguments():
 
     assert list(signature.parameters) == ["self", "anchor_image", "target_image", "mode"]
     assert signature.parameters["mode"].default is None
+
+
+# ---------------------------------------------------------------------------
+# What a caller sees when the arguments are wrong.
+#
+# This matters more now that nothing is imported: the error is the only thing pointing at
+# what to fix, and it must not name internals the caller has never seen.
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.dasface
+def test_a_wrong_type_is_reported_once_and_in_the_library_s_own_terms(dasface_client):
+    """A `str | bytes` union reports one failure per branch unless something stops it.
+
+    Unhelped, pydantic says both "should be a valid string" and "should be a valid bytes" —
+    two errors for one mistake, neither of which is what the caller got wrong.
+    """
+    with pytest.raises(ValidationError) as raised:
+        dasface_client.verify_photo(anchor_image=123, target_image=b"x")
+
+    assert len(raised.value.errors()) == 1
+    assert "expected a path to a file, or its content as bytes" in str(raised.value)
+
+
+@pytest.mark.dasface
+def test_a_validation_error_names_the_method_not_the_model(dasface_client):
+    """The caller wrote `verify_photo(...)`, so that is what the error has to say.
+
+    Before the models were built internally, naming them was fair: the caller had imported
+    one. Now `VerifyPhotoInput` is an implementation detail, and an error that leads with it
+    sends someone looking for a class they have never seen.
+    """
+    with pytest.raises(ValidationError) as raised:
+        dasface_client.verify_photo(anchor_image=123, target_image=b"x")
+
+    assert "verify_photo()" in str(raised.value)
+    assert "VerifyPhotoInput" not in str(raised.value)
+
+
+@pytest.mark.dasface
+def test_a_missing_argument_is_an_ordinary_python_error(dasface_client):
+    """Python's own message is better than anything the library could produce."""
+    with pytest.raises(TypeError, match="missing 1 required positional argument: 'target_image'"):
+        dasface_client.verify_photo(anchor_image=b"x")
+
+
+@pytest.mark.dasface
+def test_a_misspelled_argument_is_an_ordinary_python_error(dasface_client):
+    """The other half of the same benefit: a typo is caught by name, before any request."""
+    with pytest.raises(TypeError, match="unexpected keyword argument 'anchor_imagee'"):
+        dasface_client.verify_photo(anchor_imagee=b"x", target_image=b"x")
+
+
+@pytest.mark.dasface
+def test_a_combination_that_makes_no_sense_says_what_to_do_about_it(dasface_client):
+    """Type-correct and still wrong: the message has to carry the way out."""
+    with pytest.raises(ValidationError, match="take them from get_models"):
+        dasface_client.generate_credential(image=b"x")
+
+    with pytest.raises(ValidationError, match="give both or neither"):
+        dasface_client.generate_credential(image=b"x", hash="a-hash")

@@ -13,6 +13,12 @@ The project follows [semantic versioning](https://semver.org/).
   validation and every error message are exactly as before — but calling no longer needs an
   import, and an editor can offer the parameters.
 
+- **das-Face input errors name the method and say one thing.** A wrong type used to produce
+  two pydantic failures — *should be a valid string* and *should be a valid bytes* — neither
+  of which was the mistake, under a header naming a model the caller no longer imports. Now
+  it is one error, *expected a path to a file, or its content as bytes*, under
+  `verify_photo()`.
+
 ### Deprecated
 
 - **Passing an input model to a das-Face method.** It still works and now raises
