@@ -779,6 +779,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#liveness-challenges" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Liveness challenges
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#the-ine-mexico-variant" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1079,6 +1090,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#liveness-challenges" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Liveness challenges
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#the-ine-mexico-variant" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1289,19 +1311,78 @@ little of the frame is <strong>refused</strong> with <code>FaceTooSmallForIasErr
 means very different things to a caller. Against the real service a 450x600 photo passes
 and a 50x63 one is rejected.</p>
 </div>
+<h2 id="liveness-challenges">Liveness challenges<a class="headerlink" href="#liveness-challenges" title="Link to this section">&para;</a></h2>
+<p>The authenticity endpoints ask whether a recording is genuine. A challenge asks something
+harder to fake: whether it was recorded <em>just now</em>, in response to instructions the recorder
+could not have known in advance.</p>
+<p>It is a two-step flow. Generate a challenge, show its actions to the person, record them, and
+send the recording back with the same token.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">vericlient</span><span class="w"> </span><span class="kn">import</span> <span class="n">DasfaceClient</span>
+</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">vericlient.dasface.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">ChallengeAnalysisInput</span><span class="p">,</span> <span class="n">SequentialChallengeInput</span>
+</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>
+</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="n">client</span> <span class="o">=</span> <span class="n">DasfaceClient</span><span class="p">(</span><span class="n">apikey</span><span class="o">=</span><span class="s2">"your_api_key"</span><span class="p">)</span>
+</span><span id="__span-9-5"><a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>
+</span><span id="__span-9-6"><a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a><span class="n">challenge</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">generate_sequential_challenge</span><span class="p">(</span><span class="n">SequentialChallengeInput</span><span class="p">(</span><span class="n">length</span><span class="o">=</span><span class="mi">3</span><span class="p">))</span>
+</span><span id="__span-9-7"><a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a>
+</span><span id="__span-9-8"><a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a><span class="k">for</span> <span class="n">action</span> <span class="ow">in</span> <span class="n">challenge</span><span class="o">.</span><span class="n">actions</span><span class="p">:</span>
+</span><span id="__span-9-9"><a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">action</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">action</span><span class="o">.</span><span class="n">action_class</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">action</span><span class="o">.</span><span class="n">parameters</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+</span><span id="__span-9-10"><a id="__codelineno-9-10" name="__codelineno-9-10" href="#__codelineno-9-10"></a><span class="c1"># action-0: move-head-and-back {'direction': 'right'}</span>
+</span><span id="__span-9-11"><a id="__codelineno-9-11" name="__codelineno-9-11" href="#__codelineno-9-11"></a><span class="c1"># action-1: move-head-and-back {'direction': 'top'}</span>
+</span><span id="__span-9-12"><a id="__codelineno-9-12" name="__codelineno-9-12" href="#__codelineno-9-12"></a><span class="c1"># action-2: move-head-and-back {'direction': 'bottom'}</span>
+</span></code></pre></div>
+<p><code>length</code> is how many actions to ask for, from 1 to 6 — the service calls 2 standard security
+and 6 high security — and <code>expiration</code> how long the challenge stays valid, from 300 to 1800
+seconds. Both are optional, and the service applies its own defaults when they are left out.</p>
+<p>The service answers with a signed token rather than JSON. <code>challenge.token</code> is it, exactly as
+it arrived: hand it to the capture SDK and send it back unchanged. The other fields are read
+out of it for convenience.</p>
+<p>Once the recording is in, along with the SDK's WebVTT annotations of it:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="n">result</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">analyse_challenge_response</span><span class="p">(</span>
+</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>    <span class="n">ChallengeAnalysisInput</span><span class="p">(</span>
+</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>        <span class="n">token</span><span class="o">=</span><span class="n">challenge</span><span class="o">.</span><span class="n">token</span><span class="p">,</span>
+</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a>        <span class="n">annotations</span><span class="o">=</span><span class="s2">"/path/to/annotations.vtt"</span><span class="p">,</span>
+</span><span id="__span-10-5"><a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a>        <span class="n">anchor_image</span><span class="o">=</span><span class="s2">"/path/to/face.jpg"</span><span class="p">,</span>
+</span><span id="__span-10-6"><a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a>        <span class="n">target_video</span><span class="o">=</span><span class="s2">"/path/to/recording.mp4"</span><span class="p">,</span>
+</span><span id="__span-10-7"><a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a>    <span class="p">),</span>
+</span><span id="__span-10-8"><a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a><span class="p">)</span>
+</span><span id="__span-10-9"><a id="__codelineno-10-9" name="__codelineno-10-9" href="#__codelineno-10-9"></a>
+</span><span id="__span-10-10"><a id="__codelineno-10-10" name="__codelineno-10-10" href="#__codelineno-10-10"></a><span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">confidence</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+</span><span id="__span-10-11"><a id="__codelineno-10-11" name="__codelineno-10-11" href="#__codelineno-10-11"></a>    <span class="k">for</span> <span class="n">error</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">errors</span><span class="p">:</span>
+</span><span id="__span-10-12"><a id="__codelineno-10-12" name="__codelineno-10-12" href="#__codelineno-10-12"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"could not analyse it: </span><span class="si">{</span><span class="n">error</span><span class="o">.</span><span class="n">code</span><span class="si">}</span><span class="s2"> — </span><span class="si">{</span><span class="n">error</span><span class="o">.</span><span class="n">message</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+</span><span id="__span-10-13"><a id="__codelineno-10-13" name="__codelineno-10-13" href="#__codelineno-10-13"></a><span class="k">elif</span> <span class="n">result</span><span class="o">.</span><span class="n">confidence</span> <span class="o">&gt;</span> <span class="mf">0.9</span><span class="p">:</span>
+</span><span id="__span-10-14"><a id="__codelineno-10-14" name="__codelineno-10-14" href="#__codelineno-10-14"></a>    <span class="nb">print</span><span class="p">(</span><span class="s2">"genuine, live, and the right person"</span><span class="p">)</span>
+</span></code></pre></div>
+<p>One figure answers all of it at once: whether the recording is genuine, whether it performs
+the challenge that was issued, and whether the face in it is the one in the anchor photo.</p>
+<div class="admonition warning">
+<p class="admonition-title">This endpoint reports failures inside a successful response</p>
+<p>It is the only one here that does. A face too small to analyse raises
+<code>FaceTooSmallForIasError</code> everywhere else; on this endpoint the same condition comes back
+as <code>200</code> with <code>confidence</code> set to <code>None</code> and the reason in <code>errors</code>. Check for <code>None</code>
+rather than assuming a number.</p>
+</div>
+<p>A challenge that has run out of time raises <code>ExpiredOrInvalidChallengeError</code>, and so does one
+whose token has been altered — the signature is the point of it.</p>
+<div class="admonition note">
+<p class="admonition-title">Where these endpoints are documented</p>
+<p>In the <strong>v3.26</strong> specification, not the current v3.35, which dropped them while the
+service kept answering. They are covered here because there is no liveness flow without
+them, and flagged in
+<a href="https://github.com/clarriu97/vericlient/issues/30">#30</a> so Veridas can say which it is.</p>
+</div>
 <h2 id="the-ine-mexico-variant">The INE Mexico variant<a class="headerlink" href="#the-ine-mexico-variant" title="Link to this section">&para;</a></h2>
 <p>das-Face exposes a separate credential endpoint for INE Mexico. It takes the same photo and
 answers with the same shape, but lives under its own path and needs a specific agreement with
 Veridas, so it is not enabled on every subscription.</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="n">credential</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">generate_credential</span><span class="p">(</span>
-</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>    <span class="n">GenerateCredentialInput</span><span class="p">(</span><span class="n">image</span><span class="o">=</span><span class="s2">"/path/to/face.jpg"</span><span class="p">,</span> <span class="nb">hash</span><span class="o">=</span><span class="n">model</span><span class="o">.</span><span class="n">hash</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="n">model</span><span class="o">.</span><span class="n">mode</span><span class="p">,</span> <span class="n">inemex</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
-</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="p">)</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="n">credential</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">generate_credential</span><span class="p">(</span>
+</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>    <span class="n">GenerateCredentialInput</span><span class="p">(</span><span class="n">image</span><span class="o">=</span><span class="s2">"/path/to/face.jpg"</span><span class="p">,</span> <span class="nb">hash</span><span class="o">=</span><span class="n">model</span><span class="o">.</span><span class="n">hash</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="n">model</span><span class="o">.</span><span class="n">mode</span><span class="p">,</span> <span class="n">inemex</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="p">)</span>
 </span></code></pre></div>
 <p>It is the one credential endpoint with a default-model form, so here <code>hash</code> and <code>mode</code> may be
 left out:</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="n">credential</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">generate_credential</span><span class="p">(</span>
-</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>    <span class="n">GenerateCredentialInput</span><span class="p">(</span><span class="n">image</span><span class="o">=</span><span class="s2">"/path/to/face.jpg"</span><span class="p">,</span> <span class="n">inemex</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
-</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="p">)</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="n">credential</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">generate_credential</span><span class="p">(</span>
+</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>    <span class="n">GenerateCredentialInput</span><span class="p">(</span><span class="n">image</span><span class="o">=</span><span class="s2">"/path/to/face.jpg"</span><span class="p">,</span> <span class="n">inemex</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+</span><span id="__span-12-3"><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="p">)</span>
 </span></code></pre></div>
 <div class="admonition warning">
 <p class="admonition-title">Its default model is not the newest one</p>

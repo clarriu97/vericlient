@@ -1244,11 +1244,11 @@ specifications rather than against memory.</p>
 </tbody>
 </table>
 <h2 id="das-face">das-Face<a class="headerlink" href="#das-face" title="Link to this section">&para;</a></h2>
-<p>Work in progress, tracked in <a href="https://github.com/clarriu97/vericlient/issues/4">issue #4</a>.</p>
-<p>Counted against the <strong>v3.35</strong> specification, which describes 11 endpoints. The older v3.26
-page, still served, lists 14: one of its extras it marks deprecated itself, another is not
-deployed, and the <code>challenges</code> pair responds but is gone from v3.35 — see
-<a href="https://github.com/clarriu97/vericlient/issues/30">#30</a>.</p>
+<p>Counted against the <strong>v3.35</strong> specification, which describes 11 endpoints, all covered. The
+older v3.26 page, still served, lists 14: one of its extras it marks deprecated itself,
+another is not deployed, and the <code>challenges</code> pair responds on <code>work</code>/<code>eu</code> but is gone from
+v3.35 — see <a href="https://github.com/clarriu97/vericlient/issues/30">#30</a>. The challenges are
+covered too, since they work and there is no liveness flow without them.</p>
 <table>
 <thead>
 <tr>
@@ -1301,8 +1301,17 @@ deployed, and the <code>challenges</code> pair responds but is gone from v3.35 �
 <td><code>POST /v2/authenticity/video/photo</code></td>
 <td><code>check_video_authenticity()</code></td>
 </tr>
+<tr>
+<td><code>POST /v2/challenges/generation/sequential</code> †</td>
+<td><code>generate_sequential_challenge()</code></td>
+</tr>
+<tr>
+<td><code>POST /v2/challenges/analysis/video-photo</code> †</td>
+<td><code>analyse_challenge_response()</code></td>
+</tr>
 </tbody>
 </table>
+<p>† Documented in v3.26 only, and working on <code>work</code>/<code>eu</code>.</p>
 <p>das-Face is served under <code>/v2</code>, unlike the other two, and takes JSON with base64 images
 rather than multipart parts.</p>
 <h2 id="other-veridas-apis">Other Veridas APIs<a class="headerlink" href="#other-veridas-apis" title="Link to this section">&para;</a></h2>

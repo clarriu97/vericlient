@@ -895,6 +895,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#changed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Changed
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1145,6 +1156,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#changed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Changed
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1371,15 +1393,26 @@ The project follows <a href="https://semver.org/">semantic versioning</a>.</p>
 <ul>
 <li><strong>A das-Face client</strong>, covering <code>alive</code>, <code>get_models</code>, <code>generate_credential</code>,
   <code>get_model_metadata_from_credential</code>, <code>verify_photo</code>, <code>verify_video</code>,
-  <code>verify_credential</code>, <code>check_photo_authenticity</code> and <code>check_video_authenticity</code> — 10 of the
-  11 endpoints in the v3.35 specification, including the INE Mexico credential variant.
+  <code>verify_credential</code>, <code>check_photo_authenticity</code> and <code>check_video_authenticity</code> — all 11
+  endpoints in the v3.35 specification, including the INE Mexico credential variant.
   das-Face takes JSON with base64 images rather than multipart parts, uses camelCase fields
   and is served under <code>/v2</code>; none of that reaches the caller.
   <code>generate_credential</code> requires the model's <code>hash</code> and <code>mode</code>, since das-Face has no
   endpoint that picks one: the one it used to have, <code>POST /v2/credential/photo</code>, is
   deprecated in the v3.26 specification, absent from v3.35 and not routed on <code>work</code>/<code>eu</code>.</li>
+<li><strong>Liveness challenges</strong> for das-Face: <code>generate_sequential_challenge</code> and
+  <code>analyse_challenge_response</code>. The service answers the first with a signed token rather
+  than JSON, so the client hands back both the token, to pass on unchanged, and the actions
+  read out of it. The second reports its failures inside a successful response, so its
+  <code>confidence</code> is <code>None</code> when the analysis could not be completed and <code>errors</code> says why.
+  Both endpoints are documented in the v3.26 specification only.</li>
 <li><code>utils.encode_base64</code>.</li>
 <li>The real-infrastructure coverage guard now covers every client, not just VCSP.</li>
+</ul>
+<h3 id="changed">Changed<a class="headerlink" href="#changed" title="Link to this section">&para;</a></h3>
+<ul>
+<li>das-Face's <code>FormValidationError</code> now carries the service's per-field errors. Its <code>message</code>
+  only ever names the form it was validating; the field and the reason were being dropped.</li>
 </ul>
 <h2 id="030-2026-09-22"><a href="https://github.com/clarriu97/vericlient/releases/tag/v0.3.0">0.3.0</a> — 2026-09-22<a class="headerlink" href="#030-2026-09-22" title="Link to this section">&para;</a></h2>
 <p>VCSP goes from a third of its API to all of it, and the client stops leaking HTTP details
