@@ -9,15 +9,26 @@ The project follows [semantic versioning](https://semver.org/).
 
 - **A das-Face client**, covering `alive`, `get_models`, `generate_credential`,
   `get_model_metadata_from_credential`, `verify_photo`, `verify_video`,
-  `verify_credential`, `check_photo_authenticity` and `check_video_authenticity` — 10 of the
-  11 endpoints in the v3.35 specification, including the INE Mexico credential variant.
+  `verify_credential`, `check_photo_authenticity` and `check_video_authenticity` — all 11
+  endpoints in the v3.35 specification, including the INE Mexico credential variant.
   das-Face takes JSON with base64 images rather than multipart parts, uses camelCase fields
   and is served under `/v2`; none of that reaches the caller.
   `generate_credential` requires the model's `hash` and `mode`, since das-Face has no
   endpoint that picks one: the one it used to have, `POST /v2/credential/photo`, is
   deprecated in the v3.26 specification, absent from v3.35 and not routed on `work`/`eu`.
+- **Liveness challenges** for das-Face: `generate_sequential_challenge` and
+  `analyse_challenge_response`. The service answers the first with a signed token rather
+  than JSON, so the client hands back both the token, to pass on unchanged, and the actions
+  read out of it. The second reports its failures inside a successful response, so its
+  `confidence` is `None` when the analysis could not be completed and `errors` says why.
+  Both endpoints are documented in the v3.26 specification only.
 - `utils.encode_base64`.
 - The real-infrastructure coverage guard now covers every client, not just VCSP.
+
+### Changed
+
+- das-Face's `FormValidationError` now carries the service's per-field errors. Its `message`
+  only ever names the form it was validating; the field and the reason were being dropped.
 
 ## [0.3.0] — 2026-09-22
 

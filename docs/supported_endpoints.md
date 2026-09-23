@@ -69,12 +69,11 @@ Fully covered.
 
 ## das-Face
 
-Work in progress, tracked in [issue #4](https://github.com/clarriu97/vericlient/issues/4).
-
-Counted against the **v3.35** specification, which describes 11 endpoints. The older v3.26
-page, still served, lists 14: one of its extras it marks deprecated itself, another is not
-deployed, and the `challenges` pair responds but is gone from v3.35 — see
-[#30](https://github.com/clarriu97/vericlient/issues/30).
+Counted against the **v3.35** specification, which describes 11 endpoints, all covered. The
+older v3.26 page, still served, lists 14: one of its extras it marks deprecated itself,
+another is not deployed, and the `challenges` pair responds on `work`/`eu` but is gone from
+v3.35 — see [#30](https://github.com/clarriu97/vericlient/issues/30). The challenges are
+covered too, since they work and there is no liveness flow without them.
 
 | Endpoint | Client |
 |---|---|
@@ -89,6 +88,10 @@ deployed, and the `challenges` pair responds but is gone from v3.35 — see
 | `POST /v2/verification/credential` | `verify_credential()` |
 | `POST /v2/authenticity/photo` | `check_photo_authenticity()` |
 | `POST /v2/authenticity/video/photo` | `check_video_authenticity()` |
+| `POST /v2/challenges/generation/sequential` † | `generate_sequential_challenge()` |
+| `POST /v2/challenges/analysis/video-photo` † | `analyse_challenge_response()` |
+
+† Documented in v3.26 only, and working on `work`/`eu`.
 
 das-Face is served under `/v2`, unlike the other two, and takes JSON with base64 images
 rather than multipart parts.

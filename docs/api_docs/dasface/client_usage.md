@@ -215,6 +215,77 @@ somebody else scores high on `authenticity` and low on `similarity`.
     means very different things to a caller. Against the real service a 450x600 photo passes
     and a 50x63 one is rejected.
 
+## Liveness challenges
+
+The authenticity endpoints ask whether a recording is genuine. A challenge asks something
+harder to fake: whether it was recorded *just now*, in response to instructions the recorder
+could not have known in advance.
+
+It is a two-step flow. Generate a challenge, show its actions to the person, record them, and
+send the recording back with the same token.
+
+```python
+from vericlient import DasfaceClient
+from vericlient.dasface.models import ChallengeAnalysisInput, SequentialChallengeInput
+
+client = DasfaceClient(apikey="your_api_key")
+
+challenge = client.generate_sequential_challenge(SequentialChallengeInput(length=3))
+
+for action in challenge.actions:
+    print(f"{action.name}: {action.action_class} {action.parameters}")
+# action-0: move-head-and-back {'direction': 'right'}
+# action-1: move-head-and-back {'direction': 'top'}
+# action-2: move-head-and-back {'direction': 'bottom'}
+```
+
+`length` is how many actions to ask for, from 1 to 6 — the service calls 2 standard security
+and 6 high security — and `expiration` how long the challenge stays valid, from 300 to 1800
+seconds. Both are optional, and the service applies its own defaults when they are left out.
+
+The service answers with a signed token rather than JSON. `challenge.token` is it, exactly as
+it arrived: hand it to the capture SDK and send it back unchanged. The other fields are read
+out of it for convenience.
+
+Once the recording is in, along with the SDK's WebVTT annotations of it:
+
+```python
+result = client.analyse_challenge_response(
+    ChallengeAnalysisInput(
+        token=challenge.token,
+        annotations="/path/to/annotations.vtt",
+        anchor_image="/path/to/face.jpg",
+        target_video="/path/to/recording.mp4",
+    ),
+)
+
+if result.confidence is None:
+    for error in result.errors:
+        print(f"could not analyse it: {error.code} — {error.message}")
+elif result.confidence > 0.9:
+    print("genuine, live, and the right person")
+```
+
+One figure answers all of it at once: whether the recording is genuine, whether it performs
+the challenge that was issued, and whether the face in it is the one in the anchor photo.
+
+!!! warning "This endpoint reports failures inside a successful response"
+
+    It is the only one here that does. A face too small to analyse raises
+    `FaceTooSmallForIasError` everywhere else; on this endpoint the same condition comes back
+    as `200` with `confidence` set to `None` and the reason in `errors`. Check for `None`
+    rather than assuming a number.
+
+A challenge that has run out of time raises `ExpiredOrInvalidChallengeError`, and so does one
+whose token has been altered — the signature is the point of it.
+
+!!! note "Where these endpoints are documented"
+
+    In the **v3.26** specification, not the current v3.35, which dropped them while the
+    service kept answering. They are covered here because there is no liveness flow without
+    them, and flagged in
+    [#30](https://github.com/clarriu97/vericlient/issues/30) so Veridas can say which it is.
+
 ## The INE Mexico variant
 
 das-Face exposes a separate credential endpoint for INE Mexico. It takes the same photo and

@@ -4,9 +4,10 @@ das-Face reports failures differently from the other services: its error bodies 
 `{code, message, status}`, where das-Peak uses `{error, exception}` and VCSP uses
 `{error, title, reason}`.
 
-The v3.35 specification enumerates these codes properly, which v3.26 did not. Two of the
-codes below are not in it and were found against `work`/`eu`: `UnknownHashAndModeError` and
-`PathNotFoundError`.
+The v3.35 specification enumerates these codes properly, which v3.26 did not. Three of the
+codes below are not in it: `UnknownHashAndModeError` and `PathNotFoundError`, both found
+against `work`/`eu`, and `ExpiredOrInvalidChallengeError`, which v3.26 documents for the
+challenge endpoints that v3.35 dropped.
 """
 
 from vericlient.exceptions import VeriClientError
@@ -121,10 +122,21 @@ class FormValidationError(DasfaceError):
     das-Face uses one code for every malformed input: an image that is not decodable, a
     string that is not valid base64, a credential that is not a credential, and a missing
     required field all arrive as this.
+
+    The service splits the explanation in two. Its `message` names the form it was validating
+    — `Incorrect parameters in GenerateSequentialChallengeForm` — and its `errors` name the
+    field and what is wrong with it. Only the second half is any use, so both are reported
+    and `errors` is kept for a caller that wants to act on a specific field.
+
+    Attributes:
+        errors: The `(field, reason)` pairs the service listed, empty if it listed none
+
     """
 
-    def __init__(self, message: str | None = None) -> None:
-        detail = f": {message}" if message else "."
+    def __init__(self, message: str | None = None, errors: list[tuple[str, str]] | None = None) -> None:
+        self.errors = errors or []
+        fields = "; ".join(f"{field}: {reason}" for field, reason in self.errors)
+        detail = ": " + " — ".join(part for part in (message, fields) if part) if message or fields else "."
         super().__init__(f"The request was rejected as invalid{detail}")
 
 
@@ -161,3 +173,15 @@ class DasfaceApiError(DasfaceError):
         detail = f": {message}" if message else ""
         super().__init__(f"The service reported {code}{detail}")
         self.code = code
+
+
+class ExpiredOrInvalidChallengeError(DasfaceError):
+    """Exception raised when a challenge token is no longer accepted.
+
+    A challenge is valid for as long as its `expiration` said, 1800 seconds by default. Past
+    that the recording cannot be analysed and a fresh challenge has to be generated.
+    """
+
+    def __init__(self) -> None:
+        message = "The challenge has expired or is not valid. Generate a new one."
+        super().__init__(message)

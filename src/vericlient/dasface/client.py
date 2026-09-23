@@ -1,5 +1,9 @@
 """Implementation of the client for the das-Face service."""
 
+import base64
+import binascii
+import json
+
 from requests.models import Response
 
 from vericlient.apis import APIs
@@ -7,6 +11,7 @@ from vericlient.client import Client
 from vericlient.dasface.endpoints import DasfaceEndpoints
 from vericlient.dasface.exceptions import (
     DasfaceApiError,
+    ExpiredOrInvalidChallengeError,
     FaceAlignmentError,
     FaceNotFoundError,
     FaceTooSmallForIasError,
@@ -22,6 +27,10 @@ from vericlient.dasface.exceptions import (
     ZeroLengthVideoError,
 )
 from vericlient.dasface.models import (
+    ChallengeAction,
+    ChallengeAnalysisInput,
+    ChallengeAnalysisOutput,
+    ChallengeError,
     GenerateCredentialInput,
     GenerateCredentialOutput,
     GetModelMetadataFromCredentialInput,
@@ -29,6 +38,8 @@ from vericlient.dasface.models import (
     ModelsOutput,
     PhotoAuthenticityInput,
     PhotoAuthenticityOutput,
+    SequentialChallengeInput,
+    SequentialChallengeOutput,
     VerificationOutput,
     VerifyCredentialInput,
     VerifyPhotoInput,
@@ -92,6 +103,7 @@ class DasfaceClient(Client):
             "MetadataEqError": IncompatibleCredentialsError,
             "UnknownHashAndModeError": UnknownHashAndModeError,
             "PathNotFoundError": PathNotFoundError,
+            "ExpiredOrInvalidChallengeError": ExpiredOrInvalidChallengeError,
             "UnsupportedMediaTypeError": UnsupportedMediaTypeError,
             "FormatNumberError": InvalidCredentialError,
             "CorruptedSecretError": InvalidCredentialError,
@@ -126,10 +138,11 @@ class DasfaceClient(Client):
         if handler:
             raise handler
 
-        # One code covers every malformed input, and its message is the only thing that says
-        # which, so it is passed through rather than swallowed.
+        # One code covers every malformed input, and what it was is split between the message
+        # and the per-field errors, so both are passed through rather than swallowed.
         if code == "FormValidationError":
-            raise FormValidationError(payload.get("message"))
+            errors = [(field, reason) for field, reason in payload.get("errors") or []]
+            raise FormValidationError(payload.get("message"), errors)
 
         # An unrecognised code still says more than a generic server error would.
         if code:
@@ -340,3 +353,104 @@ class DasfaceClient(Client):
             },
         )
         return VideoAuthenticityOutput(**response.json())
+
+    def generate_sequential_challenge(
+        self,
+        data_model: SequentialChallengeInput | None = None,
+    ) -> SequentialChallengeOutput:
+        """Generate a liveness challenge: a sequence of actions for the subject to perform.
+
+        The point of a challenge is that the recording cannot have been prepared in advance,
+        since the actions are only known once the challenge is issued. Show the actions to
+        the subject, record them, and send the recording back to
+        `analyse_challenge_response` together with this token.
+
+        Args:
+            data_model: How long the challenge should be and how long it should stay valid.
+                Omit it for the service's defaults, 2 actions valid for 1800 seconds
+
+        Returns:
+            SequentialChallengeOutput: The token to pass on, and the actions to prompt for
+
+        Raises:
+            FormValidationError: If the length or the expiration is out of range
+
+        """
+        data_model = data_model or SequentialChallengeInput()
+        body = {
+            key: value
+            for key, value in (("length", data_model.length), ("expiration", data_model.expiration))
+            if value is not None
+        }
+
+        response = self._post(endpoint=DasfaceEndpoints.CHALLENGES_GENERATION_SEQUENTIAL.value, json_=body)
+        return self._read_challenge(response)
+
+    def _read_challenge(self, response: Response) -> SequentialChallengeOutput:
+        """Read a challenge out of the JWS token the service answers with.
+
+        The signature is not checked. It is not this client's to check: the token is signed
+        for the service to verify when the recording comes back, and the key is not
+        published. The payload is read only to save every caller writing the same base64
+        split, and the token is passed on exactly as it arrived.
+        """
+        token = response.text.strip()
+        try:
+            payload = token.split(".")[1]
+            challenge = json.loads(base64.urlsafe_b64decode(payload + "=" * (-len(payload) % 4)))
+            actions = [
+                ChallengeAction(
+                    name=action["name"],
+                    action_class=action["class"],
+                    parameters=action.get("parameters") or {},
+                )
+                for action in challenge["challenge"]["actions"]
+            ]
+            return SequentialChallengeOutput(
+                token=token,
+                id=challenge["id"],
+                timestamp=challenge["timestamp"],
+                expires=challenge["expires"],
+                actions=actions,
+            )
+        except (IndexError, KeyError, TypeError, ValueError, binascii.Error):
+            # A 200 whose token cannot be read is the service breaking its own contract.
+            self._raise_server_error(response)
+            raise
+
+    def analyse_challenge_response(self, data_model: ChallengeAnalysisInput) -> ChallengeAnalysisOutput:
+        """Analyse the recording of a challenge against the photo of the expected person.
+
+        One figure answers all of it: whether the recording is genuine, whether it performs
+        the challenge that was issued, and whether it is the right person.
+
+        Unlike every other endpoint here, this one reports what went wrong inside a
+        successful response. A confidence of `None` means the analysis could not be
+        completed, and the `errors` of the result say why.
+
+        Args:
+            data_model: The challenge token, the SDK's annotations, the anchor photo and the
+                recording
+
+        Returns:
+            ChallengeAnalysisOutput: The confidence, or `None` with the errors behind it
+
+        Raises:
+            ExpiredOrInvalidChallengeError: If the challenge is no longer valid
+            FormValidationError: If the token, the annotations or a media file cannot be read
+
+        """
+        response = self._post(
+            endpoint=DasfaceEndpoints.CHALLENGES_ANALYSIS_VIDEO_PHOTO.value,
+            json_={
+                "token": data_model.token,
+                "annotations": encode_base64(data_model.annotations),
+                "anchorImage": encode_base64(data_model.anchor_image),
+                "targetVideo": encode_base64(data_model.target_video),
+            },
+        )
+        payload = response.json()
+        return ChallengeAnalysisOutput(
+            confidence=payload.get("confidence"),
+            errors=[ChallengeError(code=code, message=message) for code, message in payload.get("errors") or []],
+        )
