@@ -569,6 +569,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#self-hosted-deployments" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Self-hosted deployments
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#environment-variables" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1004,6 +1015,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#self-hosted-deployments" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Self-hosted deployments
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#environment-variables" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1121,6 +1143,28 @@ client like this:</p>
 </span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>
 </span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="n">client</span> <span class="o">=</span> <span class="n">DaspeakClient</span><span class="p">(</span><span class="n">apikey</span><span class="o">=</span><span class="s2">"your_api_key"</span><span class="p">)</span>
 </span></code></pre></div>
+<h3 id="self-hosted-deployments">Self-hosted deployments<a class="headerlink" href="#self-hosted-deployments" title="Link to this section">&para;</a></h3>
+<p>Give the client a <code>url</code> and it skips the cloud entirely:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">vericlient</span><span class="w"> </span><span class="kn">import</span> <span class="n">DaspeakClient</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="n">client</span> <span class="o">=</span> <span class="n">DaspeakClient</span><span class="p">(</span><span class="n">url</span><span class="o">=</span><span class="s2">"https://veridas.internal.example.com/daspeak/v1"</span><span class="p">)</span>
+</span></code></pre></div>
+<p>Two things work differently from the cloud, both on purpose.</p>
+<p><strong>The URL is used exactly as given</strong>, service path included. For the cloud the client builds
+it, because the environment and the location determine where the service lives. For a
+self-hosted deployment only you know that, so nothing is appended.</p>
+<p><strong>The <code>apikey</code> is ignored.</strong> It is the Veridas cloud's authentication scheme, and a deployment
+you run yourself has whatever you put in front of it instead. That is what <code>headers</code> is for:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="n">client</span> <span class="o">=</span> <span class="n">DaspeakClient</span><span class="p">(</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>    <span class="n">url</span><span class="o">=</span><span class="s2">"https://veridas.internal.example.com/daspeak/v1"</span><span class="p">,</span>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>    <span class="n">headers</span><span class="o">=</span><span class="p">{</span><span class="s2">"Authorization"</span><span class="p">:</span> <span class="s2">"Bearer your-token"</span><span class="p">,</span> <span class="s2">"X-Tenant"</span><span class="p">:</span> <span class="s2">"acme"</span><span class="p">},</span>
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="p">)</span>
+</span></code></pre></div>
+<p>Anything in <code>headers</code> is sent with every request. It is not limited to authentication, and it
+is not limited to self-hosted deployments — a cloud client can carry its own headers too, for
+tracing or routing, alongside the apikey:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="n">client</span> <span class="o">=</span> <span class="n">DaspeakClient</span><span class="p">(</span><span class="n">apikey</span><span class="o">=</span><span class="s2">"your_api_key"</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="p">{</span><span class="s2">"X-Request-Id"</span><span class="p">:</span> <span class="s2">"abc123"</span><span class="p">})</span>
+</span></code></pre></div>
 <h3 id="environment-variables">Environment variables<a class="headerlink" href="#environment-variables" title="Link to this section">&para;</a></h3>
 <table>
 <thead>
@@ -1165,13 +1209,13 @@ client like this:</p>
 <li>the <code>VERICLIENT_</code> environment variable,</li>
 <li>the library default.</li>
 </ol>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">vericlient</span><span class="w"> </span><span class="kn">import</span> <span class="n">DaspeakClient</span>
-</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>
-</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">"VERICLIENT_APIKEY"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"from-the-environment"</span>
-</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>
-</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="n">DaspeakClient</span><span class="p">()</span>  <span class="c1"># uses "from-the-environment"</span>
-</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="n">DaspeakClient</span><span class="p">(</span><span class="n">apikey</span><span class="o">=</span><span class="s2">"explicit"</span><span class="p">)</span>  <span class="c1"># uses "explicit"</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">vericlient</span><span class="w"> </span><span class="kn">import</span> <span class="n">DaspeakClient</span>
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">"VERICLIENT_APIKEY"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"from-the-environment"</span>
+</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>
+</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="n">DaspeakClient</span><span class="p">()</span>  <span class="c1"># uses "from-the-environment"</span>
+</span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="n">DaspeakClient</span><span class="p">(</span><span class="n">apikey</span><span class="o">=</span><span class="s2">"explicit"</span><span class="p">)</span>  <span class="c1"># uses "explicit"</span>
 </span></code></pre></div>
 <div class="admonition warning">
 <p class="admonition-title">Changed in 0.2.0</p>
