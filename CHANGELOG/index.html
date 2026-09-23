@@ -1518,11 +1518,19 @@ The project follows <a href="https://semver.org/">semantic versioning</a>.</p>
 </ul>
 <h3 id="documentation">Documentation<a class="headerlink" href="#documentation" title="Link to this section">&para;</a></h3>
 <ul>
-<li><strong>Self-hosted deployments have a page section of their own.</strong> <code>headers</code> was always
+<li>
+<p><strong>The example scripts run.</strong> They were still showing the call style the library has
+  deprecated, and were never executed by anything, so nothing caught it. All three now
+  default to the repository's own test media and were run end to end against <code>work</code>/<code>eu</code>.
+  das-Face gained the script it never had, and the README and the quickstart link to them.</p>
+</li>
+<li>
+<p><strong>Self-hosted deployments have a page section of their own.</strong> <code>headers</code> was always
   accepted and never documented, which mattered because the apikey is the Veridas cloud's
   authentication scheme and does not apply to a deployment you run yourself — <code>headers</code> is
   how those authenticate. Also states that a self-hosted URL is used verbatim, service path
-  included, since only the operator knows where the service sits.</li>
+  included, since only the operator knows where the service sits.</p>
+</li>
 </ul>
 <h2 id="040-2026-09-23"><a href="https://github.com/clarriu97/vericlient/releases/tag/v0.4.0">0.4.0</a> — 2026-09-23<a class="headerlink" href="#040-2026-09-23" title="Link to this section">&para;</a></h2>
 <p>das-Face joins das-Peak and VCSP: all three Veridas APIs this client targets are now fully

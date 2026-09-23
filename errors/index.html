@@ -1301,9 +1301,7 @@ it receives, so a client-side mistake can look like a server fault. The client g
 against this by declaring the media type per multipart part, inferring it from the file
 extension for a path and from the magic bytes for a bytes object. Where the guess would be
 wrong, set it explicitly:</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">vericlient.vcsp.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">EnrollmentInput</span>
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>
-</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="n">EnrollmentInput</span><span class="p">(</span><span class="n">sample</span><span class="o">=</span><span class="n">raw_bytes</span><span class="p">,</span> <span class="n">applicant</span><span class="o">=</span><span class="n">applicant</span><span class="p">,</span> <span class="n">content_type</span><span class="o">=</span><span class="s2">"audio/wav"</span><span class="p">)</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">client</span><span class="o">.</span><span class="n">enroll_subject</span><span class="p">(</span><span class="n">sample</span><span class="o">=</span><span class="n">raw_bytes</span><span class="p">,</span> <span class="n">applicant</span><span class="o">=</span><span class="n">applicant</span><span class="p">,</span> <span class="n">content_type</span><span class="o">=</span><span class="s2">"audio/wav"</span><span class="p">)</span>
 </span></code></pre></div>
 
 
