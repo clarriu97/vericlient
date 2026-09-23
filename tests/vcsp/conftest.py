@@ -40,14 +40,6 @@ from vericlient.vcsp.exceptions import (
 )
 from vericlient.vcsp.models import (
     Applicant,
-    CreateGroupInput,
-    CreateTagsInput,
-    DeleteAccountInput,
-    DeleteGroupInput,
-    DeleteTagInput,
-    EnrollmentInput,
-    GetGroupsInput,
-    ListCredentialsInput,
 )
 
 logger = get_logger(__name__)
@@ -198,8 +190,8 @@ def resource_tracker(keep_resources) -> Generator[ResourceTracker, None, None]:
 @pytest.fixture
 def temp_tag(real_writes, resource_tracker) -> str:
     """Create the shared test tag and remove it afterwards."""
-    real_writes.create_tags(data_model=CreateTagsInput(tags=[TEST_TAG]))
-    resource_tracker.add("tag", TEST_TAG, lambda: real_writes.delete_tag(DeleteTagInput(name=TEST_TAG)))
+    real_writes.create_tags(tags=[TEST_TAG])
+    resource_tracker.add("tag", TEST_TAG, lambda: real_writes.delete_tag(name=TEST_TAG))
     return TEST_TAG
 
 
@@ -211,8 +203,8 @@ def own_tag(real_writes, resource_tracker) -> str:
     nothing — including the session-scoped fixture that keeps the shared tag alive.
     """
     name = unique_tag()
-    real_writes.create_tags(data_model=CreateTagsInput(tags=[name]))
-    resource_tracker.add("tag", name, lambda: real_writes.delete_tag(DeleteTagInput(name=name)))
+    real_writes.create_tags(tags=[name])
+    resource_tracker.add("tag", name, lambda: real_writes.delete_tag(name=name))
     return name
 
 
@@ -221,9 +213,10 @@ def temp_group(real_writes, resource_tracker, voice_credential_configuration) ->
     """Create a group and remove it afterwards."""
     name = unique_group_name()
     real_writes.create_group(
-        data_model=CreateGroupInput(name=name, credential_configuration_urn=voice_credential_configuration),
+        name=name,
+        credential_configuration_urn=voice_credential_configuration,
     )
-    resource_tracker.add("group", name, lambda: real_writes.delete_group(DeleteGroupInput(name=name)))
+    resource_tracker.add("group", name, lambda: real_writes.delete_group(name=name))
     return name
 
 
@@ -306,22 +299,20 @@ def temp_subject(
     """
     subject_id = unique_subject_id()
     enrollment = real_writes.enroll_subject(
-        data_model=EnrollmentInput(
-            sample=audio_file_path,
-            applicant=Applicant(
-                subject_id=subject_id,
-                credential_configuration_urn=voice_credential_configuration,
-                assurance_method_urn=enrollment_assurance_method,
-                assurance={"authenticity_threshold": 0.5},
-                # Tagging is what lets the sweeper find this account if teardown never runs.
-                tags=[shared_test_tag],
-            ),
+        sample=audio_file_path,
+        applicant=Applicant(
+            subject_id=subject_id,
+            credential_configuration_urn=voice_credential_configuration,
+            assurance_method_urn=enrollment_assurance_method,
+            assurance={"authenticity_threshold": 0.5},
+            # Tagging is what lets the sweeper find this account if teardown never runs.
+            tags=[shared_test_tag],
         ),
     )
     resource_tracker.add(
         "account",
         subject_id,
-        lambda: real_writes.delete_account(DeleteAccountInput(subject_id=subject_id)),
+        lambda: real_writes.delete_account(subject_id=subject_id),
     )
     return subject_id, enrollment.credential_id
 
@@ -335,7 +326,7 @@ def shared_test_tag(vcsp_client, mock_server, writes_allowed) -> str:
     """
     if not mock_server and writes_allowed:
         with contextlib.suppress(Exception):
-            vcsp_client.create_tags(data_model=CreateTagsInput(tags=[TEST_TAG]))
+            vcsp_client.create_tags(tags=[TEST_TAG])
     return TEST_TAG
 
 
@@ -356,22 +347,22 @@ def sweep_leftovers(vcsp_client, mock_server, writes_allowed, keep_resources) ->
             return
 
         with contextlib.suppress(Exception):
-            leaked = vcsp_client.list_credentials(ListCredentialsInput(tags=[TEST_TAG])).items
+            leaked = vcsp_client.list_credentials(tags=[TEST_TAG]).items
             for subject_id in {credential.subject_id for credential in leaked}:
                 with contextlib.suppress(Exception):
-                    vcsp_client.delete_account(DeleteAccountInput(subject_id=subject_id))
+                    vcsp_client.delete_account(subject_id=subject_id)
                     logger.info("swept_account", subject_id=subject_id, when=when)
 
-        for group in vcsp_client.get_groups(GetGroupsInput()).items:
+        for group in vcsp_client.get_groups().items:
             if group.name.startswith(GROUP_PREFIX):
                 with contextlib.suppress(Exception):
-                    vcsp_client.delete_group(DeleteGroupInput(name=group.name))
+                    vcsp_client.delete_group(name=group.name)
                     logger.info("swept_group", name=group.name, when=when)
 
         for tag in vcsp_client.get_tags().items:
             if tag.name == TEST_TAG:
                 with contextlib.suppress(Exception):
-                    vcsp_client.delete_tag(DeleteTagInput(name=tag.name))
+                    vcsp_client.delete_tag(name=tag.name)
                     logger.info("swept_tag", name=tag.name, when=when)
 
         # Tasks are deliberately not swept. They carry no name to recognise ours by, the

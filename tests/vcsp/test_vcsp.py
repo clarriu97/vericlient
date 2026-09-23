@@ -3,6 +3,7 @@ import tarfile
 import uuid
 
 import pytest
+from pydantic import ValidationError
 
 from tests.vcsp.conftest import SUBJECT_PREFIX, TEST_TAG, unique_group_name
 from vericlient.vcsp.exceptions import (
@@ -33,36 +34,13 @@ from vericlient.vcsp.exceptions import (
 )
 from vericlient.vcsp.models import (
     Applicant,
-    AssuranceMethodInput,
     BatchApplicant,
-    BatchEnrollmentInput,
-    ClusteringInput,
-    CreateGroupInput,
-    CreateTagsInput,
-    CredentialConfigurationInput,
     CredentialTagAction,
-    DeleteAccountInput,
-    DeleteCredentialInput,
-    DeleteCredentialsInput,
-    DeleteGroupInput,
-    DeleteTagInput,
-    EnrollmentInput,
     GetAccountInput,
-    GetCredentialInput,
-    GetCredentialSampleInput,
-    GetCredentialsInput,
-    GetGroupInput,
-    GetGroupMembersInput,
-    GetGroupsInput,
     GroupAction,
     GroupClaimant,
     GroupMembershipSource,
-    ListCredentialsInput,
-    MatchingInput,
-    ModifyCredentialTagsInput,
-    ModifyGroupInput,
     SubjectClaimant,
-    TaskInput,
 )
 
 
@@ -139,7 +117,7 @@ def test_get_assurance_method_info_success(
         valid_assurance_method_urn = vcsp_client.get_assurance_methods().assurance_methods[0]
 
     response = vcsp_client.get_assurance_method_info(
-        data_model=AssuranceMethodInput(urn=valid_assurance_method_urn),
+        urn=valid_assurance_method_urn,
     )
 
     assert response.urn == valid_assurance_method_urn
@@ -170,7 +148,7 @@ def test_get_assurance_method_info_not_found(
 
     with pytest.raises(AssuranceMethodNotFoundError):
         vcsp_client.get_assurance_method_info(
-            data_model=AssuranceMethodInput(urn=invalid_urn),
+            urn=invalid_urn,
         )
 
 
@@ -183,7 +161,7 @@ def test_mock_vcsp_enroll_subject(vcsp_client, mock_server, vcsp_enrollment_para
         endpoint, mock_response, mock_status_code, _, _, _, _ = param
         mock_server.post(endpoint, json=mock_response, status_code=mock_status_code)
 
-        input_model = EnrollmentInput(
+        response = vcsp_client.enroll_subject(
             sample=audio_file_path,
             applicant=Applicant(
                 credential_configuration_urn="fake-credential_configuration_urn",
@@ -191,8 +169,6 @@ def test_mock_vcsp_enroll_subject(vcsp_client, mock_server, vcsp_enrollment_para
                 assurance={},
             ),
         )
-
-        response = vcsp_client.enroll_subject(data_model=input_model)
 
         assert response.credential_id == "fake-credential_id"
         assert response.subject_id == test_subject_id
@@ -207,16 +183,15 @@ def test_vcsp_enrollment_exception(vcsp_client, mock_server, vcsp_enrollment_exc
             endpoint, mock_response, mock_status_code, _, _, _, exception = param
             mock_server.post(endpoint, json=mock_response, status_code=mock_status_code)
 
-            input_model = EnrollmentInput(
-                sample=audio_file_path,
-                applicant=Applicant(
-                    credential_configuration_urn="fake-credential_configuration_urn",
-                    assurance_method_urn="fake-assurance_method_urn",
-                    assurance={},
-                ),
-            )
             with pytest.raises(exception):
-                vcsp_client.enroll_subject(data_model=input_model)
+                vcsp_client.enroll_subject(
+                    sample=audio_file_path,
+                    applicant=Applicant(
+                        credential_configuration_urn="fake-credential_configuration_urn",
+                        assurance_method_urn="fake-assurance_method_urn",
+                        assurance={},
+                    ),
+                )
 
 
 @pytest.mark.vcsp
@@ -227,7 +202,7 @@ def test_get_account(vcsp_client, mock_server, vcsp_get_account_parameters, test
         endpoint, mock_response, mock_status_code, _, _, _, _ = param
         mock_server.get(endpoint, json=mock_response, status_code=mock_status_code)
 
-        response = vcsp_client.get_account(data_model=GetAccountInput(subject_id=test_subject_id))
+        response = vcsp_client.get_account(subject_id=test_subject_id)
         assert response.subject_id == test_subject_id
 
 
@@ -239,7 +214,7 @@ def test_delete_account(vcsp_client, mock_server, vcsp_delete_account_parameters
         endpoint, mock_response, mock_status_code, _, _, _, _ = param
         mock_server.delete(endpoint, json=mock_response, status_code=mock_status_code)
 
-        response = vcsp_client.delete_account(data_model=DeleteAccountInput(subject_id=test_subject_id))
+        response = vcsp_client.delete_account(subject_id=test_subject_id)
         assert response is None
 
 
@@ -251,7 +226,7 @@ def test_get_all_credentials(vcsp_client, mock_server, vcsp_get_all_credentials_
         endpoint, mock_response, mock_status_code, _, _, _, _ = param
         mock_server.get(endpoint, json=mock_response, status_code=mock_status_code)
 
-        response = vcsp_client.get_all_subject_credentials(data_model=GetCredentialsInput(subject_id=test_subject_id))
+        response = vcsp_client.get_all_subject_credentials(subject_id=test_subject_id)
         for cred_response, cred_mock in zip(response.credentials, mock_response, strict=False):
             assert cred_response.id == cred_mock["id"]
             assert cred_response.sample.type == cred_mock["sample"]["type"]
@@ -272,7 +247,8 @@ def test_get_credential(vcsp_client, mock_server, vcsp_get_credential_parameters
         mock_server.get(endpoint, json=mock_response, status_code=mock_status_code)
 
         response = vcsp_client.get_credential(
-            data_model=GetCredentialInput(subject_id=test_subject_id, credential_id=test_credential_id),
+            subject_id=test_subject_id,
+            credential_id=test_credential_id,
         )
         assert response.id == mock_response["id"]
         assert response.sample.type == mock_response["sample"]["type"]
@@ -293,10 +269,8 @@ def test_delete_credential(vcsp_client, mock_server, vcsp_delete_credential_para
         mock_server.delete(endpoint, json=mock_response, status_code=mock_status_code)
 
         response = vcsp_client.delete_credential(
-            data_model=DeleteCredentialInput(
-                subject_id=test_subject_id,
-                credential_id=test_credential_id,
-            ),
+            subject_id=test_subject_id,
+            credential_id=test_credential_id,
         )
         assert response is None
 
@@ -309,7 +283,7 @@ def test_create_tags(vcsp_client, mock_server, vcsp_create_tags_parameters, test
         endpoint, mock_response, mock_status_code, _, _, _, _ = param
         mock_server.post(endpoint, json=mock_response, status_code=mock_status_code)
 
-        response = vcsp_client.create_tags(data_model=CreateTagsInput(tags=[test_tag_name, test_tag_name_2]))
+        response = vcsp_client.create_tags(tags=[test_tag_name, test_tag_name_2])
         assert response.tags == [test_tag_name, test_tag_name_2]
         assert response.created_at == mock_response["created_at"]
 
@@ -329,9 +303,8 @@ def test_vcsp_create_tags_exception(
             endpoint, mock_response, mock_status_code, _, _, _, exception = param
             mock_server.post(endpoint, json=mock_response, status_code=mock_status_code)
 
-            input_model = CreateTagsInput(tags=[test_tag_name, test_tag_name_2])
             with pytest.raises(exception):
-                vcsp_client.create_tags(data_model=input_model)
+                vcsp_client.create_tags(tags=[test_tag_name, test_tag_name_2])
 
 
 @pytest.mark.vcsp
@@ -359,7 +332,7 @@ def test_delete_tag(vcsp_client, mock_server, vcsp_delete_tag_parameters, test_t
         endpoint, mock_response, mock_status_code, _, _, _, _ = param
         mock_server.delete(endpoint, json=mock_response, status_code=mock_status_code)
 
-        response = vcsp_client.delete_tag(data_model=DeleteTagInput(name=test_tag_name))
+        response = vcsp_client.delete_tag(name=test_tag_name)
         assert response is None
 
 
@@ -373,7 +346,7 @@ def test_vcsp_delete_tag_exception(vcsp_client, mock_server, vcsp_delete_tag_exc
             mock_server.delete(endpoint, json=mock_response, status_code=mock_status_code)
 
             with pytest.raises(exception):
-                vcsp_client.delete_tag(data_model=DeleteTagInput(name="invalid_tag"))
+                vcsp_client.delete_tag(name="invalid_tag")
 
 
 @pytest.mark.vcsp
@@ -385,12 +358,10 @@ def test_create_group(vcsp_client, mock_server, vcsp_create_group_parameters, te
         mock_server.post(endpoint, json=mock_response, status_code=mock_status_code)
 
         response = vcsp_client.create_group(
-            data_model=CreateGroupInput(
-                name=test_group_name,
-                credential_configuration_urn="urn:vcsp:credential_configurations:face:selfie:v1",
-                description="test:group",
-                expired_at="P1Y",
-            ),
+            name=test_group_name,
+            credential_configuration_urn="urn:vcsp:credential_configurations:face:selfie:v1",
+            description="test:group",
+            expired_at="P1Y",
         )
         assert response.name == test_group_name
         assert response.credential_configuration_urn == mock_response["credential_configuration_urn"]
@@ -415,14 +386,13 @@ def test_vcsp_create_group_exception(
             endpoint, mock_response, mock_status_code, _, _, _, exception = param
             mock_server.post(endpoint, json=mock_response, status_code=mock_status_code)
 
-            input_model = CreateGroupInput(
-                name=test_group_name,
-                credential_configuration_urn="urn:vcsp:credential_configurations:face:selfie:v1",
-                description="test:group",
-                expired_at="P1Y",
-            )
             with pytest.raises(exception):
-                vcsp_client.create_group(data_model=input_model)
+                vcsp_client.create_group(
+                    name=test_group_name,
+                    credential_configuration_urn="urn:vcsp:credential_configurations:face:selfie:v1",
+                    description="test:group",
+                    expired_at="P1Y",
+                )
 
 
 @pytest.mark.vcsp
@@ -433,7 +403,9 @@ def test_get_groups(vcsp_client, mock_server, vcsp_get_groups_parameters, test_g
         endpoint, mock_response, mock_status_code, _, _, _, _ = param
         mock_server.get(endpoint, json=mock_response, status_code=mock_status_code)
 
-        response = vcsp_client.get_groups(data_model=GetGroupsInput(name=test_group_name))
+        # `name` used to be passed here and silently dropped: GetGroupsInput never had it,
+        # and this endpoint lists every group rather than looking one up.
+        response = vcsp_client.get_groups()
         assert response.items[0].name == test_group_name
         assert response.items[1].name == test_group_name_2
         assert response.total == 2
@@ -452,7 +424,7 @@ def test_vcsp_get_group_exception(vcsp_client, mock_server, vcsp_get_group_excep
             mock_server.get(endpoint, json=mock_response, status_code=mock_status_code)
 
             with pytest.raises(exception):
-                vcsp_client.get_group(data_model=GetGroupInput(name="nonexistent_group_name"))
+                vcsp_client.get_group(name="nonexistent_group_name")
 
 
 @pytest.mark.vcsp
@@ -463,7 +435,7 @@ def test_get_group(vcsp_client, mock_server, vcsp_get_group_parameters, test_gro
         endpoint, mock_response, mock_status_code, _, _, _, _ = param
         mock_server.get(endpoint, json=mock_response, status_code=mock_status_code)
 
-        response = vcsp_client.get_group(data_model=GetGroupInput(name=test_group_name))
+        response = vcsp_client.get_group(name=test_group_name)
         assert response.name == test_group_name
         assert response.credential_configuration_urn == mock_response["credential_configuration_urn"]
         assert response.size == mock_response["size"]
@@ -481,7 +453,7 @@ def test_delete_group(vcsp_client, mock_server, vcsp_delete_group_parameters, te
         endpoint, mock_response, mock_status_code, _, _, _, _ = param
         mock_server.delete(endpoint, json=mock_response, status_code=mock_status_code)
 
-        response = vcsp_client.delete_group(data_model=DeleteGroupInput(name=test_group_name))
+        response = vcsp_client.delete_group(name=test_group_name)
         assert response is None
 
 
@@ -495,7 +467,7 @@ def test_vcsp_delete_group_exception(vcsp_client, mock_server, vcsp_delete_group
             mock_server.delete(endpoint, json=mock_response, status_code=mock_status_code)
 
             with pytest.raises(exception):
-                vcsp_client.delete_group(data_model=DeleteGroupInput(name="nonexistent_group_name"))
+                vcsp_client.delete_group(name="nonexistent_group_name")
 
 
 @pytest.mark.vcsp
@@ -506,7 +478,7 @@ def test_get_group_members(vcsp_client, mock_server, vcsp_get_group_members_para
         endpoint, mock_response, mock_status_code, _, _, _, _ = param
         mock_server.get(endpoint, json=mock_response, status_code=mock_status_code)
 
-        response = vcsp_client.get_group_members(data_model=GetGroupMembersInput(name=test_group_name))
+        response = vcsp_client.get_group_members(name=test_group_name)
         assert response.items[0].subject_id == mock_response["items"][0]["subject_id"]
         assert response.items[0].credential_id == mock_response["items"][0]["credential_id"]
         assert response.items[0].expired_in_group == mock_response["items"][0]["expired_in_group"]
@@ -528,7 +500,7 @@ def test_vcsp_get_group_members_exception(vcsp_client, mock_server, vcsp_get_gro
             mock_server.get(endpoint, json=mock_response, status_code=mock_status_code)
 
             with pytest.raises(exception):
-                vcsp_client.get_group_members(data_model=GetGroupMembersInput(name="nonexistent_group_name"))
+                vcsp_client.get_group_members(name="nonexistent_group_name")
 
 
 # ---------------------------------------------------------------------------
@@ -550,12 +522,12 @@ def test_real_tag_lifecycle(real_writes, temp_tag):
 @pytest.mark.vcsp
 def test_real_tag_is_gone_after_teardown(real_writes, resource_tracker):
     """Deleting a tag really removes it, rather than the listing being stale."""
-    real_writes.create_tags(data_model=CreateTagsInput(tags=[TEST_TAG]))
-    resource_tracker.add("tag", TEST_TAG, lambda: real_writes.delete_tag(DeleteTagInput(name=TEST_TAG)))
+    real_writes.create_tags(tags=[TEST_TAG])
+    resource_tracker.add("tag", TEST_TAG, lambda: real_writes.delete_tag(name=TEST_TAG))
 
     assert TEST_TAG in [tag.name for tag in real_writes.get_tags().items]
 
-    real_writes.delete_tag(data_model=DeleteTagInput(name=TEST_TAG))
+    real_writes.delete_tag(name=TEST_TAG)
     resource_tracker.forget(TEST_TAG)
 
     assert TEST_TAG not in [tag.name for tag in real_writes.get_tags().items]
@@ -564,14 +536,14 @@ def test_real_tag_is_gone_after_teardown(real_writes, resource_tracker):
 @pytest.mark.vcsp
 def test_real_group_lifecycle(real_writes, temp_group, voice_credential_configuration):
     """A created group can be read back, is listed, and starts empty."""
-    group = real_writes.get_group(data_model=GetGroupInput(name=temp_group))
+    group = real_writes.get_group(name=temp_group)
     assert group.name == temp_group
     assert group.credential_configuration_urn == voice_credential_configuration
     assert group.size == 0
 
-    assert temp_group in [g.name for g in real_writes.get_groups(GetGroupsInput()).items]
+    assert temp_group in [g.name for g in real_writes.get_groups().items]
 
-    members = real_writes.get_group_members(data_model=GetGroupMembersInput(name=temp_group))
+    members = real_writes.get_group_members(name=temp_group)
     assert members.total == 0
     assert members.items == []
 
@@ -585,9 +557,10 @@ def test_real_group_defaults(real_writes, resource_tracker, voice_credential_con
     """
     name = unique_group_name()
     created = real_writes.create_group(
-        data_model=CreateGroupInput(name=name, credential_configuration_urn=voice_credential_configuration),
+        name=name,
+        credential_configuration_urn=voice_credential_configuration,
     )
-    resource_tracker.add("group", name, lambda: real_writes.delete_group(DeleteGroupInput(name=name)))
+    resource_tracker.add("group", name, lambda: real_writes.delete_group(name=name))
 
     assert created.description == ""
     assert created.expired_at.startswith("20")
@@ -598,17 +571,18 @@ def test_real_subject_lifecycle(real_writes, temp_subject):
     """Enrol a subject, read the account and its credentials back, then let teardown remove it."""
     subject_id, credential_id = temp_subject
 
-    account = real_writes.get_account(data_model=GetAccountInput(subject_id=subject_id))
+    account = real_writes.get_account(subject_id=subject_id)
     assert account.subject_id == subject_id
     assert credential_id in account.credentials
 
     credentials = real_writes.get_all_subject_credentials(
-        data_model=GetCredentialsInput(subject_id=subject_id),
+        subject_id=subject_id,
     ).credentials
     assert [c.id for c in credentials] == [credential_id]
 
     credential = real_writes.get_credential(
-        data_model=GetCredentialInput(subject_id=subject_id, credential_id=credential_id),
+        subject_id=subject_id,
+        credential_id=credential_id,
     )
     assert credential.id == credential_id
     assert credential.sample.type == "voice"
@@ -619,11 +593,11 @@ def test_real_deleted_account_is_gone(real_writes, temp_subject, resource_tracke
     """Deleting an account removes it and its credentials, not just the account row."""
     subject_id, _ = temp_subject
 
-    real_writes.delete_account(data_model=DeleteAccountInput(subject_id=subject_id))
+    real_writes.delete_account(subject_id=subject_id)
     resource_tracker.forget(subject_id)
 
     with pytest.raises(AccountNotFoundError):
-        real_writes.get_account(data_model=GetAccountInput(subject_id=subject_id))
+        real_writes.get_account(subject_id=subject_id)
 
 
 @pytest.mark.vcsp
@@ -635,7 +609,7 @@ def test_real_list_credentials_by_tag(real_writes, temp_subject, shared_test_tag
     """
     subject_id, credential_id = temp_subject
 
-    listed = real_writes.list_credentials(ListCredentialsInput(tags=[shared_test_tag]))
+    listed = real_writes.list_credentials(tags=[shared_test_tag])
 
     matching = [c for c in listed.items if c.id == credential_id]
     assert matching, f"credential {credential_id} not found among {listed.total} tagged credentials"
@@ -646,7 +620,7 @@ def test_real_list_credentials_by_tag(real_writes, temp_subject, shared_test_tag
 @pytest.mark.vcsp
 def test_real_list_credentials_pages(real_writes):
     """Paging is honoured, which matters because the listing is unbounded by default."""
-    page = real_writes.list_credentials(ListCredentialsInput(size=2, page=1))
+    page = real_writes.list_credentials(size=2, page=1)
     assert len(page.items) <= 2
     assert page.page == 1
     assert page.size == 2
@@ -659,7 +633,8 @@ def test_real_credential_sample_round_trips(real_writes, temp_subject, audio_fil
     subject_id, credential_id = temp_subject
 
     sample = real_writes.get_credential_sample(
-        data_model=GetCredentialSampleInput(subject_id=subject_id, credential_id=credential_id),
+        subject_id=subject_id,
+        credential_id=credential_id,
     )
 
     assert sample.content == audio_file
@@ -670,7 +645,7 @@ def test_real_credential_sample_round_trips(real_writes, temp_subject, audio_fil
 def test_real_credential_configuration_has_a_claims_schema(real_writes, voice_credential_configuration):
     """One configuration can be read on its own, with the schema its claims must satisfy."""
     configuration = real_writes.get_credential_configuration(
-        data_model=CredentialConfigurationInput(urn=voice_credential_configuration),
+        urn=voice_credential_configuration,
     )
 
     assert configuration.urn == voice_credential_configuration
@@ -686,10 +661,11 @@ def test_real_delete_credentials_of_an_empty_group(real_writes, temp_group):
     wrapping the filters, and the service wants a flat JSON one.
     """
     real_writes.delete_credentials(
-        data_model=DeleteCredentialsInput(group_name=temp_group, delete_empty_accounts=True),
+        group_name=temp_group,
+        delete_empty_accounts=True,
     )
 
-    assert real_writes.get_group(data_model=GetGroupInput(name=temp_group)).size == 0
+    assert real_writes.get_group(name=temp_group).size == 0
 
 
 @pytest.mark.vcsp
@@ -704,13 +680,13 @@ def test_real_task_listing_is_paginated(real_writes):
 @pytest.mark.vcsp
 def test_real_unknown_task_is_reported(real_writes):
     """A task id that does not exist raises rather than returning an empty task."""
-    unknown = TaskInput(task_id="00000000-0000-0000-0000-000000000000")
+    unknown = "00000000-0000-0000-0000-000000000000"
 
     with pytest.raises(TaskNotFoundError):
-        real_writes.get_task(data_model=unknown)
+        real_writes.get_task(task_id=unknown)
 
     with pytest.raises(TaskNotFoundError):
-        real_writes.delete_task(data_model=unknown)
+        real_writes.delete_task(task_id=unknown)
 
 
 @pytest.mark.vcsp
@@ -733,48 +709,46 @@ def test_real_batch_enrollment_runs_as_a_task(
             "account",
             subject_id,
             lambda subject_id=subject_id: real_writes.delete_account(
-                DeleteAccountInput(subject_id=subject_id),
+                subject_id=subject_id,
             ),
         )
 
     batch = real_writes.enroll_batch(
-        data_model=BatchEnrollmentInput(
-            applicants=[
-                BatchApplicant(
-                    sample=audio_file,
-                    filename=f"sample_{index}.wav",
-                    applicant=Applicant(
-                        subject_id=subject_id,
-                        credential_configuration_urn=voice_credential_configuration,
-                        assurance_method_urn=enrollment_assurance_method,
-                        assurance={"authenticity_threshold": 0.5},
-                        tags=[shared_test_tag],
-                    ),
-                )
-                for index, subject_id in enumerate(subject_ids)
-            ],
-        ),
+        applicants=[
+            BatchApplicant(
+                sample=audio_file,
+                filename=f"sample_{index}.wav",
+                applicant=Applicant(
+                    subject_id=subject_id,
+                    credential_configuration_urn=voice_credential_configuration,
+                    assurance_method_urn=enrollment_assurance_method,
+                    assurance={"authenticity_threshold": 0.5},
+                    tags=[shared_test_tag],
+                ),
+            )
+            for index, subject_id in enumerate(subject_ids)
+        ],
     )
     resource_tracker.add(
         "task",
         batch.task_id,
-        lambda: real_writes.delete_task(TaskInput(task_id=batch.task_id)),
+        lambda: real_writes.delete_task(task_id=batch.task_id),
     )
 
-    task = real_writes.wait_for_task(TaskInput(task_id=batch.task_id), timeout=120)
+    task = real_writes.wait_for_task(task_id=batch.task_id, timeout=120)
     assert task.succeeded, f"batch task finished as {task.status}"
     assert task.is_finished
     assert task.progress == 100
     assert task.finished_at
 
-    result = real_writes.get_task_result(data_model=TaskInput(task_id=batch.task_id)).result
+    result = real_writes.get_task_result(task_id=batch.task_id).result
     assert result["summary"] == {"total": 2, "success": 2, "error": 0}
     assert sorted(item["subject_id"] for item in result["report"]) == sorted(subject_ids)
     assert {item["status"] for item in result["report"]} == {"success"}
 
     # The accounts really exist, rather than the report just saying so.
     for subject_id in subject_ids:
-        assert real_writes.get_account(data_model=GetAccountInput(subject_id=subject_id)).credentials
+        assert real_writes.get_account(subject_id=subject_id).credentials
 
 
 @pytest.mark.vcsp
@@ -787,7 +761,7 @@ def test_real_batch_rejects_a_tar_without_applicants(real_writes):
         tar.addfile(info, io.BytesIO(b"fake"))
 
     with pytest.raises(InvalidBatchFileError):
-        real_writes.enroll_batch(data_model=BatchEnrollmentInput(batch_file=archive.getvalue()))
+        real_writes.enroll_batch(batch_file=archive.getvalue())
 
 
 @pytest.mark.vcsp
@@ -798,7 +772,7 @@ def test_real_batch_rejects_something_that_is_not_an_archive(real_writes):
     wrong", and they surface as different exceptions.
     """
     with pytest.raises(UnsupportedMediaTypeError):
-        real_writes.enroll_batch(data_model=BatchEnrollmentInput(batch_file=b"not a tar archive"))
+        real_writes.enroll_batch(batch_file=b"not a tar archive")
 
 
 @pytest.mark.vcsp
@@ -817,27 +791,23 @@ def test_real_populate_a_group_and_match_against_it(
     subject_id, credential_id = temp_subject
 
     group = real_writes.modify_group(
-        data_model=ModifyGroupInput(
-            name=temp_group,
-            action=GroupAction.POPULATE,
-            from_=GroupMembershipSource(subjects=[subject_id]),
-        ),
+        name=temp_group,
+        action=GroupAction.POPULATE,
+        from_=GroupMembershipSource(subjects=[subject_id]),
     )
     assert group.size == 1
 
-    members = real_writes.get_group_members(data_model=GetGroupMembersInput(name=temp_group))
+    members = real_writes.get_group_members(name=temp_group)
     assert [member.credential_id for member in members.items] == [credential_id]
     assert members.items[0].subject_id == subject_id
 
     matched = real_writes.match(
-        data_model=MatchingInput(
-            sample=audio_file,
-            claimant=GroupClaimant(
-                group_name=temp_group,
-                assurance_method_urn=matching_assurance_method,
-                assurance={"biometric_threshold": 0.5},
-                limit=5,
-            ),
+        sample=audio_file,
+        claimant=GroupClaimant(
+            group_name=temp_group,
+            assurance_method_urn=matching_assurance_method,
+            assurance={"biometric_threshold": 0.5},
+            limit=5,
         ),
     )
     assert matched.nhits == 1
@@ -847,11 +817,9 @@ def test_real_populate_a_group_and_match_against_it(
 
     # And removing it empties the group again.
     emptied = real_writes.modify_group(
-        data_model=ModifyGroupInput(
-            name=temp_group,
-            action=GroupAction.REMOVE,
-            from_=GroupMembershipSource(subjects=[subject_id]),
-        ),
+        name=temp_group,
+        action=GroupAction.REMOVE,
+        from_=GroupMembershipSource(subjects=[subject_id]),
     )
     assert emptied.size == 0
 
@@ -868,14 +836,12 @@ def test_real_one_to_one_matching(
     subject_id, _ = temp_subject
 
     matched = real_writes.match(
-        data_model=MatchingInput(
-            sample=audio_file,
-            claimant=SubjectClaimant(
-                subject_id=subject_id,
-                credential_configuration_urn=voice_credential_configuration,
-                assurance_method_urn=matching_assurance_method,
-                assurance={"biometric_threshold": 0.5},
-            ),
+        sample=audio_file,
+        claimant=SubjectClaimant(
+            subject_id=subject_id,
+            credential_configuration_urn=voice_credential_configuration,
+            assurance_method_urn=matching_assurance_method,
+            assurance={"biometric_threshold": 0.5},
         ),
     )
 
@@ -889,18 +855,16 @@ def test_real_one_to_one_matching(
 def test_real_credential_tags_can_be_added_and_removed(real_writes, temp_subject, shared_test_tag):
     """Tags move on and off a credential, and the credential comes back each time."""
     subject_id, credential_id = temp_subject
-    target = ModifyCredentialTagsInput(
-        subject_id=subject_id,
-        credential_id=credential_id,
-        action=CredentialTagAction.REMOVE,
-        tags=[shared_test_tag],
-    )
+    target = {
+        "subject_id": subject_id,
+        "credential_id": credential_id,
+        "tags": [shared_test_tag],
+    }
 
-    without = real_writes.modify_credential_tags(data_model=target)
+    without = real_writes.modify_credential_tags(action=CredentialTagAction.REMOVE, **target)
     assert shared_test_tag not in without.tags
 
-    target.action = CredentialTagAction.ADD
-    restored = real_writes.modify_credential_tags(data_model=target)
+    restored = real_writes.modify_credential_tags(action=CredentialTagAction.ADD, **target)
     assert shared_test_tag in restored.tags
     assert restored.id == credential_id
 
@@ -918,11 +882,9 @@ def test_real_clustering_is_refused_for_a_voice_group(
     """
     with pytest.raises(ClusteringNotSupportedError):
         real_writes.start_clustering(
-            data_model=ClusteringInput(
-                name=temp_group,
-                assurance_method_urn=clustering_assurance_method,
-                properties={"similarity_threshold": 0.5, "mode": "similarity_based"},
-            ),
+            name=temp_group,
+            assurance_method_urn=clustering_assurance_method,
+            properties={"similarity_threshold": 0.5, "mode": "similarity_based"},
         )
 
 
@@ -936,15 +898,17 @@ def test_real_deleting_a_credential_leaves_the_account(real_writes, temp_subject
     subject_id, credential_id = temp_subject
 
     real_writes.delete_credential(
-        data_model=DeleteCredentialInput(subject_id=subject_id, credential_id=credential_id),
+        subject_id=subject_id,
+        credential_id=credential_id,
     )
 
-    account = real_writes.get_account(data_model=GetAccountInput(subject_id=subject_id))
+    account = real_writes.get_account(subject_id=subject_id)
     assert credential_id not in account.credentials
 
     with pytest.raises(CredentialNotFoundError):
         real_writes.get_credential(
-            data_model=GetCredentialInput(subject_id=subject_id, credential_id=credential_id),
+            subject_id=subject_id,
+            credential_id=credential_id,
         )
 
 
@@ -996,10 +960,8 @@ def test_real_voice_enrollment_rejects_bad_audio(
     """
     with pytest.raises(expected):
         real_writes.enroll_subject(
-            data_model=EnrollmentInput(
-                sample=request.getfixturevalue(sample_fixture),
-                applicant=_applicant(voice_credential_configuration, enrollment_assurance_method),
-            ),
+            sample=request.getfixturevalue(sample_fixture),
+            applicant=_applicant(voice_credential_configuration, enrollment_assurance_method),
         )
 
 
@@ -1013,10 +975,8 @@ def test_real_voice_enrollment_rejects_a_sample_that_is_not_audio(
     """A photo sent where a recording belongs is caught on its media type, before analysis."""
     with pytest.raises(UnsupportedMediaTypeError):
         real_writes.enroll_subject(
-            data_model=EnrollmentInput(
-                sample=face_image_path,
-                applicant=_applicant(voice_credential_configuration, enrollment_assurance_method),
-            ),
+            sample=face_image_path,
+            applicant=_applicant(voice_credential_configuration, enrollment_assurance_method),
         )
 
 
@@ -1044,10 +1004,8 @@ def test_real_face_enrollment_rejects_bad_photos(
     """
     with pytest.raises(expected):
         real_writes.enroll_subject(
-            data_model=EnrollmentInput(
-                sample=request.getfixturevalue(image_fixture),
-                applicant=_applicant(face_credential_configuration, enrollment_assurance_method),
-            ),
+            sample=request.getfixturevalue(image_fixture),
+            applicant=_applicant(face_credential_configuration, enrollment_assurance_method),
         )
 
 
@@ -1059,10 +1017,8 @@ def test_real_enrollment_rejects_an_unknown_credential_configuration(
 ):
     with pytest.raises(InvalidCredentialConfigurationUrnError):
         real_writes.enroll_subject(
-            data_model=EnrollmentInput(
-                sample=audio_file_path,
-                applicant=_applicant("urn:vcsp:credential_configurations:not_a_real_one:v1", enrollment_assurance_method),
-            ),
+            sample=audio_file_path,
+            applicant=_applicant("urn:vcsp:credential_configurations:not_a_real_one:v1", enrollment_assurance_method),
         )
 
 
@@ -1074,10 +1030,8 @@ def test_real_enrollment_rejects_an_unknown_assurance_method(
 ):
     with pytest.raises(InvalidAssuranceMethodUrnError):
         real_writes.enroll_subject(
-            data_model=EnrollmentInput(
-                sample=audio_file_path,
-                applicant=_applicant(voice_credential_configuration, "urn:vcsp:assurance_methods:not_a_real_one:v1"),
-            ),
+            sample=audio_file_path,
+            applicant=_applicant(voice_credential_configuration, "urn:vcsp:assurance_methods:not_a_real_one:v1"),
         )
 
 
@@ -1093,13 +1047,11 @@ def test_real_enrollment_rejects_an_assurance_that_does_not_fit_the_method(
     """The assurance is validated against the method's own schema, both ways it can miss."""
     with pytest.raises(InvalidAssuranceError):
         real_writes.enroll_subject(
-            data_model=EnrollmentInput(
-                sample=audio_file_path,
-                applicant=_applicant(
-                    voice_credential_configuration,
-                    enrollment_assurance_method,
-                    assurance=assurance,
-                ),
+            sample=audio_file_path,
+            applicant=_applicant(
+                voice_credential_configuration,
+                enrollment_assurance_method,
+                assurance=assurance,
             ),
         )
 
@@ -1114,13 +1066,11 @@ def test_real_enrollment_rejects_a_tag_that_does_not_exist(
     """A credential can only carry tags the subscription already knows about."""
     with pytest.raises(InvalidTagsError):
         real_writes.enroll_subject(
-            data_model=EnrollmentInput(
-                sample=audio_file_path,
-                applicant=_applicant(
-                    voice_credential_configuration,
-                    enrollment_assurance_method,
-                    tags=["vericlient:nosuchtag"],
-                ),
+            sample=audio_file_path,
+            applicant=_applicant(
+                voice_credential_configuration,
+                enrollment_assurance_method,
+                tags=["vericlient:nosuchtag"],
             ),
         )
 
@@ -1138,13 +1088,11 @@ def test_real_enrollment_rejects_a_tag_that_is_not_shaped_like_a_tag(
     """
     with pytest.raises(RequestValidationError):
         real_writes.enroll_subject(
-            data_model=EnrollmentInput(
-                sample=audio_file_path,
-                applicant=_applicant(
-                    voice_credential_configuration,
-                    enrollment_assurance_method,
-                    tags=["no-colon-here"],
-                ),
+            sample=audio_file_path,
+            applicant=_applicant(
+                voice_credential_configuration,
+                enrollment_assurance_method,
+                tags=["no-colon-here"],
             ),
         )
 
@@ -1152,7 +1100,7 @@ def test_real_enrollment_rejects_a_tag_that_is_not_shaped_like_a_tag(
 @pytest.mark.vcsp
 def test_real_reading_a_group_that_does_not_exist(real_vcsp):
     with pytest.raises(GroupNotFoundError):
-        real_vcsp.get_group(data_model=GetGroupInput(name="vericlient_test_no_such_group"))
+        real_vcsp.get_group(name="vericlient_test_no_such_group")
 
 
 @pytest.mark.vcsp
@@ -1160,7 +1108,8 @@ def test_real_creating_a_group_twice(real_writes, temp_group, voice_credential_c
     """The second attempt is refused rather than silently reusing the first."""
     with pytest.raises(GroupAlreadyExistsError):
         real_writes.create_group(
-            data_model=CreateGroupInput(name=temp_group, credential_configuration_urn=voice_credential_configuration),
+            name=temp_group,
+            credential_configuration_urn=voice_credential_configuration,
         )
 
 
@@ -1168,11 +1117,41 @@ def test_real_creating_a_group_twice(real_writes, temp_group, voice_credential_c
 def test_real_creating_a_tag_twice(real_writes, own_tag):
     """Uses a tag of its own: `vericlient:test` is already held by a session fixture."""
     with pytest.raises(TagAlreadyExistsError):
-        real_writes.create_tags(data_model=CreateTagsInput(tags=[own_tag]))
+        real_writes.create_tags(tags=[own_tag])
 
 
 @pytest.mark.vcsp
 def test_real_creating_no_tags_at_all(real_writes):
     """An empty list is refused rather than treated as a no-op."""
     with pytest.raises(TagListEmptyError):
-        real_writes.create_tags(data_model=CreateTagsInput(tags=[]))
+        real_writes.create_tags(tags=[])
+
+
+@pytest.mark.vcsp
+def test_the_old_call_style_still_works_and_warns(vcsp_client, mock_server, vcsp_get_account_parameters, test_subject_id):
+    """Passing the input model is deprecated, not broken, until 1.0.0."""
+    skip_if_not_mock(mock_server)
+
+    endpoint, mock_response, mock_status_code, *_ = vcsp_get_account_parameters[0]
+    mock_server.get(endpoint, json=mock_response, status_code=mock_status_code)
+
+    with pytest.warns(DeprecationWarning, match="GetAccountInput"):
+        vcsp_client.get_account(GetAccountInput(subject_id=test_subject_id))
+
+
+@pytest.mark.vcsp
+def test_vcsp_input_errors_name_the_method(vcsp_client):
+    """The caller wrote `enroll_subject(...)`, so that is what the error says."""
+    with pytest.raises(ValidationError) as raised:
+        vcsp_client.enroll_subject(
+            sample=123,
+            applicant=Applicant(
+                credential_configuration_urn="a-urn",
+                assurance_method_urn="a-method",
+                assurance={},
+            ),
+        )
+
+    assert "enroll_subject()" in str(raised.value)
+    assert "EnrollmentInput" not in str(raised.value)
+    assert "expected a path to a file, or its content as bytes" in str(raised.value)
