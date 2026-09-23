@@ -9,6 +9,7 @@ from requests.models import Response
 
 from vericlient.apis import APIs
 from vericlient.client import Client
+from vericlient.deprecation import legacy_model_argument
 from vericlient.utils import DEFAULT_CONTENT_TYPE, get_virtual_file, guess_content_type
 from vericlient.vcsp.batch import build_batch_archive, sample_filename
 from vericlient.vcsp.endpoints import VcspEndpoints
@@ -46,9 +47,11 @@ from vericlient.vcsp.exceptions import (
     VoiceDurationIsNotEnoughError,
 )
 from vericlient.vcsp.models import (
+    Applicant,
     AssuranceMethodInput,
     AssuranceMethodOutput,
     AssuranceMethodsOutput,
+    BatchApplicant,
     BatchEnrollmentInput,
     BatchEnrollmentOutput,
     ClusteringInput,
@@ -83,12 +86,15 @@ from vericlient.vcsp.models import (
     GetTagsOutput,
     GetTaskResultOutput,
     GetTasksOutput,
+    GroupClaimant,
+    GroupMembershipSource,
     ListCredentialsInput,
     ListCredentialsOutput,
     MatchingInput,
     MatchingOutput,
     ModifyCredentialTagsInput,
     ModifyGroupInput,
+    SubjectClaimant,
     TaskCreatedOutput,
     TaskInput,
     TaskOutput,
@@ -186,52 +192,80 @@ class VcspClient(Client):
         handler = self._exceptions[exception]
         raise handler()
 
-    def list_credentials(self, data_model: ListCredentialsInput | None = None) -> ListCredentialsOutput:
+    @legacy_model_argument(ListCredentialsInput)
+    def list_credentials(
+        self,
+        credential_configuration_urn: str | None = None,
+        tags: list[str] | None = None,
+        page: int | None = None,
+        size: int | None = None,
+    ) -> ListCredentialsOutput:
         """List credentials across the whole system, optionally filtered.
 
         Unlike `get_all_subject_credentials`, this is not scoped to one account. Deployments
         hold a lot of credentials, so filter and page rather than walking everything.
 
         Args:
-            data_model: The filters to apply. Omit it to list without filtering
+            credential_configuration_urn: Only credentials created with this configuration
+            tags: Only credentials carrying these tags
+            page: The page to retrieve, starting at 1
+            size: How many credentials per page
 
         Returns:
             ListCredentialsOutput: A page of credentials
 
         """
-        data_model = data_model or ListCredentialsInput()
+        data_model = ListCredentialsInput(
+            credential_configuration_urn=credential_configuration_urn,
+            tags=tags,
+            page=page,
+            size=size,
+        )
         response = self._get(
             endpoint=VcspEndpoints.ALL_CREDENTIALS.value,
             params=data_model.model_dump(exclude_none=True),
         )
         return ListCredentialsOutput(**response.json())
 
-    def delete_credentials(self, data_model: DeleteCredentialsInput) -> None:
+    @legacy_model_argument(DeleteCredentialsInput)
+    def delete_credentials(
+        self,
+        group_name: str,
+        delete_empty_accounts: bool = False,  # noqa: FBT001, FBT002
+    ) -> None:
         """Delete every credential in a group.
 
         Irreversible. The credentials are removed from any other group they belong to, and
         with `delete_empty_accounts` the accounts left holding nothing go too.
 
         Args:
-            data_model: The group to empty, and whether to remove the accounts left behind
+            group_name: The group whose credentials are deleted
+            delete_empty_accounts: Whether to delete an account left with no credentials
 
         Raises:
             GroupNotFoundError: If no group exists with that name
 
         """
+        data_model = DeleteCredentialsInput(group_name=group_name, delete_empty_accounts=delete_empty_accounts)
         self._delete(
             endpoint=VcspEndpoints.ALL_CREDENTIALS.value,
             json_=data_model.model_dump(),
         )
 
-    def get_credential_sample(self, data_model: GetCredentialSampleInput) -> GetCredentialSampleOutput:
+    @legacy_model_argument(GetCredentialSampleInput)
+    def get_credential_sample(
+        self,
+        credential_id: str,
+        subject_id: str,
+    ) -> GetCredentialSampleOutput:
         """Get the sample a credential was created from.
 
         The service answers with the raw bytes rather than JSON, so the media type comes
         from the response header.
 
         Args:
-            data_model: The subject and credential to retrieve the sample of
+            credential_id: The credential whose sample to retrieve
+            subject_id: The subject the credential belongs to
 
         Returns:
             GetCredentialSampleOutput: The sample and its media type
@@ -241,6 +275,7 @@ class VcspClient(Client):
             CredentialNotFoundError: If the credential is not found
 
         """
+        data_model = GetCredentialSampleInput(credential_id=credential_id, subject_id=subject_id)
         endpoint = VcspEndpoints.CREDENTIAL_SAMPLE.value.replace("<subject_id>", data_model.subject_id)
         endpoint = endpoint.replace("<credential_id>", data_model.credential_id)
         response = self._get(endpoint=endpoint)
@@ -249,11 +284,15 @@ class VcspClient(Client):
             content_type=response.headers.get("content-type", DEFAULT_CONTENT_TYPE),
         )
 
-    def get_credential_configuration(self, data_model: CredentialConfigurationInput) -> CredentialConfigurationOutput:
+    @legacy_model_argument(CredentialConfigurationInput)
+    def get_credential_configuration(
+        self,
+        urn: str,
+    ) -> CredentialConfigurationOutput:
         """Get one credential configuration, including the schema its claims must satisfy.
 
         Args:
-            data_model: The urn of the credential configuration
+            urn: The urn of the credential configuration
 
         Returns:
             CredentialConfigurationOutput: The configuration and its claims schema
@@ -262,11 +301,17 @@ class VcspClient(Client):
             InvalidCredentialConfigurationUrnError: If no configuration exists with that urn
 
         """
+        data_model = CredentialConfigurationInput(urn=urn)
         endpoint = VcspEndpoints.CREDENTIAL_CONFIGURATION_URN.value.replace("<urn>", data_model.urn)
         response = self._get(endpoint=endpoint)
         return CredentialConfigurationOutput(**response.json())
 
-    def enroll_batch(self, data_model: BatchEnrollmentInput) -> BatchEnrollmentOutput:
+    @legacy_model_argument(BatchEnrollmentInput)
+    def enroll_batch(
+        self,
+        applicants: list[BatchApplicant] | None = None,
+        batch_file: str | bytes | None = None,
+    ) -> BatchEnrollmentOutput:
         """Enrol several applicants at once.
 
         The work happens asynchronously. Follow it with `get_task`, or block on
@@ -277,7 +322,8 @@ class VcspClient(Client):
         both were found by reading the service's errors.
 
         Args:
-            data_model: The enrolments to perform, or a prepared TAR archive
+            applicants: The enrolments to perform
+            batch_file: A prepared TAR archive, as a path or as bytes
 
         Returns:
             BatchEnrollmentOutput: The task the enrolments run under
@@ -286,6 +332,7 @@ class VcspClient(Client):
             InvalidBatchFileError: If the archive is malformed or a sample is missing
 
         """
+        data_model = BatchEnrollmentInput(applicants=applicants, batch_file=batch_file)
         if data_model.batch_file is not None:
             archive = get_virtual_file(data_model.batch_file)
         else:
@@ -315,11 +362,15 @@ class VcspClient(Client):
         response = self._get(endpoint=VcspEndpoints.TASKS.value)
         return GetTasksOutput(**response.json())
 
-    def get_task(self, data_model: TaskInput) -> TaskOutput:
+    @legacy_model_argument(TaskInput)
+    def get_task(
+        self,
+        task_id: str,
+    ) -> TaskOutput:
         """Get the state of one asynchronous task.
 
         Args:
-            data_model: The task to look up
+            task_id: The identifier the service returned when the task was created
 
         Returns:
             TaskOutput: Its status and progress
@@ -328,32 +379,42 @@ class VcspClient(Client):
             TaskNotFoundError: If no task exists with that identifier
 
         """
+        data_model = TaskInput(task_id=task_id)
         endpoint = VcspEndpoints.TASK_ID.value.replace("<task_id>", data_model.task_id)
         response = self._get(endpoint=endpoint)
         return TaskOutput(**response.json())
 
-    def delete_task(self, data_model: TaskInput) -> None:
+    @legacy_model_argument(TaskInput)
+    def delete_task(
+        self,
+        task_id: str,
+    ) -> None:
         """Delete a task and its result.
 
         Tasks expire on their own, but a long-running caller is better off tidying up.
 
         Args:
-            data_model: The task to delete
+            task_id: The identifier the service returned when the task was created
 
         Raises:
             TaskNotFoundError: If no task exists with that identifier
 
         """
+        data_model = TaskInput(task_id=task_id)
         endpoint = VcspEndpoints.TASK_ID.value.replace("<task_id>", data_model.task_id)
         self._delete(endpoint=endpoint)
 
-    def get_task_result(self, data_model: TaskInput) -> GetTaskResultOutput:
+    @legacy_model_argument(TaskInput)
+    def get_task_result(
+        self,
+        task_id: str,
+    ) -> GetTaskResultOutput:
         """Get the outcome of a finished task.
 
         The shape depends on what created the task, so it comes back as a dictionary.
 
         Args:
-            data_model: The task to collect
+            task_id: The identifier the service returned when the task was created
 
         Returns:
             GetTaskResultOutput: The outcome, as the service returned it
@@ -362,13 +423,15 @@ class VcspClient(Client):
             TaskNotFoundError: If no task exists with that identifier
 
         """
+        data_model = TaskInput(task_id=task_id)
         endpoint = VcspEndpoints.TASK_RESULT.value.replace("<task_id>", data_model.task_id)
         response = self._get(endpoint=endpoint)
         return GetTaskResultOutput(result=response.json())
 
+    @legacy_model_argument(TaskInput)
     def wait_for_task(
         self,
-        data_model: TaskInput,
+        task_id: str,
         timeout: float = 300,
         poll_interval: float = 2,
     ) -> TaskOutput:
@@ -378,7 +441,7 @@ class VcspClient(Client):
         success, so check `succeeded` on the result.
 
         Args:
-            data_model: The task to wait for
+            task_id: The task to wait for
             timeout: How long to wait, in seconds, before giving up
             poll_interval: How long to sleep between checks, in seconds
 
@@ -392,15 +455,22 @@ class VcspClient(Client):
         """
         deadline = time.monotonic() + timeout
         while True:
-            task = self.get_task(data_model=data_model)
+            task = self.get_task(task_id=task_id)
             if task.is_finished:
                 return task
             if time.monotonic() >= deadline:
-                error = f"Task {data_model.task_id} did not finish within {timeout} seconds"
+                error = f"Task {task_id} did not finish within {timeout} seconds"
                 raise TimeoutError(error)
             time.sleep(poll_interval)
 
-    def match(self, data_model: MatchingInput) -> MatchingOutput | TaskCreatedOutput:
+    @legacy_model_argument(MatchingInput)
+    def match(
+        self,
+        sample: str | bytes,
+        claimant: SubjectClaimant | GroupClaimant,
+        sample_processing: dict | None = None,
+        content_type: str | None = None,
+    ) -> MatchingOutput | TaskCreatedOutput:
         """Match a sample against one subject or against a whole group.
 
         Pass a `SubjectClaimant` for 1:1 or a `GroupClaimant` for 1:N. Small operations
@@ -408,7 +478,10 @@ class VcspClient(Client):
         asynchronously, answering with a `TaskCreatedOutput` to follow with `wait_for_task`.
 
         Args:
-            data_model: The sample and what to match it against
+            sample: The biometric sample to match, as a path or as bytes
+            claimant: What to match it against — a `SubjectClaimant` for 1:1, a `GroupClaimant` for 1:N
+            sample_processing: Options for reading the sample, such as `{"nchannel": 1}`
+            content_type: The media type to declare for the sample. Inferred when omitted
 
         Returns:
             MatchingOutput when the service answered directly, TaskCreatedOutput when it
@@ -420,6 +493,9 @@ class VcspClient(Client):
             InvalidAssuranceError: If the assurance does not satisfy its method's schema
 
         """
+        data_model = MatchingInput(
+            sample=sample, claimant=claimant, sample_processing=sample_processing, content_type=content_type
+        )
         filename, sample, content_type = self._get_sample(data_model.sample, data_model.content_type)
         data = {"claimant": json.dumps(data_model.claimant.model_dump(exclude_none=True))}
         if data_model.sample_processing is not None:
@@ -435,14 +511,29 @@ class VcspClient(Client):
             return TaskCreatedOutput(**response.json())
         return MatchingOutput(**response.json())
 
-    def modify_group(self, data_model: ModifyGroupInput) -> GetGroupOutput | TaskCreatedOutput:
+    @legacy_model_argument(ModifyGroupInput)
+    def modify_group(
+        self,
+        name: str,
+        action: str,
+        from_: GroupMembershipSource | None = None,
+        credential_ttl: str | None = None,
+        description: str | None = None,
+        expired_at: str | None = None,
+    ) -> GetGroupOutput | TaskCreatedOutput:
         """Add credentials to a group, remove them, or change the group's own details.
 
         A small change answers directly with the group; a large population is accepted and
         run asynchronously.
 
         Args:
-            data_model: The group, the action, and what it applies to
+            name: The group to modify
+            action: `populate`, `remove` or `update_info`
+            from_: Which credentials to add or remove. Required for populate and remove, and serialised as `from`, which is a
+                reserved word in Python
+            credential_ttl: How long added credentials stay in the group, as an ISO 8601 duration such as `P30D`
+            description: A new description, for `update_info`
+            expired_at: A new retention period, for `update_info`, as an ISO 8601 duration
 
         Returns:
             GetGroupOutput when the service answered directly, TaskCreatedOutput when it
@@ -453,6 +544,9 @@ class VcspClient(Client):
             AccountNotFoundError: If one of the subjects does not exist
 
         """
+        data_model = ModifyGroupInput(
+            name=name, action=action, from_=from_, credential_ttl=credential_ttl, description=description, expired_at=expired_at
+        )
         endpoint = VcspEndpoints.GROUP_NAME.value.replace("<group_name>", data_model.name)
         body = data_model.model_dump(exclude_none=True, by_alias=True, exclude={"name"})
         response = self._patch(endpoint=endpoint, json_=body)
@@ -461,13 +555,23 @@ class VcspClient(Client):
             return TaskCreatedOutput(**response.json())
         return GetGroupOutput(**response.json())
 
-    def modify_credential_tags(self, data_model: ModifyCredentialTagsInput) -> GetCredentialOutput:
+    @legacy_model_argument(ModifyCredentialTagsInput)
+    def modify_credential_tags(
+        self,
+        credential_id: str,
+        subject_id: str,
+        action: str,
+        tags: list[str],
+    ) -> GetCredentialOutput:
         """Add or remove tags on one credential.
 
         The tags have to exist already: create them with `create_tags` first.
 
         Args:
-            data_model: The credential, the action, and the tags
+            credential_id: The credential to change
+            subject_id: The subject the credential belongs to
+            action: `add` or `remove`
+            tags: The tags to add or remove. They must already exist in the system
 
         Returns:
             GetCredentialOutput: The credential as it now stands
@@ -478,6 +582,7 @@ class VcspClient(Client):
             InvalidTagsError: If one of the tags does not exist
 
         """
+        data_model = ModifyCredentialTagsInput(credential_id=credential_id, subject_id=subject_id, action=action, tags=tags)
         endpoint = VcspEndpoints.CREDENTIAL_TAGS.value.replace("<subject_id>", data_model.subject_id)
         endpoint = endpoint.replace("<credential_id>", data_model.credential_id)
         response = self._patch(
@@ -486,13 +591,22 @@ class VcspClient(Client):
         )
         return GetCredentialOutput(**response.json())
 
-    def start_clustering(self, data_model: ClusteringInput) -> TaskCreatedOutput:
+    @legacy_model_argument(ClusteringInput)
+    def start_clustering(
+        self,
+        name: str,
+        assurance_method_urn: str,
+        properties: dict,
+    ) -> TaskCreatedOutput:
         """Start a clustering task over a group.
 
         Only groups of face credentials can be clustered; a voice group is rejected.
 
         Args:
-            data_model: The group and the clustering assurance method to apply
+            name: The group to cluster
+            assurance_method_urn: The clustering assurance method to apply
+            properties: The values that method requires, such as `{"similarity_threshold": 0.5, "mode": "similarity_based"}`. Note
+                the service calls this `properties`, not `assurance` as everywhere else
 
         Returns:
             TaskCreatedOutput: The task the clustering runs under
@@ -502,6 +616,7 @@ class VcspClient(Client):
             ClusteringNotSupportedError: If the group does not hold face credentials
 
         """
+        data_model = ClusteringInput(name=name, assurance_method_urn=assurance_method_urn, properties=properties)
         endpoint = VcspEndpoints.GROUP_CLUSTERING.value.replace("<group_name>", data_model.name)
         response = self._post(
             endpoint=endpoint,
@@ -538,25 +653,41 @@ class VcspClient(Client):
             assurance_methods=response.json(),
         )
 
-    def get_assurance_method_info(self, data_model: AssuranceMethodInput) -> AssuranceMethodOutput:
+    @legacy_model_argument(AssuranceMethodInput)
+    def get_assurance_method_info(
+        self,
+        urn: str,
+    ) -> AssuranceMethodOutput:
         """Get an assurance method.
 
         Args:
-            data_model: The input to get the assurance method
+            urn: The urn of the assurance method
 
         Returns:
             AssuranceMethodOutput: The output of the assurance method
 
         """
+        data_model = AssuranceMethodInput(urn=urn)
         endpoint = VcspEndpoints.ASSURANCE_METHOD_URN.value.replace("<urn>", data_model.urn)
         response = self._get(endpoint=endpoint)
         return AssuranceMethodOutput(**response.json())
 
-    def enroll_subject(self, data_model: EnrollmentInput) -> EnrollmentOutput:
+    @legacy_model_argument(EnrollmentInput)
+    def enroll_subject(
+        self,
+        sample: str | bytes,
+        applicant: Applicant,
+        content_type: str | None = None,
+    ) -> EnrollmentOutput:
         """Enroll a subject.
 
         Args:
-            data_model: The input to enroll the subject
+            sample: The sample to generate the credential with. It can be a path to a file or a bytes object with the audio
+                content
+            applicant: The applicant to enroll
+            content_type: The media type to declare for the sample, such as `audio/wav` or `image/jpeg`. Optional: it is inferred
+                from the file extension for a path and from the magic bytes for a bytes object. Set it when the guess
+                would be wrong, since VCSP answers with a 500 if the declared type does not match the content
 
         Returns:
             EnrollmentOutput: The output of the enrollment
@@ -582,6 +713,7 @@ class VcspClient(Client):
             UnsupportedMediaTypeError: If the media type is not supported
 
         """
+        data_model = EnrollmentInput(sample=sample, applicant=applicant, content_type=content_type)
         endpoint = VcspEndpoints.ENROLLMENTS.value
         sample = self._get_sample(data_model.sample, data_model.content_type)
         files = {"sample": sample}
@@ -622,11 +754,15 @@ class VcspClient(Client):
             raise TypeError(error)
         return filename, file, content_type or guessed or DEFAULT_CONTENT_TYPE
 
-    def get_account(self, data_model: GetAccountInput) -> GetAccountOutput:
+    @legacy_model_argument(GetAccountInput)
+    def get_account(
+        self,
+        subject_id: str,
+    ) -> GetAccountOutput:
         """Get an account.
 
         Args:
-            data_model: The input to get the account
+            subject_id: The account_id to get
 
         Returns:
             GetAccountOutput: The output of the account
@@ -635,28 +771,38 @@ class VcspClient(Client):
             AccountNotFoundError: If the account is not found
 
         """
+        data_model = GetAccountInput(subject_id=subject_id)
         endpoint = VcspEndpoints.ACCOUNTS.value.replace("<subject_id>", data_model.subject_id)
         response = self._get(endpoint=endpoint)
         return GetAccountOutput(**response.json())
 
-    def delete_account(self, data_model: DeleteAccountInput) -> None:
+    @legacy_model_argument(DeleteAccountInput)
+    def delete_account(
+        self,
+        subject_id: str,
+    ) -> None:
         """Delete an account.
 
         Args:
-            data_model: The input to delete the account
+            subject_id: The account_id to delete
 
         Raises:
             AccountNotFoundError: If the account is not found
 
         """
+        data_model = DeleteAccountInput(subject_id=subject_id)
         endpoint = VcspEndpoints.ACCOUNTS.value.replace("<subject_id>", data_model.subject_id)
         self._delete(endpoint=endpoint)
 
-    def get_all_subject_credentials(self, data_model: GetCredentialsInput) -> GetCredentialsOutput:
+    @legacy_model_argument(GetCredentialsInput)
+    def get_all_subject_credentials(
+        self,
+        subject_id: str,
+    ) -> GetCredentialsOutput:
         """Get all credentials for a subject.
 
         Args:
-            data_model: The input to get all credentials for the subject
+            subject_id: The account_id to get the credentials from
 
         Returns:
             GetCredentialsOutput: The output of the credentials
@@ -665,15 +811,22 @@ class VcspClient(Client):
             AccountNotFoundError: If the account is not found
 
         """
+        data_model = GetCredentialsInput(subject_id=subject_id)
         endpoint = VcspEndpoints.CREDENTIALS.value.replace("<subject_id>", data_model.subject_id)
         response = self._get(endpoint=endpoint)
         return GetCredentialsOutput(credentials=response.json())
 
-    def get_credential(self, data_model: GetCredentialInput) -> GetCredentialOutput:
+    @legacy_model_argument(GetCredentialInput)
+    def get_credential(
+        self,
+        credential_id: str,
+        subject_id: str,
+    ) -> GetCredentialOutput:
         """Get a credential.
 
         Args:
-            data_model: The input to get the credential
+            credential_id: The credential_id to get
+            subject_id: The subject_id to get the credential from
 
         Returns:
             GetCredentialOutput: The output of the credential
@@ -683,27 +836,39 @@ class VcspClient(Client):
             AccountNotFoundError: If the account is not found
 
         """
+        data_model = GetCredentialInput(credential_id=credential_id, subject_id=subject_id)
         endpoint = VcspEndpoints.CREDENTIAL_ID.value.replace("<subject_id>", data_model.subject_id)
         endpoint = endpoint.replace("<credential_id>", data_model.credential_id)
         response = self._get(endpoint=endpoint)
         return GetCredentialOutput(**response.json())
 
-    def delete_credential(self, data_model: DeleteCredentialInput) -> None:
+    @legacy_model_argument(DeleteCredentialInput)
+    def delete_credential(
+        self,
+        credential_id: str,
+        subject_id: str,
+    ) -> None:
         """Delete a credential.
 
         Args:
-            data_model: The input to delete the credential
+            credential_id: The credential_id to delete
+            subject_id: The subject from which the credential will be deleted
 
         """
+        data_model = DeleteCredentialInput(credential_id=credential_id, subject_id=subject_id)
         endpoint = VcspEndpoints.CREDENTIAL_ID.value.replace("<subject_id>", data_model.subject_id)
         endpoint = endpoint.replace("<credential_id>", data_model.credential_id)
         self._delete(endpoint=endpoint)
 
-    def create_tags(self, data_model: CreateTagsInput) -> CreateTagsOutput:
+    @legacy_model_argument(CreateTagsInput)
+    def create_tags(
+        self,
+        tags: list[str],
+    ) -> CreateTagsOutput:
         """Create tags.
 
         Args:
-            data_model: The input to create the tags
+            tags: The tags to create
 
         Returns:
             CreateTagsOutput: The output of the tags creation
@@ -714,6 +879,7 @@ class VcspClient(Client):
             TagListEmptyError: If the tag list is empty
 
         """
+        data_model = CreateTagsInput(tags=tags)
         endpoint = VcspEndpoints.TAGS.value
         response = self._post(endpoint=endpoint, json_=data_model.model_dump())
         return CreateTagsOutput(**response.json())
@@ -729,24 +895,41 @@ class VcspClient(Client):
         response = self._get(endpoint=endpoint)
         return GetTagsOutput(**response.json())
 
-    def delete_tag(self, data_model: DeleteTagInput) -> None:
+    @legacy_model_argument(DeleteTagInput)
+    def delete_tag(
+        self,
+        name: str,
+    ) -> None:
         """Delete a tag.
 
         Args:
-            data_model: The input to delete the tag
+            name: The name of the tag
 
         Raises:
             InvalidTagsError: If the tag is invalid
 
         """
+        data_model = DeleteTagInput(name=name)
         endpoint = VcspEndpoints.TAGS_NAME.value.replace("<tag_name>", data_model.name)
         self._delete(endpoint=endpoint)
 
-    def create_group(self, data_model: CreateGroupInput) -> CreateGroupOutput:
+    @legacy_model_argument(CreateGroupInput)
+    def create_group(
+        self,
+        name: str,
+        credential_configuration_urn: str,
+        description: str | None = None,
+        expired_at: str | None = None,
+    ) -> CreateGroupOutput:
         """Create a group.
 
         Args:
-            data_model: The input to create the group
+            name: The name of the group. Must match `^[a-zA-Z_][a-zA-Z0-9_]{2,63}$`, so letters, digits and underscores only,
+                starting with a letter or an underscore
+            credential_configuration_urn: The credential configuration the group holds
+            description: A free-text description. Defaults to empty on the service
+            expired_at: How long credentials are retained in the group, as an **ISO 8601 duration** such as `P1Y` or `P30D` — not
+                a date. The service answers with the resulting timestamp. Defaults to five years
 
         Returns:
             CreateGroupOutput: The output of the group creation
@@ -757,20 +940,30 @@ class VcspClient(Client):
             InvalidCredentialConfigurationUrnError: If the credential configuration urn is invalid
 
         """
+        data_model = CreateGroupInput(
+            name=name, credential_configuration_urn=credential_configuration_urn, description=description, expired_at=expired_at
+        )
         endpoint = VcspEndpoints.GROUPS.value
         response = self._post(endpoint=endpoint, json_=data_model.model_dump(exclude_none=True))
         return CreateGroupOutput(**response.json())
 
-    def get_groups(self, data_model: GetGroupsInput) -> GetGroupsOutput:
+    @legacy_model_argument(GetGroupsInput)
+    def get_groups(
+        self,
+        size: int | None = 100,
+        page: int | None = 1,
+    ) -> GetGroupsOutput:
         """Get all groups.
 
         Args:
-            data_model: The input to get the groups
+            size: The size of the groups (optional), default is 100
+            page: The page number (optional), default is 1
 
         Returns:
             GetGroupsOutput: The output of the groups
 
         """
+        data_model = GetGroupsInput(size=size, page=page)
         endpoint = VcspEndpoints.GROUPS.value
         endpoint = endpoint + f"?size={data_model.size}&page={data_model.page}"
         response = self._get(endpoint=endpoint)
@@ -787,11 +980,15 @@ class VcspClient(Client):
             pages=pages,
         )
 
-    def get_group(self, data_model: GetGroupInput) -> GetGroupOutput:
+    @legacy_model_argument(GetGroupInput)
+    def get_group(
+        self,
+        name: str,
+    ) -> GetGroupOutput:
         """Get a group.
 
         Args:
-            data_model: The input to get the group
+            name: The name of the group
 
         Returns:
             GetGroupOutput: The output of the group
@@ -800,28 +997,38 @@ class VcspClient(Client):
             GroupNotFoundError: If the group is not found
 
         """
+        data_model = GetGroupInput(name=name)
         endpoint = VcspEndpoints.GROUP_NAME.value.replace("<group_name>", data_model.name)
         response = self._get(endpoint=endpoint)
         return GetGroupOutput(**response.json())
 
-    def delete_group(self, data_model: DeleteGroupInput) -> None:
+    @legacy_model_argument(DeleteGroupInput)
+    def delete_group(
+        self,
+        name: str,
+    ) -> None:
         """Delete a group.
 
         Args:
-            data_model: The input to delete the group
+            name: The name of the group
 
         Raises:
             GroupNotFoundError: If the group is not found
 
         """
+        data_model = DeleteGroupInput(name=name)
         endpoint = VcspEndpoints.GROUP_NAME.value.replace("<group_name>", data_model.name)
         self._delete(endpoint=endpoint)
 
-    def get_group_members(self, data_model: GetGroupMembersInput) -> GetGroupMembersOutput:
+    @legacy_model_argument(GetGroupMembersInput)
+    def get_group_members(
+        self,
+        name: str,
+    ) -> GetGroupMembersOutput:
         """Get the members of a group.
 
         Args:
-            data_model: The input to get the members of the group
+            name: The name of the group
 
         Returns:
             GetGroupMembersOutput: The output of the group members
@@ -830,6 +1037,7 @@ class VcspClient(Client):
             GroupNotFoundError: If the group is not found
 
         """
+        data_model = GetGroupMembersInput(name=name)
         endpoint = VcspEndpoints.GROUP_MEMBERS.value.replace("<group_name>", data_model.name)
         response = self._get(endpoint=endpoint)
         return GetGroupMembersOutput(**response.json())

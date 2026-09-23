@@ -5,6 +5,8 @@ from enum import StrEnum
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
+from vericlient.types import Media
+
 
 class VcspResponse(BaseModel):
     """Base class for the VCSP API responses.
@@ -66,6 +68,8 @@ class AssuranceMethodInput(BaseModel):
         urn: The urn of the assurance method
 
     """
+
+    model_config = ConfigDict(title="get_assurance_method_info()")
 
     urn: str
 
@@ -141,7 +145,7 @@ class EnrollmentInput(BaseModel):
 
     """
 
-    sample: str | bytes
+    sample: Media
     applicant: Applicant
     content_type: str | None = None
 
@@ -152,7 +156,7 @@ class EnrollmentInput(BaseModel):
             raise TypeError(error)
         return value
 
-    model_config = ConfigDict(arbitrary_types_allowed=True)
+    model_config = ConfigDict(arbitrary_types_allowed=True, title="enroll_subject()")
 
 
 class EnrollmentOutput(BaseModel):
@@ -198,6 +202,8 @@ class DeleteSubjectInput(SubjectInput):
 
     """
 
+    model_config = ConfigDict(title="delete_account()")
+
 
 class DeleteCredentialInput(SubjectInput, CredentialInput):
     """Input class for the delete credential endpoint.
@@ -208,6 +214,8 @@ class DeleteCredentialInput(SubjectInput, CredentialInput):
 
     """
 
+    model_config = ConfigDict(title="delete_credential()")
+
 
 class GetAccountInput(SubjectInput):
     """Input class for the get account endpoint.
@@ -216,6 +224,8 @@ class GetAccountInput(SubjectInput):
         subject_id: The account_id to get
 
     """
+
+    model_config = ConfigDict(title="get_account()")
 
 
 class GetCredentialInput(SubjectInput, CredentialInput):
@@ -226,6 +236,8 @@ class GetCredentialInput(SubjectInput, CredentialInput):
         credential_id: The credential_id to get
 
     """
+
+    model_config = ConfigDict(title="get_credential()")
 
 
 class GetCredentialOutput(BaseModel):
@@ -293,6 +305,8 @@ class GetCredentialsInput(SubjectInput):
 
     """
 
+    model_config = ConfigDict(title="get_all_subject_credentials()")
+
 
 class GetCredentialsOutput(VcspResponse):
     """Output class for the get all credentials from a subject endpoint.
@@ -335,6 +349,8 @@ class CreateTagsInput(BaseModel):
         tags: The tags to create
 
     """
+
+    model_config = ConfigDict(title="create_tags()")
 
     tags: list[str]
 
@@ -379,6 +395,8 @@ class DeleteTagInput(TagInput):
 
     """
 
+    model_config = ConfigDict(title="delete_tag()")
+
 
 class GroupInput(BaseModel):
     """Input class for the group endpoint.
@@ -404,6 +422,8 @@ class CreateGroupInput(GroupInput):
             resulting timestamp. Defaults to five years
 
     """
+
+    model_config = ConfigDict(title="create_group()")
 
     credential_configuration_urn: str
     description: str | None = None
@@ -443,6 +463,8 @@ class GetGroupsInput(BaseModel):
 
     """
 
+    model_config = ConfigDict(title="get_groups()")
+
     size: int | None = 100
     page: int | None = 1
 
@@ -469,6 +491,8 @@ class GetGroupsOutput(VcspResponse):
 class GetGroupInput(GroupInput):
     """Input class for the get a specific group endpoint."""
 
+    model_config = ConfigDict(title="get_group()")
+
 
 class GetGroupOutput(CreateGroupOutput):
     """Output class for the get a specific group endpoint.
@@ -493,11 +517,15 @@ class DeleteGroupInput(GroupInput):
 
     """
 
+    model_config = ConfigDict(title="delete_group()")
+
     name: str
 
 
 class GetGroupMembersInput(GroupInput):
     """Input class for the get group members endpoint."""
+
+    model_config = ConfigDict(title="get_group_members()")
 
 
 class GroupMember(BaseModel):
@@ -563,6 +591,8 @@ class ListCredentialsInput(BaseModel):
 
     """
 
+    model_config = ConfigDict(title="list_credentials()")
+
     credential_configuration_urn: str | None = None
     tags: list[str] | None = None
     page: int | None = None
@@ -600,6 +630,8 @@ class DeleteCredentialsInput(BaseModel):
 
     """
 
+    model_config = ConfigDict(title="delete_credentials()")
+
     group_name: str
     delete_empty_accounts: bool = False
 
@@ -612,6 +644,8 @@ class GetCredentialSampleInput(SubjectInput, CredentialInput):
         credential_id: The credential whose sample to retrieve
 
     """
+
+    model_config = ConfigDict(title="get_credential_sample()")
 
 
 class GetCredentialSampleOutput(VcspResponse):
@@ -636,6 +670,8 @@ class CredentialConfigurationInput(BaseModel):
         urn: The urn of the credential configuration
 
     """
+
+    model_config = ConfigDict(title="get_credential_configuration()")
 
     urn: str
 
@@ -673,6 +709,8 @@ class TaskInput(BaseModel):
         task_id: The identifier the service returned when the task was created
 
     """
+
+    model_config = ConfigDict(title="get_task_result()")
 
     task_id: str
 
@@ -755,7 +793,7 @@ class BatchApplicant(BaseModel):
 
     """
 
-    sample: str | bytes
+    sample: Media
     applicant: Applicant
     filename: str | None = None
 
@@ -778,7 +816,7 @@ class BatchEnrollmentInput(BaseModel):
     applicants: list[BatchApplicant] | None = None
     batch_file: str | bytes | None = None
 
-    model_config = ConfigDict(arbitrary_types_allowed=True)
+    model_config = ConfigDict(arbitrary_types_allowed=True, title="enroll_batch()")
 
     @field_validator("batch_file")
     def exactly_one_source(cls, value: object, info: object):
@@ -860,12 +898,12 @@ class MatchingInput(BaseModel):
 
     """
 
-    sample: str | bytes
+    sample: Media
     claimant: SubjectClaimant | GroupClaimant
     sample_processing: dict | None = None
     content_type: str | None = None
 
-    model_config = ConfigDict(arbitrary_types_allowed=True)
+    model_config = ConfigDict(arbitrary_types_allowed=True, title="match()")
 
 
 class MatchingResult(BaseModel):
@@ -959,7 +997,7 @@ class ModifyGroupInput(GroupInput):
     description: str | None = None
     expired_at: str | None = None
 
-    model_config = ConfigDict(populate_by_name=True)
+    model_config = ConfigDict(populate_by_name=True, title="modify_group()")
 
 
 class CredentialTagAction(StrEnum):
@@ -980,6 +1018,8 @@ class ModifyCredentialTagsInput(SubjectInput, CredentialInput):
 
     """
 
+    model_config = ConfigDict(title="modify_credential_tags()")
+
     action: str
     tags: list[str]
 
@@ -998,6 +1038,8 @@ class ClusteringInput(GroupInput):
             calls this `properties`, not `assurance` as everywhere else
 
     """
+
+    model_config = ConfigDict(title="start_clustering()")
 
     assurance_method_urn: str
     properties: dict

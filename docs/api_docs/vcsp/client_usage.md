@@ -25,7 +25,6 @@ hardcoding them.
 
 ```python
 from vericlient import VcspClient
-from vericlient.vcsp.models import AssuranceMethodInput
 
 client = VcspClient(apikey="your_api_key")
 
@@ -40,7 +39,7 @@ Each assurance method carries a JSON schema describing the values it expects, wh
 goes into the `assurance` field when enrolling:
 
 ```python
-method = client.get_assurance_method_info(AssuranceMethodInput(urn=methods[0]))
+method = client.get_assurance_method_info(urn=methods[0])
 print(method.json_schema.title)
 print(method.json_schema.properties)
 ```
@@ -49,7 +48,7 @@ print(method.json_schema.properties)
 
 ```python
 from vericlient import VcspClient
-from vericlient.vcsp.models import Applicant, EnrollmentInput
+from vericlient.vcsp.models import Applicant
 
 client = VcspClient(apikey="your_api_key")
 
@@ -57,14 +56,12 @@ configuration = next(c for c in client.get_credential_configurations().credentia
 method = next(m for m in client.get_assurance_methods().assurance_methods if "enrollment:thresholds" in m)
 
 enrollment = client.enroll_subject(
-    EnrollmentInput(
-        sample="/path/to/audio.wav",
-        applicant=Applicant(
-            subject_id="user-1",
-            credential_configuration_urn=configuration,
-            assurance_method_urn=method,
-            assurance={"authenticity_threshold": 0.5},
-        ),
+    sample="/path/to/audio.wav",
+    applicant=Applicant(
+        subject_id="user-1",
+        credential_configuration_urn=configuration,
+        assurance_method_urn=method,
+        assurance={"authenticity_threshold": 0.5},
     ),
 )
 print(f"Subject {enrollment.subject_id} now holds credential {enrollment.credential_id}")
@@ -81,7 +78,9 @@ answers 500 rather than a 4xx when the declared type does not match what it rece
 ```python
 with open("/path/to/audio.wav", "rb") as f:
     enrollment = client.enroll_subject(
-        EnrollmentInput(sample=f.read(), applicant=applicant, content_type="audio/wav"),
+        sample=f.read(),
+        applicant=applicant,
+        content_type="audio/wav",
     )
 ```
 
@@ -89,19 +88,19 @@ with open("/path/to/audio.wav", "rb") as f:
 
 ```python
 from vericlient import VcspClient
-from vericlient.vcsp.models import GetAccountInput, GetCredentialInput, GetCredentialsInput
 
 client = VcspClient(apikey="your_api_key")
 
-account = client.get_account(GetAccountInput(subject_id="user-1"))
+account = client.get_account(subject_id="user-1")
 print(f"Created at {account.created_at}, {len(account.credentials)} credential(s)")
 
-credentials = client.get_all_subject_credentials(GetCredentialsInput(subject_id="user-1")).credentials
+credentials = client.get_all_subject_credentials(subject_id="user-1").credentials
 for credential in credentials:
     print(f"{credential.id}: {credential.sample.type}, valid until {credential.valid_until}")
 
 one = client.get_credential(
-    GetCredentialInput(subject_id="user-1", credential_id=credentials[0].id),
+    subject_id="user-1",
+    credential_id=credentials[0].id,
 )
 print(one.claims, one.tags)
 ```
@@ -112,14 +111,14 @@ Deleting an account removes every credential it holds. Both are permanent.
 
 ```python
 from vericlient import VcspClient
-from vericlient.vcsp.models import DeleteAccountInput, DeleteCredentialInput
 
 client = VcspClient(apikey="your_api_key")
 
 client.delete_credential(
-    DeleteCredentialInput(subject_id="user-1", credential_id="the-credential-id"),
+    subject_id="user-1",
+    credential_id="the-credential-id",
 )
-client.delete_account(DeleteAccountInput(subject_id="user-1"))
+client.delete_account(subject_id="user-1")
 ```
 
 ## Handling failures
@@ -133,7 +132,7 @@ except AssuranceValidationError:
     print("The sample did not meet the assurance thresholds")
 
 try:
-    client.get_account(GetAccountInput(subject_id="does-not-exist"))
+    client.get_account(subject_id="does-not-exist")
 except AccountNotFoundError:
     print("No such subject")
 ```
@@ -148,21 +147,22 @@ can carry it, and its name must be `key:value` with alphanumerics only —
 
 ```python
 from vericlient import VcspClient
-from vericlient.vcsp.models import CreateTagsInput, DeleteTagInput
 
 client = VcspClient(apikey="your_api_key")
 
-client.create_tags(CreateTagsInput(tags=["role:employee", "region:eu"]))
+client.create_tags(tags=["role:employee", "region:eu"])
 
 for tag in client.get_tags().items:
     print(f"{tag.name} (created {tag.created_at})")
 
-client.delete_tag(DeleteTagInput(name="region:eu"))
+client.delete_tag(name="region:eu")
 ```
 
 Once a tag exists, pass it when enrolling:
 
 ```python
+from vericlient.vcsp.models import Applicant
+
 Applicant(
     subject_id="user-1",
     credential_configuration_urn=configuration,
@@ -180,34 +180,28 @@ an underscore. Hyphens are rejected.
 
 ```python
 from vericlient import VcspClient
-from vericlient.vcsp.models import (
-    CreateGroupInput,
-    DeleteGroupInput,
-    GetGroupInput,
-    GetGroupMembersInput,
-    GetGroupsInput,
-)
 
 client = VcspClient(apikey="your_api_key")
 configuration = next(c for c in client.get_credential_configurations().credential_configurations if "voice" in c)
 
 group = client.create_group(
-    CreateGroupInput(name="support_agents", credential_configuration_urn=configuration),
+    name="support_agents",
+    credential_configuration_urn=configuration,
 )
 print(f"{group.name} holds {group.size} credentials, expiring {group.expired_at}")
 
-for g in client.get_groups(GetGroupsInput()).items:
+for g in client.get_groups().items:
     print(g.name)
 
-members = client.get_group_members(GetGroupMembersInput(name="support_agents"))
+members = client.get_group_members(name="support_agents")
 print(f"{members.total} members")
 
-client.delete_group(DeleteGroupInput(name="support_agents"))
+client.delete_group(name="support_agents")
 ```
 
 !!! warning "`expired_at` is a duration going in and a date coming out"
 
-    `CreateGroupInput.expired_at` takes an **ISO 8601 duration** — a retention period such as
+    `create_group`'s `expired_at` takes an **ISO 8601 duration** — a retention period such as
     `P1Y` or `P30D`, not a date. The service applies it and answers with the resulting
     timestamp in `CreateGroupOutput.expired_at`. Leave it out and credentials are retained
     for five years.
@@ -224,11 +218,10 @@ everything, so filter and page rather than asking for the lot.
 
 ```python
 from vericlient import VcspClient
-from vericlient.vcsp.models import ListCredentialsInput
 
 client = VcspClient(apikey="your_api_key")
 
-page = client.list_credentials(ListCredentialsInput(tags=["role:employee"], size=50))
+page = client.list_credentials(tags=["role:employee"], size=50)
 print(f"{page.total} credentials over {page.pages} pages")
 for credential in page.items:
     print(f"{credential.id} belongs to {credential.subject_id}")
@@ -242,10 +235,9 @@ makes the listing useful for finding an account you only know a tag for.
 The service answers with the raw bytes it was enrolled with, not with JSON.
 
 ```python
-from vericlient.vcsp.models import GetCredentialSampleInput
-
 sample = client.get_credential_sample(
-    GetCredentialSampleInput(subject_id="user-1", credential_id=credential_id),
+    subject_id="user-1",
+    credential_id=credential_id,
 )
 with open("recovered.wav", "wb") as f:
     f.write(sample.content)
@@ -255,10 +247,9 @@ print(sample.content_type)  # audio/wav
 ## Deleting credentials in bulk
 
 ```python
-from vericlient.vcsp.models import DeleteCredentialsInput
-
 client.delete_credentials(
-    DeleteCredentialsInput(group_name="support_agents", delete_empty_accounts=True),
+    group_name="support_agents",
+    delete_empty_accounts=True,
 )
 ```
 
@@ -274,10 +265,8 @@ client.delete_credentials(
 `claims` must satisfy for a given one.
 
 ```python
-from vericlient.vcsp.models import CredentialConfigurationInput
-
 configuration = client.get_credential_configuration(
-    CredentialConfigurationInput(urn="urn:vcsp:credential_configurations:voice_telephone:v1"),
+    urn="urn:vcsp:credential_configurations:voice_telephone:v1",
 )
 print(configuration.claims_schema)
 ```
@@ -290,37 +279,30 @@ assembling a TAR yourself.
 
 ```python
 from vericlient import VcspClient
-from vericlient.vcsp.models import (
-    Applicant,
-    BatchApplicant,
-    BatchEnrollmentInput,
-    TaskInput,
-)
+from vericlient.vcsp.models import Applicant, BatchApplicant
 
 client = VcspClient(apikey="your_api_key")
 
 batch = client.enroll_batch(
-    BatchEnrollmentInput(
-        applicants=[
-            BatchApplicant(
-                sample="/path/to/alice.wav",
-                applicant=Applicant(
-                    subject_id="alice",
-                    credential_configuration_urn=configuration,
-                    assurance_method_urn=method,
-                    assurance={"authenticity_threshold": 0.5},
-                ),
+    applicants=[
+        BatchApplicant(
+            sample="/path/to/alice.wav",
+            applicant=Applicant(
+                subject_id="alice",
+                credential_configuration_urn=configuration,
+                assurance_method_urn=method,
+                assurance={"authenticity_threshold": 0.5},
             ),
-            BatchApplicant(sample="/path/to/bob.wav", applicant=bob),
-        ],
-    ),
+        ),
+        BatchApplicant(sample="/path/to/bob.wav", applicant=bob),
+    ],
 )
 
-task = client.wait_for_task(TaskInput(task_id=batch.task_id), timeout=300)
+task = client.wait_for_task(task_id=batch.task_id, timeout=300)
 if not task.succeeded:
     raise RuntimeError(f"batch finished as {task.status}")
 
-result = client.get_task_result(TaskInput(task_id=batch.task_id)).result
+result = client.get_task_result(task_id=batch.task_id).result
 print(result["summary"])  # {'total': 2, 'success': 2, 'error': 0}
 for item in result["report"]:
     print(item["subject_id"], item["status"])
@@ -337,22 +319,20 @@ archive if you need it to be something particular; otherwise it is derived.
 Anything that answers `202` runs as a task.
 
 ```python
-from vericlient.vcsp.models import TaskInput, TaskStatus
-
 # Everything still running or recently finished
 for task in client.get_tasks().items:
     print(f"{task.task_id}: {task.status} at {task.progress}%")
 
 # One task, checked once
-task = client.get_task(TaskInput(task_id=task_id))
+task = client.get_task(task_id=task_id)
 if task.status == TaskStatus.FAILED:
     ...
 
 # Or block until it finishes
-task = client.wait_for_task(TaskInput(task_id=task_id), timeout=300, poll_interval=2)
+task = client.wait_for_task(task_id=task_id, timeout=300, poll_interval=2)
 print(task.is_finished, task.succeeded)
 
-client.delete_task(TaskInput(task_id=task_id))
+client.delete_task(task_id=task_id)
 ```
 
 `wait_for_task` returns on failure as well as on success — check `succeeded` rather than
@@ -375,21 +355,19 @@ against one subject, or a `GroupClaimant` to search a whole group.
 
 ```python
 from vericlient import VcspClient
-from vericlient.vcsp.models import GroupClaimant, MatchingInput, SubjectClaimant
+from vericlient.vcsp.models import GroupClaimant, SubjectClaimant
 
 client = VcspClient(apikey="your_api_key")
 method = "urn:vcsp:assurance_methods:matching:biometric_threshold:v1"
 
 # 1:1 — is this the person they claim to be?
 result = client.match(
-    MatchingInput(
-        sample="/path/to/caller.wav",
-        claimant=SubjectClaimant(
-            subject_id="alice",
-            credential_configuration_urn=configuration,
-            assurance_method_urn=method,
-            assurance={"biometric_threshold": 0.5},
-        ),
+    sample="/path/to/caller.wav",
+    claimant=SubjectClaimant(
+        subject_id="alice",
+        credential_configuration_urn=configuration,
+        assurance_method_urn=method,
+        assurance={"biometric_threshold": 0.5},
     ),
 )
 print(result.results[0].match_status)  # HIT or MISS
@@ -397,15 +375,13 @@ print(result.results[0].biometrics_score)  # 0.0 to 1.0
 
 # 1:N — who in this group is it?
 result = client.match(
-    MatchingInput(
-        sample="/path/to/caller.wav",
-        claimant=GroupClaimant(
-            group_name="support_agents",
-            assurance_method_urn=method,
-            assurance={"biometric_threshold": 0.5},
-            limit=5,
-            filter={"AND": [{"tag": "role:employee"}]},
-        ),
+    sample="/path/to/caller.wav",
+    claimant=GroupClaimant(
+        group_name="support_agents",
+        assurance_method_urn=method,
+        assurance={"biometric_threshold": 0.5},
+        limit=5,
+        filter={"AND": [{"tag": "role:employee"}]},
     ),
 )
 print(f"{result.nhits} hits out of {len(result.results)} candidates")
@@ -425,34 +401,28 @@ A credential does not join a group at enrolment: it is added afterwards, by subj
 tag.
 
 ```python
-from vericlient.vcsp.models import GroupAction, GroupMembershipSource, ModifyGroupInput
+from vericlient.vcsp.models import GroupAction, GroupMembershipSource
 
 # By subject
 client.modify_group(
-    ModifyGroupInput(
-        name="support_agents",
-        action=GroupAction.POPULATE,
-        from_=GroupMembershipSource(subjects=["alice", "bob"]),
-    ),
+    name="support_agents",
+    action=GroupAction.POPULATE,
+    from_=GroupMembershipSource(subjects=["alice", "bob"]),
 )
 
 # Or by tag, which scales better
 client.modify_group(
-    ModifyGroupInput(
-        name="support_agents",
-        action=GroupAction.POPULATE,
-        from_=GroupMembershipSource(tags=["role:employee"]),
-        credential_ttl="P30D",
-    ),
+    name="support_agents",
+    action=GroupAction.POPULATE,
+    from_=GroupMembershipSource(tags=["role:employee"]),
+    credential_ttl="P30D",
 )
 
 # Taking them out again
 client.modify_group(
-    ModifyGroupInput(
-        name="support_agents",
-        action=GroupAction.REMOVE,
-        from_=GroupMembershipSource(subjects=["bob"]),
-    ),
+    name="support_agents",
+    action=GroupAction.REMOVE,
+    from_=GroupMembershipSource(subjects=["bob"]),
 )
 ```
 
@@ -464,15 +434,13 @@ A small change answers with the group, a large population is accepted as a task.
 The tags must already exist — create them with `create_tags` first.
 
 ```python
-from vericlient.vcsp.models import CredentialTagAction, ModifyCredentialTagsInput
+from vericlient.vcsp.models import CredentialTagAction
 
 credential = client.modify_credential_tags(
-    ModifyCredentialTagsInput(
-        subject_id="alice",
-        credential_id=credential_id,
-        action=CredentialTagAction.ADD,
-        tags=["region:eu"],
-    ),
+    subject_id="alice",
+    credential_id=credential_id,
+    action=CredentialTagAction.ADD,
+    tags=["region:eu"],
 )
 print(credential.tags)
 ```
@@ -483,16 +451,12 @@ Clustering groups similar credentials together, to find duplicates or related en
 runs as a task.
 
 ```python
-from vericlient.vcsp.models import ClusteringInput, TaskInput
-
 task = client.start_clustering(
-    ClusteringInput(
-        name="onboarding_faces",
-        assurance_method_urn="urn:vcsp:assurance_methods:clustering:thresholds:v1",
-        properties={"similarity_threshold": 0.5, "mode": "similarity_based"},
-    ),
+    name="onboarding_faces",
+    assurance_method_urn="urn:vcsp:assurance_methods:clustering:thresholds:v1",
+    properties={"similarity_threshold": 0.5, "mode": "similarity_based"},
 )
-client.wait_for_task(TaskInput(task_id=task.task_id))
+client.wait_for_task(task_id=task.task_id)
 ```
 
 !!! warning "Face credentials only"
