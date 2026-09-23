@@ -46,7 +46,6 @@ The model is part of the credential, so you have to say which one to use. Take i
 
 ```python
 from vericlient import DasfaceClient
-from vericlient.dasface.models import GenerateCredentialInput
 
 client = DasfaceClient(apikey="your_api_key")
 
@@ -56,7 +55,9 @@ model = max(
 )
 
 credential = client.generate_credential(
-    GenerateCredentialInput(image="/path/to/face.jpg", hash=model.hash, mode=model.mode),
+    image="/path/to/face.jpg",
+    hash=model.hash,
+    mode=model.mode,
 )
 print(credential.credential)
 print(f"generated with {credential.model.hash} in {credential.model.mode}")
@@ -78,7 +79,9 @@ The photo can be a path or a `bytes` object:
 ```python
 with open("/path/to/face.jpg", "rb") as f:
     credential = client.generate_credential(
-        GenerateCredentialInput(image=f.read(), hash=model.hash, mode=model.mode),
+        image=f.read(),
+        hash=model.hash,
+        mode=model.mode,
     )
 ```
 
@@ -88,10 +91,8 @@ Useful to check whether a credential you stored some time ago still matches a mo
 service offers today.
 
 ```python
-from vericlient.dasface.models import GetModelMetadataFromCredentialInput
-
 metadata = client.get_model_metadata_from_credential(
-    GetModelMetadataFromCredentialInput(credential=stored_credential),
+    credential=stored_credential,
 ).metadata
 print(f"{metadata.hash} · {metadata.mode} · tag {metadata.tag}")
 ```
@@ -112,7 +113,9 @@ from vericlient.exceptions import InvalidCredentialError
 
 try:
     client.generate_credential(
-        GenerateCredentialInput(image=photo, hash=model.hash, mode=model.mode),
+        image=photo,
+        hash=model.hash,
+        mode=model.mode,
     )
 except FaceNotFoundError:
     print("no face in that photo")
@@ -139,27 +142,25 @@ Three ways to ask the same question — is this the same person?
 
 ```python
 from vericlient import DasfaceClient
-from vericlient.dasface.models import (
-    VerifyCredentialInput,
-    VerifyPhotoInput,
-    VerifyVideoInput,
-)
 
 client = DasfaceClient(apikey="your_api_key")
 
 # against another photo
 result = client.verify_photo(
-    VerifyPhotoInput(anchor_image="/path/to/enrolled.jpg", target_image="/path/to/live.jpg"),
+    anchor_image="/path/to/enrolled.jpg",
+    target_image="/path/to/live.jpg",
 )
 
 # against a video, which is what a liveness capture gives you
 result = client.verify_video(
-    VerifyVideoInput(anchor_image="/path/to/enrolled.jpg", target_video="/path/to/capture.mp4"),
+    anchor_image="/path/to/enrolled.jpg",
+    target_video="/path/to/capture.mp4",
 )
 
 # against a stored credential, which is the everyday case
 result = client.verify_credential(
-    VerifyCredentialInput(anchor_image="/path/to/live.jpg", target_credential=stored_credential),
+    anchor_image="/path/to/live.jpg",
+    target_credential=stored_credential,
 )
 
 print(result.confidence)
@@ -175,7 +176,7 @@ Against a real service, the same face scores about **0.99995** and two different
 `verify_photo` also takes a `mode`, to pin the model mode rather than let the service choose:
 
 ```python
-VerifyPhotoInput(anchor_image=enrolled, target_image=live, mode="document-mode")
+client.verify_photo(anchor_image=enrolled, target_image=live, mode="document-mode")
 ```
 
 !!! warning "`rotatePhotos` does not exist"
@@ -191,15 +192,14 @@ Verification answers "is this the same person?". Authenticity answers a differen
 perfectly — it is the same face, after all — so the two checks go together.
 
 ```python
-from vericlient.dasface.models import PhotoAuthenticityInput, VideoAuthenticityInput
-
 # A selfie
-result = client.check_photo_authenticity(PhotoAuthenticityInput(image="/path/to/selfie.jpg"))
+result = client.check_photo_authenticity(image="/path/to/selfie.jpg")
 print(result.confidence)
 
 # A video, which answers both questions at once
 result = client.check_video_authenticity(
-    VideoAuthenticityInput(anchor_image="/path/to/enrolled.jpg", target_video="/path/to/capture.mp4"),
+    anchor_image="/path/to/enrolled.jpg",
+    target_video="/path/to/capture.mp4",
 )
 print(result.authenticity)  # is the recording genuine
 print(result.similarity)  # is it the right person
@@ -226,11 +226,10 @@ send the recording back with the same token.
 
 ```python
 from vericlient import DasfaceClient
-from vericlient.dasface.models import ChallengeAnalysisInput, SequentialChallengeInput
 
 client = DasfaceClient(apikey="your_api_key")
 
-challenge = client.generate_sequential_challenge(SequentialChallengeInput(length=3))
+challenge = client.generate_sequential_challenge(length=3)
 
 for action in challenge.actions:
     print(f"{action.name}: {action.action_class} {action.parameters}")
@@ -251,12 +250,10 @@ Once the recording is in, along with the SDK's WebVTT annotations of it:
 
 ```python
 result = client.analyse_challenge_response(
-    ChallengeAnalysisInput(
-        token=challenge.token,
-        annotations="/path/to/annotations.vtt",
-        anchor_image="/path/to/face.jpg",
-        target_video="/path/to/recording.mp4",
-    ),
+    token=challenge.token,
+    annotations="/path/to/annotations.vtt",
+    anchor_image="/path/to/face.jpg",
+    target_video="/path/to/recording.mp4",
 )
 
 if result.confidence is None:
@@ -294,7 +291,10 @@ Veridas, so it is not enabled on every subscription.
 
 ```python
 credential = client.generate_credential(
-    GenerateCredentialInput(image="/path/to/face.jpg", hash=model.hash, mode=model.mode, inemex=True),
+    image="/path/to/face.jpg",
+    hash=model.hash,
+    mode=model.mode,
+    inemex=True,
 )
 ```
 
@@ -303,7 +303,8 @@ left out:
 
 ```python
 credential = client.generate_credential(
-    GenerateCredentialInput(image="/path/to/face.jpg", inemex=True),
+    image="/path/to/face.jpg",
+    inemex=True,
 )
 ```
 

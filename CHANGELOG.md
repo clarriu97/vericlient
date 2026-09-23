@@ -5,6 +5,19 @@ The project follows [semantic versioning](https://semver.org/).
 
 ## Unreleased
 
+### Changed
+
+- **das-Face methods take their arguments directly.** `client.verify_photo(anchor_image=a,
+  target_image=b)` rather than `client.verify_photo(VerifyPhotoInput(anchor_image=a,
+  target_image=b))`. The models are unchanged and still public — the methods build them, so
+  validation and every error message are exactly as before — but calling no longer needs an
+  import, and an editor can offer the parameters.
+
+### Deprecated
+
+- **Passing an input model to a das-Face method.** It still works and now raises
+  `DeprecationWarning`; it is removed in 1.0.0.
+
 ### Documentation
 
 - **Self-hosted deployments have a page section of their own.** `headers` was always

@@ -1,4 +1,6 @@
 import base64
+import inspect
+import warnings
 from datetime import UTC, datetime
 
 import pytest
@@ -17,17 +19,10 @@ from vericlient.dasface.exceptions import (
     VideoExtractionError,
 )
 from vericlient.dasface.models import (
-    ChallengeAnalysisInput,
     GenerateCredentialInput,
     GenerateCredentialOutput,
-    GetModelMetadataFromCredentialInput,
     ModelsOutput,
-    PhotoAuthenticityInput,
-    SequentialChallengeInput,
-    VerifyCredentialInput,
     VerifyPhotoInput,
-    VerifyVideoInput,
-    VideoAuthenticityInput,
 )
 from vericlient.exceptions import InvalidCredentialError, ServerError
 
@@ -80,7 +75,9 @@ def test_generate_credential_sends_a_base64_json_body(
     )
 
     response = dasface_client.generate_credential(
-        GenerateCredentialInput(image=face_image, hash="a-hash", mode="default-mode"),
+        image=face_image,
+        hash="a-hash",
+        mode="default-mode",
     )
 
     assert isinstance(response, GenerateCredentialOutput)
@@ -104,7 +101,9 @@ def test_generate_credential_with_a_pinned_model(
     mock_server.post(f"{SANDBOX_EU}/models/a-hash/document-mode/credential/photo", json=dasface_credential_response)
 
     dasface_client.generate_credential(
-        GenerateCredentialInput(image=face_image, hash="a-hash", mode="document-mode"),
+        image=face_image,
+        hash="a-hash",
+        mode="document-mode",
     )
 
     assert mock_server.last_request.path.endswith("/models/a-hash/document-mode/credential/photo")
@@ -161,7 +160,9 @@ def test_error_codes_become_exceptions(dasface_client, mock_server, request, res
 
     with pytest.raises(expected):
         dasface_client.generate_credential(
-            GenerateCredentialInput(image=face_image, hash="a-hash", mode="default-mode"),
+            image=face_image,
+            hash="a-hash",
+            mode="default-mode",
         )
 
 
@@ -178,7 +179,9 @@ def test_an_unknown_code_carries_it_through(dasface_client, mock_server, dasface
 
     with pytest.raises(DasfaceApiError) as raised:
         dasface_client.generate_credential(
-            GenerateCredentialInput(image=face_image, hash="a-hash", mode="default-mode"),
+            image=face_image,
+            hash="a-hash",
+            mode="default-mode",
         )
 
     assert raised.value.code == "SomethingNobodyHasSeenYet"
@@ -200,7 +203,7 @@ def test_a_credential_the_service_cannot_read_is_reported_as_invalid(dasface_cli
             )
             with pytest.raises(InvalidCredentialError):
                 dasface_client.get_model_metadata_from_credential(
-                    GetModelMetadataFromCredentialInput(credential="nope"),
+                    credential="nope",
                 )
 
 
@@ -228,14 +231,18 @@ def test_real_get_models(real_dasface):
 def test_real_generate_credential(real_dasface, real_model, face_image_path, face_image):
     """A credential comes back from a path and from bytes alike, for the model asked for."""
     from_path = real_dasface.generate_credential(
-        GenerateCredentialInput(image=face_image_path, hash=real_model.hash, mode=real_model.mode),
+        image=face_image_path,
+        hash=real_model.hash,
+        mode=real_model.mode,
     )
     assert from_path.credential
     assert from_path.model.hash == real_model.hash
     assert from_path.model.mode == real_model.mode
 
     from_bytes = real_dasface.generate_credential(
-        GenerateCredentialInput(image=face_image, hash=real_model.hash, mode=real_model.mode),
+        image=face_image,
+        hash=real_model.hash,
+        mode=real_model.mode,
     )
     assert from_bytes.model.hash == from_path.model.hash
 
@@ -243,11 +250,13 @@ def test_real_generate_credential(real_dasface, real_model, face_image_path, fac
 @pytest.mark.dasface
 def test_real_model_metadata_points_back_at_the_generating_model(real_dasface, real_model, face_image_path):
     credential = real_dasface.generate_credential(
-        GenerateCredentialInput(image=face_image_path, hash=real_model.hash, mode=real_model.mode),
+        image=face_image_path,
+        hash=real_model.hash,
+        mode=real_model.mode,
     )
 
     metadata = real_dasface.get_model_metadata_from_credential(
-        GetModelMetadataFromCredentialInput(credential=credential.credential),
+        credential=credential.credential,
     ).metadata
 
     assert metadata.hash == credential.model.hash
@@ -265,7 +274,7 @@ def test_real_an_unreadable_credential_is_rejected(real_dasface):
     """
     with pytest.raises(InvalidCredentialError):
         real_dasface.get_model_metadata_from_credential(
-            GetModelMetadataFromCredentialInput(credential="AAAA"),
+            credential="AAAA",
         )
 
 
@@ -274,7 +283,7 @@ def test_real_a_credential_that_is_not_base64_is_reported_differently(real_dasfa
     """Padding is checked before decryption, and says so."""
     with pytest.raises(FormValidationError, match="padding"):
         real_dasface.get_model_metadata_from_credential(
-            GetModelMetadataFromCredentialInput(credential="not-a-credential"),
+            credential="not-a-credential",
         )
 
 
@@ -297,7 +306,8 @@ def test_verify_photo_sends_both_images_base64(
     mock_server.post(f"{SANDBOX_EU}/verification/photo", json=dasface_verification_response)
 
     response = dasface_client.verify_photo(
-        VerifyPhotoInput(anchor_image=face_image, target_image=other_face_image),
+        anchor_image=face_image,
+        target_image=other_face_image,
     )
 
     assert response.confidence == 0.9876
@@ -325,11 +335,13 @@ def test_verify_photo_omits_the_mode_unless_given(
 
     mock_server.post(f"{SANDBOX_EU}/verification/photo", json=dasface_verification_response)
 
-    dasface_client.verify_photo(VerifyPhotoInput(anchor_image=face_image, target_image=face_image))
+    dasface_client.verify_photo(anchor_image=face_image, target_image=face_image)
     assert "mode" not in mock_server.last_request.json()
 
     dasface_client.verify_photo(
-        VerifyPhotoInput(anchor_image=face_image, target_image=face_image, mode="document-mode"),
+        anchor_image=face_image,
+        target_image=face_image,
+        mode="document-mode",
     )
     assert mock_server.last_request.json()["mode"] == "document-mode"
 
@@ -348,7 +360,8 @@ def test_verify_credential_sends_the_credential_verbatim(
     mock_server.post(f"{SANDBOX_EU}/verification/credential", json=dasface_verification_response)
 
     dasface_client.verify_credential(
-        VerifyCredentialInput(anchor_image=face_image, target_credential="a-credential"),
+        anchor_image=face_image,
+        target_credential="a-credential",
     )
 
     sent = mock_server.last_request.json()
@@ -369,7 +382,7 @@ def test_verify_video_sends_the_video_base64(
 
     mock_server.post(f"{SANDBOX_EU}/verification/video", json=dasface_verification_response)
 
-    dasface_client.verify_video(VerifyVideoInput(anchor_image=face_image, target_video=face_video))
+    dasface_client.verify_video(anchor_image=face_image, target_video=face_video)
 
     sent = mock_server.last_request.json()
     assert sorted(sent) == ["anchorImage", "targetVideo"]
@@ -380,10 +393,12 @@ def test_verify_video_sends_the_video_base64(
 def test_real_verify_photo(real_dasface, face_image_path, other_face_image_path):
     """The same face matches itself, a different face does not, by a wide margin."""
     same = real_dasface.verify_photo(
-        VerifyPhotoInput(anchor_image=face_image_path, target_image=face_image_path),
+        anchor_image=face_image_path,
+        target_image=face_image_path,
     )
     different = real_dasface.verify_photo(
-        VerifyPhotoInput(anchor_image=face_image_path, target_image=other_face_image_path),
+        anchor_image=face_image_path,
+        target_image=other_face_image_path,
     )
 
     assert same.confidence > 0.9
@@ -395,7 +410,9 @@ def test_real_verify_photo(real_dasface, face_image_path, other_face_image_path)
 def test_real_verify_photo_with_a_mode(real_dasface, face_image_path):
     """A mode is accepted. `rotatePhotos`, which v3.26 documents, is not — see #30."""
     response = real_dasface.verify_photo(
-        VerifyPhotoInput(anchor_image=face_image_path, target_image=face_image_path, mode="default-mode"),
+        anchor_image=face_image_path,
+        target_image=face_image_path,
+        mode="default-mode",
     )
     assert response.confidence > 0.9
 
@@ -404,11 +421,14 @@ def test_real_verify_photo_with_a_mode(real_dasface, face_image_path):
 def test_real_verify_credential(real_dasface, real_model, face_image_path):
     """The everyday flow: enrol once into a credential, then verify fresh photos against it."""
     credential = real_dasface.generate_credential(
-        GenerateCredentialInput(image=face_image_path, hash=real_model.hash, mode=real_model.mode),
+        image=face_image_path,
+        hash=real_model.hash,
+        mode=real_model.mode,
     ).credential
 
     response = real_dasface.verify_credential(
-        VerifyCredentialInput(anchor_image=face_image_path, target_credential=credential),
+        anchor_image=face_image_path,
+        target_credential=credential,
     )
 
     assert response.confidence > 0.9
@@ -417,7 +437,8 @@ def test_real_verify_credential(real_dasface, real_model, face_image_path):
 @pytest.mark.dasface
 def test_real_verify_video(real_dasface, face_image_path, face_video_path):
     response = real_dasface.verify_video(
-        VerifyVideoInput(anchor_image=face_image_path, target_video=face_video_path),
+        anchor_image=face_image_path,
+        target_video=face_video_path,
     )
     assert response.confidence > 0.9
 
@@ -427,7 +448,8 @@ def test_real_a_video_that_is_not_a_video_is_reported(real_dasface, face_image_p
     """Undecodable video is its own failure, not a generic bad request."""
     with pytest.raises(VideoExtractionError):
         real_dasface.verify_video(
-            VerifyVideoInput(anchor_image=face_image_path, target_video=b"x" * 5000),
+            anchor_image=face_image_path,
+            target_video=b"x" * 5000,
         )
 
 
@@ -448,7 +470,7 @@ def test_check_photo_authenticity_sends_the_image_as_target(
 
     mock_server.post(f"{SANDBOX_EU}/authenticity/photo", json=dasface_photo_authenticity_response)
 
-    response = dasface_client.check_photo_authenticity(PhotoAuthenticityInput(image=face_image))
+    response = dasface_client.check_photo_authenticity(image=face_image)
 
     assert response.confidence == 0.8765
     sent = mock_server.last_request.json()
@@ -470,7 +492,8 @@ def test_check_video_authenticity_returns_both_figures(
     mock_server.post(f"{SANDBOX_EU}/authenticity/video/photo", json=dasface_video_authenticity_response)
 
     response = dasface_client.check_video_authenticity(
-        VideoAuthenticityInput(anchor_image=face_image, target_video=face_video),
+        anchor_image=face_image,
+        target_video=face_video,
     )
 
     assert response.authenticity == 0.86
@@ -480,7 +503,7 @@ def test_check_video_authenticity_returns_both_figures(
 @pytest.mark.dasface
 def test_real_check_photo_authenticity(real_dasface, face_image_path):
     """A genuine photo of a face scores high."""
-    response = real_dasface.check_photo_authenticity(PhotoAuthenticityInput(image=face_image_path))
+    response = real_dasface.check_photo_authenticity(image=face_image_path)
     assert response.confidence > 0.5
 
 
@@ -492,14 +515,15 @@ def test_real_authenticity_rejects_a_face_that_is_too_small(real_dasface, other_
     the one place in das-Face where image size alone decides.
     """
     with pytest.raises(FaceTooSmallForIasError):
-        real_dasface.check_photo_authenticity(PhotoAuthenticityInput(image=other_face_image_path))
+        real_dasface.check_photo_authenticity(image=other_face_image_path)
 
 
 @pytest.mark.dasface
 def test_real_check_video_authenticity(real_dasface, face_image_path, face_video_path):
     """Authenticity and similarity are independent, and both come back."""
     response = real_dasface.check_video_authenticity(
-        VideoAuthenticityInput(anchor_image=face_image_path, target_video=face_video_path),
+        anchor_image=face_image_path,
+        target_video=face_video_path,
     )
 
     assert response.authenticity > 0.5
@@ -515,7 +539,10 @@ def test_inemex_uses_its_own_path(dasface_client, mock_server, dasface_credentia
     mock_server.post(f"{SANDBOX_EU}/inemex/models/a-hash/default-mode/credential/photo", json=dasface_credential_response)
 
     dasface_client.generate_credential(
-        GenerateCredentialInput(image=face_image, hash="a-hash", mode="default-mode", inemex=True),
+        image=face_image,
+        hash="a-hash",
+        mode="default-mode",
+        inemex=True,
     )
 
     assert mock_server.last_request.path.endswith("/inemex/models/a-hash/default-mode/credential/photo")
@@ -534,7 +561,7 @@ def test_inemex_without_a_model_uses_its_default_model_path(
 
     mock_server.post(f"{SANDBOX_EU}/models/inemex/default-mode/credential/photo", json=dasface_credential_response)
 
-    dasface_client.generate_credential(GenerateCredentialInput(image=face_image, inemex=True))
+    dasface_client.generate_credential(image=face_image, inemex=True)
 
     assert mock_server.last_request.path.endswith("/models/inemex/default-mode/credential/photo")
 
@@ -547,7 +574,7 @@ def test_real_generate_credential_with_inemex_default_model(real_dasface, real_m
     an older model than `get_models()` leads with, so a credential made here does not compare
     against one made with the current model.
     """
-    credential = real_dasface.generate_credential(GenerateCredentialInput(image=face_image_path, inemex=True))
+    credential = real_dasface.generate_credential(image=face_image_path, inemex=True)
 
     assert credential.credential
     assert credential.model.mode == "default-mode"
@@ -562,7 +589,10 @@ def test_real_generate_credential_with_inemex(real_dasface, real_model, face_ima
     the subscription this runs against.
     """
     credential = real_dasface.generate_credential(
-        GenerateCredentialInput(image=face_image_path, hash=real_model.hash, mode=real_model.mode, inemex=True),
+        image=face_image_path,
+        hash=real_model.hash,
+        mode=real_model.mode,
+        inemex=True,
     )
 
     assert credential.credential
@@ -585,7 +615,7 @@ def test_generate_sequential_challenge_reads_the_actions_out_of_the_token(
         headers={"Content-Type": "application/jose"},
     )
 
-    challenge = dasface_client.generate_sequential_challenge(SequentialChallengeInput(length=2))
+    challenge = dasface_client.generate_sequential_challenge(length=2)
 
     assert challenge.token == dasface_challenge_token
     assert challenge.id == "f6ba1c2d3e4f5061728394a5b6c7d8e9"
@@ -644,12 +674,10 @@ def test_analyse_challenge_response_sends_the_token_verbatim(
     )
 
     response = dasface_client.analyse_challenge_response(
-        ChallengeAnalysisInput(
-            token=dasface_challenge_token,
-            annotations=annotations,
-            anchor_image=face_image,
-            target_video=face_video,
-        ),
+        token=dasface_challenge_token,
+        annotations=annotations,
+        anchor_image=face_image,
+        target_video=face_video,
     )
 
     assert response.confidence == dasface_challenge_analysis_response["confidence"]
@@ -687,12 +715,10 @@ def test_a_failed_analysis_comes_back_as_a_result_rather_than_an_exception(
     )
 
     response = dasface_client.analyse_challenge_response(
-        ChallengeAnalysisInput(
-            token=dasface_challenge_token,
-            annotations=annotations,
-            anchor_image=face_image,
-            target_video=face_video,
-        ),
+        token=dasface_challenge_token,
+        annotations=annotations,
+        anchor_image=face_image,
+        target_video=face_video,
     )
 
     assert response.confidence is None
@@ -722,19 +748,17 @@ def test_an_expired_challenge_is_reported_as_such(
 
     with pytest.raises(ExpiredOrInvalidChallengeError):
         dasface_client.analyse_challenge_response(
-            ChallengeAnalysisInput(
-                token=dasface_challenge_token,
-                annotations=annotations,
-                anchor_image=face_image,
-                target_video=face_video,
-            ),
+            token=dasface_challenge_token,
+            annotations=annotations,
+            anchor_image=face_image,
+            target_video=face_video,
         )
 
 
 @pytest.mark.dasface
 def test_real_generate_sequential_challenge(real_dasface):
     """The challenge names the actions to prompt for, and says when it stops being valid."""
-    challenge = real_dasface.generate_sequential_challenge(SequentialChallengeInput(length=3, expiration=300))
+    challenge = real_dasface.generate_sequential_challenge(length=3, expiration=300)
 
     assert challenge.token.count(".") == 2
     assert len(challenge.actions) == 3
@@ -748,7 +772,7 @@ def test_real_generate_sequential_challenge(real_dasface):
 def test_real_a_challenge_length_out_of_range_is_refused(real_dasface):
     """1 to 6, and the service says which field and which range."""
     with pytest.raises(FormValidationError, match="between 1 and 6"):
-        real_dasface.generate_sequential_challenge(SequentialChallengeInput(length=9))
+        real_dasface.generate_sequential_challenge(length=9)
 
 
 @pytest.mark.dasface
@@ -762,12 +786,10 @@ def test_real_analyse_challenge_response(real_dasface, face_image_path, face_vid
     challenge = real_dasface.generate_sequential_challenge()
 
     response = real_dasface.analyse_challenge_response(
-        ChallengeAnalysisInput(
-            token=challenge.token,
-            annotations=annotations_path,
-            anchor_image=face_image_path,
-            target_video=face_video_path,
-        ),
+        token=challenge.token,
+        annotations=annotations_path,
+        anchor_image=face_image_path,
+        target_video=face_video_path,
     )
 
     assert response.errors == []
@@ -785,12 +807,10 @@ def test_real_analysis_reports_a_face_that_is_too_small(
     challenge = real_dasface.generate_sequential_challenge()
 
     response = real_dasface.analyse_challenge_response(
-        ChallengeAnalysisInput(
-            token=challenge.token,
-            annotations=annotations_path,
-            anchor_image=other_face_image_path,
-            target_video=face_video_path,
-        ),
+        token=challenge.token,
+        annotations=annotations_path,
+        anchor_image=other_face_image_path,
+        target_video=face_video_path,
     )
 
     assert response.confidence is None
@@ -806,12 +826,10 @@ def test_real_a_tampered_token_is_refused(real_dasface, face_image_path, face_vi
 
     with pytest.raises(FormValidationError, match=r"signature|Token"):
         real_dasface.analyse_challenge_response(
-            ChallengeAnalysisInput(
-                token=tampered,
-                annotations=annotations_path,
-                anchor_image=face_image_path,
-                target_video=face_video_path,
-            ),
+            token=tampered,
+            annotations=annotations_path,
+            anchor_image=face_image_path,
+            target_video=face_video_path,
         )
 
 
@@ -832,7 +850,7 @@ def test_a_validation_failure_names_the_field(dasface_client, mock_server, dasfa
     )
 
     with pytest.raises(FormValidationError) as raised:
-        dasface_client.generate_sequential_challenge(SequentialChallengeInput(length=9))
+        dasface_client.generate_sequential_challenge(length=9)
 
     assert raised.value.errors == [("length", "Number must be between 1 and 6.")]
     assert "length: Number must be between 1 and 6." in str(raised.value)
@@ -851,14 +869,16 @@ def test_real_an_image_with_no_face_is_refused_everywhere(real_dasface, real_mod
     """The same input fails the same way on all three endpoints that read a face."""
     with pytest.raises(FaceNotFoundError):
         real_dasface.generate_credential(
-            GenerateCredentialInput(image=no_face_image_path, hash=real_model.hash, mode=real_model.mode),
+            image=no_face_image_path,
+            hash=real_model.hash,
+            mode=real_model.mode,
         )
 
     with pytest.raises(FaceNotFoundError):
-        real_dasface.verify_photo(VerifyPhotoInput(anchor_image=no_face_image_path, target_image=no_face_image_path))
+        real_dasface.verify_photo(anchor_image=no_face_image_path, target_image=no_face_image_path)
 
     with pytest.raises(FaceNotFoundError):
-        real_dasface.check_photo_authenticity(PhotoAuthenticityInput(image=no_face_image_path))
+        real_dasface.check_photo_authenticity(image=no_face_image_path)
 
 
 @pytest.mark.dasface
@@ -870,7 +890,9 @@ def test_real_an_unknown_mode_is_refused(real_dasface, real_model, face_image_pa
     """
     with pytest.raises(UnknownHashAndModeError):
         real_dasface.generate_credential(
-            GenerateCredentialInput(image=face_image_path, hash=real_model.hash, mode="no-such-mode"),
+            image=face_image_path,
+            hash=real_model.hash,
+            mode="no-such-mode",
         )
 
 
@@ -884,13 +906,13 @@ def test_real_a_video_with_nobody_in_it_is_refused(real_dasface, face_image_path
     reads; reported in #30.
     """
     with pytest.raises(InvalidVideoMetadataError):
-        real_dasface.verify_video(VerifyVideoInput(anchor_image=face_image_path, target_video=no_face_video_path))
+        real_dasface.verify_video(anchor_image=face_image_path, target_video=no_face_video_path)
 
 
 @pytest.mark.dasface
 def test_real_an_empty_video_is_refused(real_dasface, face_image_path, empty_file_path):
     with pytest.raises(FormValidationError):
-        real_dasface.verify_video(VerifyVideoInput(anchor_image=face_image_path, target_video=empty_file_path))
+        real_dasface.verify_video(anchor_image=face_image_path, target_video=empty_file_path)
 
 
 @pytest.mark.dasface
@@ -906,11 +928,88 @@ def test_real_two_faces_in_one_photo_are_not_refused(real_dasface, real_model, t
     rather than from a user.
     """
     credential = real_dasface.generate_credential(
-        GenerateCredentialInput(image=two_people_image_path, hash=real_model.hash, mode=real_model.mode),
+        image=two_people_image_path,
+        hash=real_model.hash,
+        mode=real_model.mode,
     )
     assert credential.credential
 
     against_the_left = real_dasface.verify_photo(
-        VerifyPhotoInput(anchor_image=two_people_image_path, target_image=face_image_path),
+        anchor_image=two_people_image_path,
+        target_image=face_image_path,
     )
     assert against_the_left.confidence < 0.1, "the left-hand face is the one it ignored"
+
+
+# ---------------------------------------------------------------------------
+# The call style these methods used to require, kept working for one version.
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.dasface
+def test_the_old_call_style_still_works_and_warns(dasface_client, mock_server, dasface_verification_response, face_image):
+    """Passing the input model is deprecated, not broken.
+
+    Upgrading should not be a rewrite, so the model is expanded into the arguments the method
+    now takes. Validation is unchanged, because the method builds the same model either way.
+    """
+    if not mock_server:
+        pytest.skip("Asserted on the request the client builds")
+
+    mock_server.post(f"{SANDBOX_EU}/verification/photo", json=dasface_verification_response)
+
+    with pytest.warns(DeprecationWarning, match="VerifyPhotoInput"):
+        response = dasface_client.verify_photo(VerifyPhotoInput(anchor_image=face_image, target_image=face_image))
+
+    assert response.confidence == dasface_verification_response["confidence"]
+    assert set(mock_server.last_request.json()) == {"anchorImage", "targetImage"}
+
+
+@pytest.mark.dasface
+def test_the_old_call_style_works_by_keyword_too(dasface_client, mock_server, dasface_verification_response, face_image):
+    """Some clients spelled it `data_model=`, so that spelling has to keep working as well."""
+    if not mock_server:
+        pytest.skip("Asserted on the request the client builds")
+
+    mock_server.post(f"{SANDBOX_EU}/verification/photo", json=dasface_verification_response)
+
+    with pytest.warns(DeprecationWarning, match="VerifyPhotoInput"):
+        dasface_client.verify_photo(data_model=VerifyPhotoInput(anchor_image=face_image, target_image=face_image))
+
+    assert set(mock_server.last_request.json()) == {"anchorImage", "targetImage"}
+
+
+@pytest.mark.dasface
+def test_the_new_call_style_does_not_warn(dasface_client, mock_server, dasface_verification_response, face_image):
+    if not mock_server:
+        pytest.skip("Asserted on the request the client builds")
+
+    mock_server.post(f"{SANDBOX_EU}/verification/photo", json=dasface_verification_response)
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("error", DeprecationWarning)
+        dasface_client.verify_photo(anchor_image=face_image, target_image=face_image)
+
+
+@pytest.mark.dasface
+def test_validation_is_the_same_whichever_way_it_is_called(face_image):
+    """The method builds the same model, so a bad call fails identically either way."""
+    with pytest.raises(ValidationError, match="required"):
+        GenerateCredentialInput(image=face_image)
+
+    client = DasfaceClient(apikey="fake-apikey")
+    with pytest.raises(ValidationError, match="required"):
+        client.generate_credential(image=face_image)
+
+
+@pytest.mark.dasface
+def test_the_methods_advertise_their_arguments():
+    """What the change is for: the parameters are visible without importing anything.
+
+    Tooling reads the signature through `functools.wraps`, so the deprecation shim has to
+    keep it intact rather than replacing it with `*args, **kwargs`.
+    """
+    signature = inspect.signature(DasfaceClient.verify_photo)
+
+    assert list(signature.parameters) == ["self", "anchor_image", "target_image", "mode"]
+    assert signature.parameters["mode"].default is None
