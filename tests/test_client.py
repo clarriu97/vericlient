@@ -132,10 +132,64 @@ def test_an_explicit_url_wins_over_the_environment(monkeypatch):
 
 
 def test_a_self_hosted_url_needs_no_apikey(monkeypatch):
+    """A self-hosted deployment does not use the cloud's authentication.
+
+    The apikey is the Veridas cloud's scheme. Somebody running the service themselves has
+    whatever they chose instead, which goes in through `headers`.
+    """
     monkeypatch.setenv("VERICLIENT_URL", "https://self-hosted.example.com")
     client = DaspeakClient()
     assert client.url == "https://self-hosted.example.com"
     assert "apikey" not in client.headers
+
+
+def test_custom_headers_reach_the_request():
+    """Asserted on the wire rather than on the attribute.
+
+    `client.headers` says what was collected; only the request says what was sent, and the
+    two are not the same check. This is the whole authentication story for a self-hosted
+    deployment, so it is worth knowing which one is being tested.
+    """
+    client = DaspeakClient(
+        url="https://self-hosted.example.com/daspeak/v1",
+        headers={"Authorization": "Bearer a-token", "X-Tenant": "acme"},
+    )
+
+    with requests_mock.Mocker() as mock_server:
+        mock_server.get("https://self-hosted.example.com/daspeak/v1/alive", json={"version": "1"})
+        client.alive()
+
+    sent = mock_server.last_request.headers
+    assert sent["Authorization"] == "Bearer a-token"
+    assert sent["X-Tenant"] == "acme"
+
+
+def test_custom_headers_and_the_cloud_apikey_travel_together():
+    """Pointing at the cloud does not rule out headers of your own, such as tracing ones."""
+    client = DaspeakClient(apikey="a-key", headers={"X-Request-Id": "abc123"})
+
+    with requests_mock.Mocker() as mock_server:
+        mock_server.get("https://api-work.eu.veri-das.com/daspeak/v1/alive", json={"version": "1"})
+        client.alive()
+
+    sent = mock_server.last_request.headers
+    assert sent["apikey"] == "a-key"
+    assert sent["X-Request-Id"] == "abc123"
+
+
+def test_a_self_hosted_url_is_used_exactly_as_given():
+    """No service path is appended: only the operator knows where the service sits.
+
+    The cloud URL is built because the environment and the location determine it. A
+    self-hosted one is not, so it is taken verbatim, service path and all.
+    """
+    client = DaspeakClient(url="https://veridas.internal.example.com/some/path/daspeak/v1")
+
+    with requests_mock.Mocker() as mock_server:
+        mock_server.get("https://veridas.internal.example.com/some/path/daspeak/v1/alive", json={"version": "1"})
+        client.alive()
+
+    assert mock_server.last_request.path == "/some/path/daspeak/v1/alive"
 
 
 def test_a_cloud_client_without_an_apikey_is_refused():

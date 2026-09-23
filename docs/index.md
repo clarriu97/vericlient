@@ -88,8 +88,15 @@ give it a self-hosted URL and it will skip the cloud entirely:
 from vericlient import DaspeakClient
 
 production = DaspeakClient(apikey="your_api_key", environment="production", location="us")
-self_hosted = DaspeakClient(url="https://veridas.internal.example.com")
+self_hosted = DaspeakClient(
+    url="https://veridas.internal.example.com/daspeak/v1",
+    headers={"Authorization": "Bearer your-token"},
+)
 ```
+
+A self-hosted URL is used exactly as given, and the apikey does not apply to it — that one is
+the Veridas cloud's authentication, so a deployment you run yourself authenticates through
+`headers` instead. See [Self-hosted deployments](api_docs/vericlient.md#self-hosted-deployments).
 
 Every setting can also come from the environment. See
 [Configuration](api_docs/vericlient.md#configuration).
