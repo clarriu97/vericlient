@@ -18,6 +18,14 @@ The project follows [semantic versioning](https://semver.org/).
 - **Passing an input model to a das-Face method.** It still works and now raises
   `DeprecationWarning`; it is removed in 1.0.0.
 
+### Documentation
+
+- **Self-hosted deployments have a page section of their own.** `headers` was always
+  accepted and never documented, which mattered because the apikey is the Veridas cloud's
+  authentication scheme and does not apply to a deployment you run yourself — `headers` is
+  how those authenticate. Also states that a self-hosted URL is used verbatim, service path
+  included, since only the operator knows where the service sits.
+
 ## [0.4.0] — 2026-09-23
 
 das-Face joins das-Peak and VCSP: all three Veridas APIs this client targets are now fully
