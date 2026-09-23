@@ -47,6 +47,7 @@ from vericlient.dasface.models import (
     VideoAuthenticityInput,
     VideoAuthenticityOutput,
 )
+from vericlient.deprecation import legacy_model_argument
 from vericlient.exceptions import InvalidCredentialError, UnsupportedMediaTypeError
 from vericlient.utils import encode_base64
 
@@ -162,7 +163,14 @@ class DasfaceClient(Client):
         response = self._get(endpoint=DasfaceEndpoints.MODELS.value)
         return ModelsOutput(models=response.json())
 
-    def generate_credential(self, data_model: GenerateCredentialInput) -> GenerateCredentialOutput:
+    @legacy_model_argument(GenerateCredentialInput)
+    def generate_credential(
+        self,
+        image: str | bytes,
+        hash: str | None = None,  # noqa: A002
+        mode: str | None = None,
+        inemex: bool = False,  # noqa: FBT001, FBT002
+    ) -> GenerateCredentialOutput:
         """Generate a credential from a photo.
 
         A credential is the biometric representation of a face, and what gets stored and
@@ -174,7 +182,10 @@ class DasfaceClient(Client):
         set the model may be left out.
 
         Args:
-            data_model: The photo and the model to use
+            image: The photo, as a path or as bytes
+            hash: The hash of the model to use, from `get_models()`
+            mode: The mode to use, from `get_models()`
+            inemex: Use the INE Mexico variant of the endpoint
 
         Returns:
             GenerateCredentialOutput: The credential and the model behind it
@@ -185,6 +196,7 @@ class DasfaceClient(Client):
             FormValidationError: If the photo cannot be read
 
         """
+        data_model = GenerateCredentialInput(image=image, hash=hash, mode=mode, inemex=inemex)
         if not data_model.inemex:
             endpoint = DasfaceEndpoints.MODEL_CREDENTIAL_PHOTO.value
         elif data_model.hash:
@@ -200,17 +212,15 @@ class DasfaceClient(Client):
         )
         return GenerateCredentialOutput(**response.json())
 
-    def get_model_metadata_from_credential(
-        self,
-        data_model: GetModelMetadataFromCredentialInput,
-    ) -> GetModelMetadataFromCredentialOutput:
+    @legacy_model_argument(GetModelMetadataFromCredentialInput)
+    def get_model_metadata_from_credential(self, credential: str) -> GetModelMetadataFromCredentialOutput:
         """Get the model a credential was generated with.
 
         Useful to tell whether a credential stored some time ago still matches a model the
         service offers today.
 
         Args:
-            data_model: The credential to inspect
+            credential: The credential to inspect
 
         Returns:
             GetModelMetadataFromCredentialOutput: The model behind the credential
@@ -219,17 +229,26 @@ class DasfaceClient(Client):
             FormValidationError: If the credential is not a credential
 
         """
+        data_model = GetModelMetadataFromCredentialInput(credential=credential)
         response = self._post(
             endpoint=DasfaceEndpoints.MODELS_METADATA_FROM_CREDENTIAL.value,
             json_={"credential": data_model.credential},
         )
         return GetModelMetadataFromCredentialOutput(**response.json())
 
-    def verify_photo(self, data_model: VerifyPhotoInput) -> VerificationOutput:
+    @legacy_model_argument(VerifyPhotoInput)
+    def verify_photo(
+        self,
+        anchor_image: str | bytes,
+        target_image: str | bytes,
+        mode: str | None = None,
+    ) -> VerificationOutput:
         """Compare two photos and report how confident the service is that they match.
 
         Args:
-            data_model: The reference photo, the photo to evaluate, and optionally a mode
+            anchor_image: The reference photo, as a path or as bytes
+            target_image: The photo to evaluate, as a path or as bytes
+            mode: The model mode to use. The service picks its default when omitted
 
         Returns:
             VerificationOutput: The confidence, from 0 to 1
@@ -241,6 +260,7 @@ class DasfaceClient(Client):
             FormValidationError: If a photo cannot be read
 
         """
+        data_model = VerifyPhotoInput(anchor_image=anchor_image, target_image=target_image, mode=mode)
         body = {
             "anchorImage": encode_base64(data_model.anchor_image),
             "targetImage": encode_base64(data_model.target_image),
@@ -251,11 +271,13 @@ class DasfaceClient(Client):
         response = self._post(endpoint=DasfaceEndpoints.VERIFICATION_PHOTO.value, json_=body)
         return VerificationOutput(**response.json())
 
-    def verify_video(self, data_model: VerifyVideoInput) -> VerificationOutput:
+    @legacy_model_argument(VerifyVideoInput)
+    def verify_video(self, anchor_image: str | bytes, target_video: str | bytes) -> VerificationOutput:
         """Compare a photo against the face in a video.
 
         Args:
-            data_model: The reference photo and the video to evaluate
+            anchor_image: The reference photo, as a path or as bytes
+            target_video: The video to evaluate, as a path or as bytes
 
         Returns:
             VerificationOutput: The confidence, from 0 to 1
@@ -266,6 +288,7 @@ class DasfaceClient(Client):
             NotEnoughVideoDataError: If the video holds too few usable frames
 
         """
+        data_model = VerifyVideoInput(anchor_image=anchor_image, target_video=target_video)
         response = self._post(
             endpoint=DasfaceEndpoints.VERIFICATION_VIDEO.value,
             json_={
@@ -275,14 +298,16 @@ class DasfaceClient(Client):
         )
         return VerificationOutput(**response.json())
 
-    def verify_credential(self, data_model: VerifyCredentialInput) -> VerificationOutput:
+    @legacy_model_argument(VerifyCredentialInput)
+    def verify_credential(self, anchor_image: str | bytes, target_credential: str) -> VerificationOutput:
         """Compare a photo against a stored credential.
 
         This is the usual verification: the credential was generated once at enrolment, and
         every later check compares a fresh photo against it without needing the original.
 
         Args:
-            data_model: The photo and the credential to compare it with
+            anchor_image: The photo, as a path or as bytes
+            target_credential: The credential to compare it with
 
         Returns:
             VerificationOutput: The confidence, from 0 to 1
@@ -293,6 +318,7 @@ class DasfaceClient(Client):
             FaceNotFoundError: If the photo holds no face
 
         """
+        data_model = VerifyCredentialInput(anchor_image=anchor_image, target_credential=target_credential)
         response = self._post(
             endpoint=DasfaceEndpoints.VERIFICATION_CREDENTIAL.value,
             json_={
@@ -302,14 +328,15 @@ class DasfaceClient(Client):
         )
         return VerificationOutput(**response.json())
 
-    def check_photo_authenticity(self, data_model: PhotoAuthenticityInput) -> PhotoAuthenticityOutput:
+    @legacy_model_argument(PhotoAuthenticityInput)
+    def check_photo_authenticity(self, image: str | bytes) -> PhotoAuthenticityOutput:
         """Check whether a selfie is a genuine capture rather than a photo of a screen or print.
 
         The face has to fill enough of the frame: a small one is rejected with
         FaceTooSmallForIasError rather than scored low.
 
         Args:
-            data_model: The selfie to analyse
+            image: The selfie to analyse, as a path or as bytes
 
         Returns:
             PhotoAuthenticityOutput: The confidence, from 0 to 1
@@ -320,20 +347,23 @@ class DasfaceClient(Client):
             MoreThanOneFaceError: If it holds more than one
 
         """
+        data_model = PhotoAuthenticityInput(image=image)
         response = self._post(
             endpoint=DasfaceEndpoints.AUTHENTICITY_PHOTO.value,
             json_={"targetImage": encode_base64(data_model.image)},
         )
         return PhotoAuthenticityOutput(**response.json())
 
-    def check_video_authenticity(self, data_model: VideoAuthenticityInput) -> VideoAuthenticityOutput:
+    @legacy_model_argument(VideoAuthenticityInput)
+    def check_video_authenticity(self, anchor_image: str | bytes, target_video: str | bytes) -> VideoAuthenticityOutput:
         """Check whether a video is a genuine recording, and of the expected person.
 
         Answers both questions at once, and they are independent: a genuine recording of
         somebody else scores high on authenticity and low on similarity.
 
         Args:
-            data_model: The photo of the expected person and the video to analyse
+            anchor_image: The photo of the expected person, as a path or as bytes
+            target_video: The video to analyse, as a path or as bytes
 
         Returns:
             VideoAuthenticityOutput: The authenticity and the similarity, each from 0 to 1
@@ -345,6 +375,7 @@ class DasfaceClient(Client):
             NotEnoughVideoDataError: If it holds too few usable frames
 
         """
+        data_model = VideoAuthenticityInput(anchor_image=anchor_image, target_video=target_video)
         response = self._post(
             endpoint=DasfaceEndpoints.AUTHENTICITY_VIDEO_PHOTO.value,
             json_={
@@ -354,9 +385,11 @@ class DasfaceClient(Client):
         )
         return VideoAuthenticityOutput(**response.json())
 
+    @legacy_model_argument(SequentialChallengeInput)
     def generate_sequential_challenge(
         self,
-        data_model: SequentialChallengeInput | None = None,
+        length: int | None = None,
+        expiration: int | None = None,
     ) -> SequentialChallengeOutput:
         """Generate a liveness challenge: a sequence of actions for the subject to perform.
 
@@ -366,8 +399,9 @@ class DasfaceClient(Client):
         `analyse_challenge_response` together with this token.
 
         Args:
-            data_model: How long the challenge should be and how long it should stay valid.
-                Omit it for the service's defaults, 2 actions valid for 1800 seconds
+            length: How many actions to ask for, from 1 to 6. The service defaults to 2
+            expiration: How long the challenge stays valid, in seconds, from 300 to 1800.
+                The service defaults to 1800
 
         Returns:
             SequentialChallengeOutput: The token to pass on, and the actions to prompt for
@@ -376,7 +410,7 @@ class DasfaceClient(Client):
             FormValidationError: If the length or the expiration is out of range
 
         """
-        data_model = data_model or SequentialChallengeInput()
+        data_model = SequentialChallengeInput(length=length, expiration=expiration)
         body = {
             key: value
             for key, value in (("length", data_model.length), ("expiration", data_model.expiration))
@@ -418,7 +452,14 @@ class DasfaceClient(Client):
             self._raise_server_error(response)
             raise
 
-    def analyse_challenge_response(self, data_model: ChallengeAnalysisInput) -> ChallengeAnalysisOutput:
+    @legacy_model_argument(ChallengeAnalysisInput)
+    def analyse_challenge_response(
+        self,
+        token: str,
+        annotations: str | bytes,
+        anchor_image: str | bytes,
+        target_video: str | bytes,
+    ) -> ChallengeAnalysisOutput:
         """Analyse the recording of a challenge against the photo of the expected person.
 
         One figure answers all of it: whether the recording is genuine, whether it performs
@@ -429,8 +470,11 @@ class DasfaceClient(Client):
         completed, and the `errors` of the result say why.
 
         Args:
-            data_model: The challenge token, the SDK's annotations, the anchor photo and the
-                recording
+            token: The token from `generate_sequential_challenge`, unchanged
+            annotations: The SDK's WebVTT annotations, as a path or as bytes. A `str` is read
+                as a path, so pass in-memory text as `text.encode()`
+            anchor_image: The photo of the expected person, as a path or as bytes
+            target_video: The recording of the challenge, as a path or as bytes
 
         Returns:
             ChallengeAnalysisOutput: The confidence, or `None` with the errors behind it
@@ -440,6 +484,12 @@ class DasfaceClient(Client):
             FormValidationError: If the token, the annotations or a media file cannot be read
 
         """
+        data_model = ChallengeAnalysisInput(
+            token=token,
+            annotations=annotations,
+            anchor_image=anchor_image,
+            target_video=target_video,
+        )
         response = self._post(
             endpoint=DasfaceEndpoints.CHALLENGES_ANALYSIS_VIDEO_PHOTO.value,
             json_={
