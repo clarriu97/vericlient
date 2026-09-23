@@ -1,3 +1,6 @@
+import base64
+import json
+
 import pytest
 
 from vericlient import DasfaceClient
@@ -150,6 +153,17 @@ def dasface_form_validation_response():
 
 
 @pytest.fixture(scope="session")
+def dasface_field_validation_response():
+    """Return the useful half of a validation failure: which field, and what is wrong with it."""
+    return {
+        "code": "FormValidationError",
+        "errors": [["length", "Number must be between 1 and 6."]],
+        "message": "Incorrect parameters in GenerateSequentialChallengeForm",
+        "status": "error",
+    }
+
+
+@pytest.fixture(scope="session")
 def dasface_verification_response():
     return {"confidence": 0.9876}
 
@@ -162,6 +176,79 @@ def dasface_photo_authenticity_response():
 @pytest.fixture(scope="session")
 def dasface_video_authenticity_response():
     return {"authenticity": 0.86, "similarity": 0.99}
+
+
+@pytest.fixture(scope="session")
+def dasface_challenge_payload():
+    """Return the challenge as it is found inside the token, shaped as the service sends it."""
+    return {
+        "schema": "https://veridas.com/dasface/schemas/chief-v0.0.0.json",
+        "id": "f6ba1c2d3e4f5061728394a5b6c7d8e9",
+        "timestamp": "2026-09-23T04:17:54.505635+00:00",
+        "expires": "2026-09-23T04:47:54.505635+00:00",
+        "challenge": {
+            "class": "sequential",
+            "actions": [
+                {"class": "move-head-and-back", "name": "action-0", "parameters": {"direction": "right"}},
+                {"class": "move-head-and-back", "name": "action-1", "parameters": {"direction": "top"}},
+            ],
+        },
+    }
+
+
+@pytest.fixture(scope="session")
+def dasface_challenge_token(dasface_challenge_payload):
+    """Return a token shaped like the real one: three base64url segments, unpadded.
+
+    Only the payload has to be real, since the client reads that and never checks the
+    signature.
+    """
+
+    def segment(content: bytes) -> str:
+        return base64.urlsafe_b64encode(content).decode().rstrip("=")
+
+    return ".".join(
+        [
+            segment(json.dumps({"typ": "JWT", "alg": "ES512"}).encode()),
+            segment(json.dumps(dasface_challenge_payload).encode()),
+            segment(b"a signature this client never checks"),
+        ],
+    )
+
+
+@pytest.fixture(scope="session")
+def dasface_challenge_analysis_response():
+    return {"confidence": 0.9556, "errors": []}
+
+
+@pytest.fixture(scope="session")
+def dasface_challenge_failed_analysis_response():
+    """Return the shape this endpoint reports a failure with: a 200, no confidence, errors."""
+    return {
+        "confidence": None,
+        "errors": [["FaceTooSmallForIAS", "Face bounding box width is too small"]],
+    }
+
+
+@pytest.fixture(scope="session")
+def dasface_expired_challenge_response():
+    return {
+        "code": "ExpiredOrInvalidChallengeError",
+        "message": "Given challenge is expired or invalid",
+        "status": "error",
+    }
+
+
+@pytest.fixture(scope="session")
+def annotations_path() -> str:
+    """Return WebVTT annotations of a challenge recording, as the capture SDK produces them."""
+    return "tests/dasface/resources/annotations.vtt"
+
+
+@pytest.fixture(scope="session")
+def annotations(annotations_path) -> bytes:
+    with open(annotations_path, "rb") as f:
+        return f.read()
 
 
 @pytest.fixture(scope="session")

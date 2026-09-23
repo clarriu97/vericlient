@@ -1,4 +1,5 @@
 import base64
+from datetime import UTC, datetime
 
 import pytest
 import requests_mock
@@ -7,22 +8,25 @@ from pydantic import ValidationError
 from vericlient import DasfaceClient
 from vericlient.dasface.exceptions import (
     DasfaceApiError,
+    ExpiredOrInvalidChallengeError,
     FaceTooSmallForIasError,
     FormValidationError,
     VideoExtractionError,
 )
 from vericlient.dasface.models import (
+    ChallengeAnalysisInput,
     GenerateCredentialInput,
     GenerateCredentialOutput,
     GetModelMetadataFromCredentialInput,
     ModelsOutput,
     PhotoAuthenticityInput,
+    SequentialChallengeInput,
     VerifyCredentialInput,
     VerifyPhotoInput,
     VerifyVideoInput,
     VideoAuthenticityInput,
 )
-from vericlient.exceptions import InvalidCredentialError
+from vericlient.exceptions import InvalidCredentialError, ServerError
 
 SANDBOX_EU = "https://api-work.eu.veri-das.com/dasface/v2"
 
@@ -560,3 +564,272 @@ def test_real_generate_credential_with_inemex(real_dasface, real_model, face_ima
 
     assert credential.credential
     assert credential.model.hash == real_model.hash
+
+
+@pytest.mark.dasface
+def test_generate_sequential_challenge_reads_the_actions_out_of_the_token(
+    dasface_client,
+    mock_server,
+    dasface_challenge_token,
+):
+    """The service answers with a signed token, not JSON, and the actions live inside it."""
+    if not mock_server:
+        pytest.skip("Covered against the real service by test_real_generate_sequential_challenge")
+
+    mock_server.post(
+        f"{SANDBOX_EU}/challenges/generation/sequential",
+        text=dasface_challenge_token,
+        headers={"Content-Type": "application/jose"},
+    )
+
+    challenge = dasface_client.generate_sequential_challenge(SequentialChallengeInput(length=2))
+
+    assert challenge.token == dasface_challenge_token
+    assert challenge.id == "f6ba1c2d3e4f5061728394a5b6c7d8e9"
+    assert [action.name for action in challenge.actions] == ["action-0", "action-1"]
+    assert [action.action_class for action in challenge.actions] == ["move-head-and-back"] * 2
+    assert [action.parameters["direction"] for action in challenge.actions] == ["right", "top"]
+    assert mock_server.last_request.json() == {"length": 2}
+
+
+@pytest.mark.dasface
+def test_generate_sequential_challenge_sends_nothing_it_was_not_given(
+    dasface_client,
+    mock_server,
+    dasface_challenge_token,
+):
+    """The service has its own defaults, so an empty request has to stay empty."""
+    if not mock_server:
+        pytest.skip("Asserted on the request body")
+
+    mock_server.post(f"{SANDBOX_EU}/challenges/generation/sequential", text=dasface_challenge_token)
+
+    dasface_client.generate_sequential_challenge()
+
+    assert mock_server.last_request.json() == {}
+
+
+@pytest.mark.dasface
+def test_a_token_that_cannot_be_read_is_a_server_error(dasface_client, mock_server):
+    """A 200 whose token is not a token is the service breaking its own contract."""
+    if not mock_server:
+        pytest.skip("This is a mocked response body")
+
+    mock_server.post(f"{SANDBOX_EU}/challenges/generation/sequential", text="not a token")
+
+    with pytest.raises(ServerError):
+        dasface_client.generate_sequential_challenge()
+
+
+@pytest.mark.dasface
+def test_analyse_challenge_response_sends_the_token_verbatim(
+    dasface_client,
+    mock_server,
+    dasface_challenge_token,
+    dasface_challenge_analysis_response,
+    face_image,
+    face_video,
+    annotations,
+):
+    """Everything is base64 except the token, which has to arrive exactly as it was issued."""
+    if not mock_server:
+        pytest.skip("Covered against the real service by test_real_analyse_challenge_response")
+
+    mock_server.post(
+        f"{SANDBOX_EU}/challenges/analysis/video-photo",
+        json=dasface_challenge_analysis_response,
+    )
+
+    response = dasface_client.analyse_challenge_response(
+        ChallengeAnalysisInput(
+            token=dasface_challenge_token,
+            annotations=annotations,
+            anchor_image=face_image,
+            target_video=face_video,
+        ),
+    )
+
+    assert response.confidence == dasface_challenge_analysis_response["confidence"]
+    assert response.errors == []
+
+    sent = mock_server.last_request.json()
+    assert sent["token"] == dasface_challenge_token
+    assert base64.b64decode(sent["annotations"]) == annotations
+    assert base64.b64decode(sent["anchorImage"]) == face_image
+    assert base64.b64decode(sent["targetVideo"]) == face_video
+
+
+@pytest.mark.dasface
+def test_a_failed_analysis_comes_back_as_a_result_rather_than_an_exception(
+    dasface_client,
+    mock_server,
+    dasface_challenge_token,
+    dasface_challenge_failed_analysis_response,
+    face_image,
+    face_video,
+    annotations,
+):
+    """Failures come back in a 200 here, which no other das-Face endpoint does.
+
+    A face too small to analyse raises everywhere else. Here it arrives as a null confidence
+    with the reason beside it, so the client hands both back instead of inventing an
+    exception the service did not raise.
+    """
+    if not mock_server:
+        pytest.skip("Covered against the real service by test_real_analysis_reports_a_face_that_is_too_small")
+
+    mock_server.post(
+        f"{SANDBOX_EU}/challenges/analysis/video-photo",
+        json=dasface_challenge_failed_analysis_response,
+    )
+
+    response = dasface_client.analyse_challenge_response(
+        ChallengeAnalysisInput(
+            token=dasface_challenge_token,
+            annotations=annotations,
+            anchor_image=face_image,
+            target_video=face_video,
+        ),
+    )
+
+    assert response.confidence is None
+    assert [(error.code, error.message) for error in response.errors] == [
+        ("FaceTooSmallForIAS", "Face bounding box width is too small"),
+    ]
+
+
+@pytest.mark.dasface
+def test_an_expired_challenge_is_reported_as_such(
+    dasface_client,
+    mock_server,
+    dasface_challenge_token,
+    dasface_expired_challenge_response,
+    face_image,
+    face_video,
+    annotations,
+):
+    if not mock_server:
+        pytest.skip("Reaching this for real means waiting out a challenge, five minutes at least")
+
+    mock_server.post(
+        f"{SANDBOX_EU}/challenges/analysis/video-photo",
+        json=dasface_expired_challenge_response,
+        status_code=400,
+    )
+
+    with pytest.raises(ExpiredOrInvalidChallengeError):
+        dasface_client.analyse_challenge_response(
+            ChallengeAnalysisInput(
+                token=dasface_challenge_token,
+                annotations=annotations,
+                anchor_image=face_image,
+                target_video=face_video,
+            ),
+        )
+
+
+@pytest.mark.dasface
+def test_real_generate_sequential_challenge(real_dasface):
+    """The challenge names the actions to prompt for, and says when it stops being valid."""
+    challenge = real_dasface.generate_sequential_challenge(SequentialChallengeInput(length=3, expiration=300))
+
+    assert challenge.token.count(".") == 2
+    assert len(challenge.actions) == 3
+    assert [action.name for action in challenge.actions] == ["action-0", "action-1", "action-2"]
+    assert all(action.action_class for action in challenge.actions)
+    assert challenge.expires > challenge.timestamp
+    assert challenge.expires > datetime.now(tz=UTC)
+
+
+@pytest.mark.dasface
+def test_real_a_challenge_length_out_of_range_is_refused(real_dasface):
+    """1 to 6, and the service says which field and which range."""
+    with pytest.raises(FormValidationError, match="between 1 and 6"):
+        real_dasface.generate_sequential_challenge(SequentialChallengeInput(length=9))
+
+
+@pytest.mark.dasface
+def test_real_analyse_challenge_response(real_dasface, face_image_path, face_video_path, annotations_path):
+    """A recording is analysed against the challenge it was issued for.
+
+    The confidence itself is not asserted: this video was not recorded performing these
+    actions, and the actions are random, so the score is whatever the analysis makes of it.
+    What matters here is that the round trip works and the service reports no errors.
+    """
+    challenge = real_dasface.generate_sequential_challenge()
+
+    response = real_dasface.analyse_challenge_response(
+        ChallengeAnalysisInput(
+            token=challenge.token,
+            annotations=annotations_path,
+            anchor_image=face_image_path,
+            target_video=face_video_path,
+        ),
+    )
+
+    assert response.errors == []
+    assert 0 <= response.confidence <= 1
+
+
+@pytest.mark.dasface
+def test_real_analysis_reports_a_face_that_is_too_small(
+    real_dasface,
+    other_face_image_path,
+    face_video_path,
+    annotations_path,
+):
+    """The same condition that raises elsewhere arrives here as a null confidence."""
+    challenge = real_dasface.generate_sequential_challenge()
+
+    response = real_dasface.analyse_challenge_response(
+        ChallengeAnalysisInput(
+            token=challenge.token,
+            annotations=annotations_path,
+            anchor_image=other_face_image_path,
+            target_video=face_video_path,
+        ),
+    )
+
+    assert response.confidence is None
+    assert [error.code for error in response.errors] == ["FaceTooSmallForIAS"]
+
+
+@pytest.mark.dasface
+def test_real_a_tampered_token_is_refused(real_dasface, face_image_path, face_video_path, annotations_path):
+    """The signature is the point of the token, and the service checks it."""
+    challenge = real_dasface.generate_sequential_challenge()
+    header, payload, signature = challenge.token.split(".")
+    tampered = f"{header}.{payload[:-4]}AAAA.{signature}"
+
+    with pytest.raises(FormValidationError, match=r"signature|Token"):
+        real_dasface.analyse_challenge_response(
+            ChallengeAnalysisInput(
+                token=tampered,
+                annotations=annotations_path,
+                anchor_image=face_image_path,
+                target_video=face_video_path,
+            ),
+        )
+
+
+@pytest.mark.dasface
+def test_a_validation_failure_names_the_field(dasface_client, mock_server, dasface_field_validation_response):
+    """The service's `message` names the form; only its `errors` say what is wrong.
+
+    `Incorrect parameters in GenerateSequentialChallengeForm` on its own tells a caller
+    nothing actionable, so the field errors are carried through rather than dropped.
+    """
+    if not mock_server:
+        pytest.skip("Covered against the real service by test_real_a_challenge_length_out_of_range_is_refused")
+
+    mock_server.post(
+        f"{SANDBOX_EU}/challenges/generation/sequential",
+        json=dasface_field_validation_response,
+        status_code=400,
+    )
+
+    with pytest.raises(FormValidationError) as raised:
+        dasface_client.generate_sequential_challenge(SequentialChallengeInput(length=9))
+
+    assert raised.value.errors == [("length", "Number must be between 1 and 6.")]
+    assert "length: Number must be between 1 and 6." in str(raised.value)
