@@ -885,6 +885,28 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#changed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Changed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#deprecated" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Deprecated
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#documentation" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -924,7 +946,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#changed" class="md-nav__link">
+  <a href="#changed_1" class="md-nav__link">
     <span class="md-ellipsis">
       
         Changed
@@ -1174,6 +1196,28 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#changed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Changed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#deprecated" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Deprecated
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#documentation" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1213,7 +1257,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#changed" class="md-nav__link">
+  <a href="#changed_1" class="md-nav__link">
     <span class="md-ellipsis">
       
         Changed
@@ -1445,6 +1489,19 @@
 <p>Notable changes to <code>vericlient</code>, newest first. Dates are the day the version was released.
 The project follows <a href="https://semver.org/">semantic versioning</a>.</p>
 <h2 id="unreleased">Unreleased<a class="headerlink" href="#unreleased" title="Link to this section">&para;</a></h2>
+<h3 id="changed">Changed<a class="headerlink" href="#changed" title="Link to this section">&para;</a></h3>
+<ul>
+<li><strong>das-Face methods take their arguments directly.</strong> <code>client.verify_photo(anchor_image=a,
+  target_image=b)</code> rather than <code>client.verify_photo(VerifyPhotoInput(anchor_image=a,
+  target_image=b))</code>. The models are unchanged and still public — the methods build them, so
+  validation and every error message are exactly as before — but calling no longer needs an
+  import, and an editor can offer the parameters.</li>
+</ul>
+<h3 id="deprecated">Deprecated<a class="headerlink" href="#deprecated" title="Link to this section">&para;</a></h3>
+<ul>
+<li><strong>Passing an input model to a das-Face method.</strong> It still works and now raises
+  <code>DeprecationWarning</code>; it is removed in 1.0.0.</li>
+</ul>
 <h3 id="documentation">Documentation<a class="headerlink" href="#documentation" title="Link to this section">&para;</a></h3>
 <ul>
 <li><strong>Self-hosted deployments have a page section of their own.</strong> <code>headers</code> was always
@@ -1476,7 +1533,7 @@ covered.</p>
 <li><code>utils.encode_base64</code>.</li>
 <li>The real-infrastructure coverage guard now covers every client, not just VCSP.</li>
 </ul>
-<h3 id="changed">Changed<a class="headerlink" href="#changed" title="Link to this section">&para;</a></h3>
+<h3 id="changed_1">Changed<a class="headerlink" href="#changed_1" title="Link to this section">&para;</a></h3>
 <ul>
 <li>das-Face's <code>FormValidationError</code> now carries the service's per-field errors. Its <code>message</code>
   only ever names the form it was validating; the field and the reason were being dropped.</li>
