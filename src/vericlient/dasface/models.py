@@ -7,7 +7,9 @@ snake_case. The models use Python names and alias them, so callers write
 
 from datetime import datetime
 
-from pydantic import BaseModel, ConfigDict, field_validator, model_validator
+from pydantic import BaseModel, ConfigDict, model_validator
+
+from vericlient.types import Media
 
 
 class BiometricsModel(BaseModel):
@@ -74,20 +76,12 @@ class GenerateCredentialInput(BaseModel):
 
     """
 
-    model_config = ConfigDict(arbitrary_types_allowed=True)
+    model_config = ConfigDict(arbitrary_types_allowed=True, title="generate_credential()")
 
-    image: str | bytes
+    image: Media
     hash: str | None = None
     mode: str | None = None
     inemex: bool = False
-
-    @field_validator("image")
-    def image_must_be_str_or_bytes(cls, value: object) -> object:  # noqa: N805
-        """Reject anything that is neither a path nor bytes."""
-        if not isinstance(value, (str, bytes)):
-            error = "image must be a string or a bytes object"
-            raise TypeError(error)
-        return value
 
     @model_validator(mode="after")
     def model_must_be_named_in_full(self) -> "GenerateCredentialInput":
@@ -130,6 +124,8 @@ class GetModelMetadataFromCredentialInput(BaseModel):
 
     """
 
+    model_config = ConfigDict(title="get_model_metadata_from_credential()")
+
     credential: str
 
 
@@ -155,10 +151,10 @@ class VerifyPhotoInput(BaseModel):
 
     """
 
-    model_config = ConfigDict(arbitrary_types_allowed=True)
+    model_config = ConfigDict(arbitrary_types_allowed=True, title="verify_photo()")
 
-    anchor_image: str | bytes
-    target_image: str | bytes
+    anchor_image: Media
+    target_image: Media
     mode: str | None = None
 
 
@@ -171,10 +167,10 @@ class VerifyVideoInput(BaseModel):
 
     """
 
-    model_config = ConfigDict(arbitrary_types_allowed=True)
+    model_config = ConfigDict(arbitrary_types_allowed=True, title="verify_video()")
 
-    anchor_image: str | bytes
-    target_video: str | bytes
+    anchor_image: Media
+    target_video: Media
 
 
 class VerifyCredentialInput(BaseModel):
@@ -186,9 +182,9 @@ class VerifyCredentialInput(BaseModel):
 
     """
 
-    model_config = ConfigDict(arbitrary_types_allowed=True)
+    model_config = ConfigDict(arbitrary_types_allowed=True, title="verify_credential()")
 
-    anchor_image: str | bytes
+    anchor_image: Media
     target_credential: str
 
 
@@ -212,9 +208,9 @@ class PhotoAuthenticityInput(BaseModel):
 
     """
 
-    model_config = ConfigDict(arbitrary_types_allowed=True)
+    model_config = ConfigDict(arbitrary_types_allowed=True, title="check_photo_authenticity()")
 
-    image: str | bytes
+    image: Media
 
 
 class PhotoAuthenticityOutput(BaseModel):
@@ -238,10 +234,10 @@ class VideoAuthenticityInput(BaseModel):
 
     """
 
-    model_config = ConfigDict(arbitrary_types_allowed=True)
+    model_config = ConfigDict(arbitrary_types_allowed=True, title="check_video_authenticity()")
 
-    anchor_image: str | bytes
-    target_video: str | bytes
+    anchor_image: Media
+    target_video: Media
 
 
 class VideoAuthenticityOutput(BaseModel):
@@ -270,6 +266,8 @@ class SequentialChallengeInput(BaseModel):
             service defaults to 1800
 
     """
+
+    model_config = ConfigDict(title="generate_sequential_challenge()")
 
     length: int | None = None
     expiration: int | None = None
@@ -326,12 +324,12 @@ class ChallengeAnalysisInput(BaseModel):
 
     """
 
-    model_config = ConfigDict(arbitrary_types_allowed=True)
+    model_config = ConfigDict(arbitrary_types_allowed=True, title="analyse_challenge_response()")
 
     token: str
-    annotations: str | bytes
-    anchor_image: str | bytes
-    target_video: str | bytes
+    annotations: Media
+    anchor_image: Media
+    target_video: Media
 
 
 class ChallengeError(BaseModel):
