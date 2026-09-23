@@ -3,6 +3,11 @@
 
 from pydantic import BaseModel, ConfigDict, field_validator
 
+from vericlient.types import Media
+
+DEFAULT_CALIBRATION = "telephone-channel"
+"""The calibration the service applies when none is asked for."""
+
 
 class DaspeakResponse(BaseModel):
     """Base class for the Daspeak API responses.
@@ -47,6 +52,8 @@ class GetModelMetadataInput(BaseModel):
 
     """
 
+    model_config = ConfigDict(title="get_model_metadata()")
+
     hash: str
 
 
@@ -69,6 +76,8 @@ class GetModelCalibrationsInput(BaseModel):
 
     """
 
+    model_config = ConfigDict(title="get_model_calibrations()")
+
     hash: str
 
 
@@ -90,6 +99,8 @@ class GetModelMetadataFromCredentialInput(BaseModel):
         credential: The credential to read the originating model from
 
     """
+
+    model_config = ConfigDict(title="get_model_metadata_from_credential()")
 
     credential: str
 
@@ -118,19 +129,12 @@ class GenerateCredentialInput(BaseModel):
 
     """
 
-    audio: str | bytes
+    audio: Media
     hash: str
     channel: int = 1
-    calibration: str = "telephone-channel"
+    calibration: str = DEFAULT_CALIBRATION
 
-    @field_validator("audio")
-    def must_be_str_or_bytes(cls, value: object):
-        if not isinstance(value, (str, bytes)):
-            error = "audio must be a string or a bytes object"
-            raise TypeError(error)
-        return value
-
-    model_config = ConfigDict(arbitrary_types_allowed=True)
+    model_config = ConfigDict(arbitrary_types_allowed=True, title="generate_credential()")
 
 
 class ModelMetadata(BaseModel):
@@ -177,7 +181,7 @@ class CompareInput(BaseModel):
 
     """
 
-    calibration: str = "telephone-channel"
+    calibration: str = DEFAULT_CALIBRATION
 
 
 class CompareOutput(DaspeakResponse):
@@ -204,6 +208,8 @@ class CompareCredential2CredentialInput(CompareInput):
         calibration: The calibration to use
 
     """
+
+    model_config = ConfigDict(title="compare_credential_to_credential()")
 
     credential_reference: str
     credential_to_evaluate: str
@@ -233,17 +239,10 @@ class CompareCredential2AudioInput(CompareInput):
     """
 
     credential_reference: str
-    audio_to_evaluate: str | bytes
+    audio_to_evaluate: Media
     channel: int = 1
 
-    @field_validator("audio_to_evaluate")
-    def must_be_str_or_bytes(cls, value: object):
-        if not isinstance(value, (str, bytes)):
-            error = "audio must be a string or a bytes object"
-            raise TypeError(error)
-        return value
-
-    model_config = ConfigDict(arbitrary_types_allowed=True)
+    model_config = ConfigDict(arbitrary_types_allowed=True, title="compare_credential_to_audio()")
 
 
 class CompareCredential2AudioOutput(CompareOutput):
@@ -284,19 +283,12 @@ class CompareAudio2AudioInput(CompareInput):
 
     """
 
-    audio_reference: str | bytes
-    audio_to_evaluate: str | bytes
+    audio_reference: Media
+    audio_to_evaluate: Media
     channel_reference: int = 1
     channel_to_evaluate: int = 1
 
-    @field_validator("audio_reference", "audio_to_evaluate")
-    def audio_ref_must_be_str_or_bytes(cls, value: object):
-        if not isinstance(value, (str, bytes)):
-            error = "audio must be a string or a bytes object"
-            raise TypeError(error)
-        return value
-
-    model_config = ConfigDict(arbitrary_types_allowed=True)
+    model_config = ConfigDict(arbitrary_types_allowed=True, title="compare_audio_to_audio()")
 
 
 class CompareAudio2AudioOutput(CompareOutput):
@@ -341,32 +333,33 @@ class CompareAudio2CredentialsInput(CompareInput):
 
     """
 
-    audio_to_evaluate: str | bytes
-    credential_list: list[tuple[str, str]]
+    audio_to_evaluate: Media
+    credential_list: list[dict[str, str]]
     channel: int = 1
 
-    @field_validator("audio_to_evaluate")
-    def must_be_str_or_bytes(cls, value: object):
-        if not isinstance(value, (str, bytes)):
-            error = "audio must be a string or a bytes object"
-            raise TypeError(error)
-        return value
-
-    @field_validator("credential_list")
+    @field_validator("credential_list", mode="before")
     def validate_and_build_list_format(cls, value: list):
+        """Turn `(id, credential)` pairs into the shape the service wants.
+
+        Accepts its own output as well, so `Model(**dict(model))` round-trips. Without that
+        a model could not be rebuilt from its own fields, which is exactly what happens when
+        one method hands its arguments to another.
+        """
         if not value:
             error = "credential_list must not be empty"
             raise ValueError(error)
-        error = "credential_list must contain touples with two strings"
+        if all(isinstance(item, dict) and {"id", "credential"} <= set(item) for item in value):
+            return value
+        error = "credential_list must contain pairs of two strings: an id and a credential"
         n_items = 2
         for item in value:
-            if not isinstance(item, tuple) or len(item) != n_items:
+            if not isinstance(item, (tuple, list)) or len(item) != n_items:
                 raise ValueError(error)
             if not all(isinstance(i, str) for i in item):
                 raise ValueError(error)
         return [{"id": item[0], "credential": item[1]} for item in value]
 
-    model_config = ConfigDict(arbitrary_types_allowed=True)
+    model_config = ConfigDict(arbitrary_types_allowed=True, title="identify_audio()")
 
 
 class CompareAudio2CredentialsOutput(DaspeakResponse):
@@ -408,18 +401,28 @@ class CompareCredential2CredentialsInput(CompareInput):
 
     """
 
-    credential_to_evaluate: str
-    credential_list: list[tuple[str, str]]
+    model_config = ConfigDict(title="identify_credential()")
 
-    @field_validator("credential_list")
+    credential_to_evaluate: str
+    credential_list: list[dict[str, str]]
+
+    @field_validator("credential_list", mode="before")
     def validate_and_build_list_format(cls, value: list):
+        """Turn `(id, credential)` pairs into the shape the service wants.
+
+        Accepts its own output as well, so `Model(**dict(model))` round-trips. Without that
+        a model could not be rebuilt from its own fields, which is exactly what happens when
+        one method hands its arguments to another.
+        """
         if not value:
             error = "credential_list must not be empty"
             raise ValueError(error)
-        error = "credential_list must contain touples with two strings"
+        if all(isinstance(item, dict) and {"id", "credential"} <= set(item) for item in value):
+            return value
+        error = "credential_list must contain pairs of two strings: an id and a credential"
         n_items = 2
         for item in value:
-            if not isinstance(item, tuple) or len(item) != n_items:
+            if not isinstance(item, (tuple, list)) or len(item) != n_items:
                 raise ValueError(error)
             if not all(isinstance(i, str) for i in item):
                 raise ValueError(error)

@@ -7,13 +7,13 @@ The project follows [semantic versioning](https://semver.org/).
 
 ### Changed
 
-- **das-Face methods take their arguments directly.** `client.verify_photo(anchor_image=a,
+- **das-Peak and das-Face methods take their arguments directly.** `client.verify_photo(anchor_image=a,
   target_image=b)` rather than `client.verify_photo(VerifyPhotoInput(anchor_image=a,
   target_image=b))`. The models are unchanged and still public — the methods build them, so
   validation and every error message are exactly as before — but calling no longer needs an
   import, and an editor can offer the parameters.
 
-- **das-Face input errors name the method and say one thing.** A wrong type used to produce
+- **Input errors name the method and say one thing.** A wrong type used to produce
   two pydantic failures — *should be a valid string* and *should be a valid bytes* — neither
   of which was the mistake, under a header naming a model the caller no longer imports. Now
   it is one error, *expected a path to a file, or its content as bytes*, under
@@ -21,8 +21,13 @@ The project follows [semantic versioning](https://semver.org/).
 
 ### Deprecated
 
-- **Passing an input model to a das-Face method.** It still works and now raises
-  `DeprecationWarning`; it is removed in 1.0.0.
+- **Passing an input model to a das-Peak or das-Face method.** It still works and now
+  raises `DeprecationWarning`; it is removed in 1.0.0.
+- **`DaspeakClient.compare`.** It chose between five comparisons by the *type* of the model
+  handed to it, so it could not be called without importing one of five classes. Each has a
+  method of its own now: `compare_credential_to_audio`, `compare_audio_to_audio`,
+  `compare_credential_to_credential`, `identify_audio` and `identify_credential`. `compare`
+  keeps dispatching, with a warning naming the replacement, until 1.0.0.
 
 ### Documentation
 

@@ -25,28 +25,26 @@ print(f"Biometrics models: {client.get_models().models}")
 
 ```python
 from vericlient import DaspeakClient
-from vericlient.daspeak.models import GetModelMetadataInput
 
 client = DaspeakClient(apikey="your_api_key")
 model = client.get_models().models[-1]
 
-metadata = client.get_model_metadata(GetModelMetadataInput(hash=model)).metadata
+metadata = client.get_model_metadata(hash=model).metadata
 print(f"Model {metadata.hash} is {metadata.description}")
 ```
 
 ## Get the calibrations a model supports
 
 Any value returned here is valid as the `calibration` argument of `generate_credential`
-and of the comparison inputs.
+and of the comparison methods.
 
 ```python
 from vericlient import DaspeakClient
-from vericlient.daspeak.models import GetModelCalibrationsInput
 
 client = DaspeakClient(apikey="your_api_key")
 model = client.get_models().models[-1]
 
-calibrations = client.get_model_calibrations(GetModelCalibrationsInput(hash=model)).calibrations
+calibrations = client.get_model_calibrations(hash=model).calibrations
 print(f"Supported calibrations: {calibrations}")
 ```
 
@@ -57,12 +55,11 @@ service offers today.
 
 ```python
 from vericlient import DaspeakClient
-from vericlient.daspeak.models import GetModelMetadataFromCredentialInput
 
 client = DaspeakClient(apikey="your_api_key")
 
 metadata = client.get_model_metadata_from_credential(
-    GetModelMetadataFromCredentialInput(credential=stored_credential),
+    credential=stored_credential,
 ).metadata
 print(f"Generated with model {metadata.hash} ({metadata.description})")
 ```
@@ -73,13 +70,12 @@ The following code generates a credential from an audio file using the last mode
 
 ```python
 from vericlient import DaspeakClient
-from vericlient.daspeak.models import GenerateCredentialInput
 
 client = DaspeakClient(apikey="your_api_key")
-model_input = GenerateCredentialInput(
+model_input 
     audio="/home/audio.wav",
     hash=client.get_models().models[-1],
-)
+
 generate_credential_output = client.generate_credential(model_input)
 print(f"Credential generated with an audio file: {generate_credential_output.credential}")
 ```
@@ -96,14 +92,13 @@ print(f"Net speech duration of the audio file: {generate_credential_output.net_s
 
 ```python
 from vericlient import DaspeakClient
-from vericlient.daspeak.models import GenerateCredentialInput
 
 client = DaspeakClient(apikey="your_api_key")
 with open("/home/audio.wav", "rb") as f:
-    model_input = GenerateCredentialInput(
+    model_input 
         audio=f.read(),
         hash=client.get_models().models[-1],
-    )
+    
 generate_credential_output = client.generate_credential(model_input)
 print(f"Credential generated with virtual file: {generate_credential_output.credential}")
 ```
@@ -114,14 +109,12 @@ You can compare a credential with an audio file using the following code:
 
 ```python
 from vericlient import DaspeakClient
-from vericlient.daspeak.models import CompareCredential2AudioInput
 
 client = DaspeakClient(apikey="your_api_key")
-compare_input = CompareCredential2AudioInput(
+compare_output = client.compare_credential_to_audio(
     audio_to_evaluate="/home/audio.wav",
     credential_reference=generate_credential_output.credential,
 )
-compare_output = client.compare(compare_input)
 print(f"Similarity between the credential and the audio file: {compare_output.score}")
 ```
 
@@ -137,15 +130,13 @@ print(f"Net speech duration of the audio file: {compare_output.net_speech_durati
 
 ```python
 from vericlient import DaspeakClient
-from vericlient.daspeak.models import CompareCredential2AudioInput
 
 client = DaspeakClient(apikey="your_api_key")
 with open("/home/audio.wav", "rb") as f:
-    compare_input = CompareCredential2AudioInput(
+    compare_output = client.compare_credential_to_audio(
         audio_to_evaluate=f.read(),
         credential_reference=generate_credential_output.credential,
     )
-compare_output = client.compare(compare_input)
 print(f"Similarity between the credential and the virtual file: {compare_output.score}")
 ```
 
@@ -155,15 +146,13 @@ You can compare two audio files, no matter if they are virtual or real:
 
 ```python
 from vericlient import DaspeakClient
-from vericlient.daspeak.models import CompareAudio2AudioInput
 
 client = DaspeakClient(apikey="your_api_key")
 with open("/home/audio.wav", "rb") as f:
-    compare_input = CompareAudio2AudioInput(
+    compare_output = client.compare_audio_to_audio(
         audio_reference="/home/audio.wav",
         audio_to_evaluate=f.read(),
     )
-compare_output = client.compare(compare_input)
 print(f"Similarity between the two audio files: {compare_output.score}")
 ```
 
@@ -173,14 +162,12 @@ You can compare two credentials using the following code:
 
 ```python
 from vericlient import DaspeakClient
-from vericlient.daspeak.models import CompareCredential2CredentialInput
 
 client = DaspeakClient(apikey="your_api_key")
-compare_input = CompareCredential2CredentialInput(
+compare_output = client.compare_credential_to_credential(
     credential_reference=generate_credential_output.credential,
     credential_to_evaluate=generate_credential_output.credential,
 )
-compare_output = client.compare(compare_input)
 print(f"Similarity between the two credentials: {compare_output.score}")
 ```
 
@@ -190,16 +177,14 @@ You can identify a subject comparing an audio against a list of credentials usin
 
 ```python
 from vericlient import DaspeakClient
-from vericlient.daspeak.models import CompareAudio2CredentialsInput
 
 client = DaspeakClient(apikey="your_api_key")
-compare_input = CompareAudio2CredentialsInput(
+compare_output = client.identify_audio(
     audio_to_evaluate="/home/audio.wav",
     credential_list=[
         ("subject1_credential", generate_credential_output.credential),
         ("subject2_credential", generate_credential_output.credential),
     ],
 )
-compare_output = client.compare(compare_input)
 print(f"Subject identified: {compare_output.scores}")
 ```
