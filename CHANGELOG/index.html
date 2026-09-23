@@ -1491,11 +1491,20 @@ The project follows <a href="https://semver.org/">semantic versioning</a>.</p>
 <h2 id="unreleased">Unreleased<a class="headerlink" href="#unreleased" title="Link to this section">&para;</a></h2>
 <h3 id="changed">Changed<a class="headerlink" href="#changed" title="Link to this section">&para;</a></h3>
 <ul>
-<li><strong>das-Face methods take their arguments directly.</strong> <code>client.verify_photo(anchor_image=a,
+<li>
+<p><strong>das-Face methods take their arguments directly.</strong> <code>client.verify_photo(anchor_image=a,
   target_image=b)</code> rather than <code>client.verify_photo(VerifyPhotoInput(anchor_image=a,
   target_image=b))</code>. The models are unchanged and still public — the methods build them, so
   validation and every error message are exactly as before — but calling no longer needs an
-  import, and an editor can offer the parameters.</li>
+  import, and an editor can offer the parameters.</p>
+</li>
+<li>
+<p><strong>das-Face input errors name the method and say one thing.</strong> A wrong type used to produce
+  two pydantic failures — <em>should be a valid string</em> and <em>should be a valid bytes</em> — neither
+  of which was the mistake, under a header naming a model the caller no longer imports. Now
+  it is one error, <em>expected a path to a file, or its content as bytes</em>, under
+  <code>verify_photo()</code>.</p>
+</li>
 </ul>
 <h3 id="deprecated">Deprecated<a class="headerlink" href="#deprecated" title="Link to this section">&para;</a></h3>
 <ul>
