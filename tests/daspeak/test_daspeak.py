@@ -1,23 +1,17 @@
 import pytest
+from pydantic import ValidationError
 
 from vericlient import DaspeakClient
 from vericlient.daspeak.exceptions import ModelNotAvailableError
 from vericlient.daspeak.models import (
-    CompareAudio2AudioInput,
     CompareAudio2AudioOutput,
-    CompareAudio2CredentialsInput,
     CompareAudio2CredentialsOutput,
-    CompareCredential2AudioInput,
     CompareCredential2AudioOutput,
     CompareCredential2CredentialInput,
     CompareCredential2CredentialOutput,
-    CompareCredential2CredentialsInput,
     CompareCredential2CredentialsOutput,
-    GenerateCredentialInput,
     GenerateCredentialOutput,
-    GetModelCalibrationsInput,
     GetModelCalibrationsOutput,
-    GetModelMetadataFromCredentialInput,
     GetModelMetadataFromCredentialOutput,
     GetModelMetadataInput,
     GetModelMetadataOutput,
@@ -85,7 +79,7 @@ def test_daspeak_get_model_metadata(mock_server, daspeak_get_model_metadata_para
         else:
             model = daspeak_client.get_models().models[-1]
 
-        response = daspeak_client.get_model_metadata(GetModelMetadataInput(hash=model))
+        response = daspeak_client.get_model_metadata(hash=model)
 
         assert isinstance(response, GetModelMetadataOutput)
         assert response.metadata.hash == model
@@ -108,7 +102,7 @@ def test_daspeak_get_model_calibrations(mock_server, daspeak_get_model_calibrati
         else:
             model = daspeak_client.get_models().models[-1]
 
-        response = daspeak_client.get_model_calibrations(GetModelCalibrationsInput(hash=model))
+        response = daspeak_client.get_model_calibrations(hash=model)
 
         assert isinstance(response, GetModelCalibrationsOutput)
         assert response.calibrations
@@ -137,11 +131,12 @@ def test_daspeak_get_model_metadata_from_credential(
         else:
             model = daspeak_client.get_models().models[-1]
             credential = daspeak_client.generate_credential(
-                GenerateCredentialInput(audio=audio_file, hash=model),
+                audio=audio_file,
+                hash=model,
             ).credential
 
         response = daspeak_client.get_model_metadata_from_credential(
-            GetModelMetadataFromCredentialInput(credential=credential),
+            credential=credential,
         )
 
         assert isinstance(response, GetModelMetadataFromCredentialOutput)
@@ -163,7 +158,7 @@ def test_daspeak_get_model_metadata_unknown_hash(mock_server, daspeak_model_not_
             mock_server.post(endpoint, json=mock_response, status_code=mock_status_code)
 
         with pytest.raises(exception or ModelNotAvailableError):
-            daspeak_client.get_model_metadata(GetModelMetadataInput(hash="not-a-real-hash"))
+            daspeak_client.get_model_metadata(hash="not-a-real-hash")
 
 
 @pytest.mark.daspeak
@@ -182,18 +177,10 @@ def test_daspeak_generate_credential(mock_server, daspeak_generate_credential_pa
         else:
             model = daspeak_client.get_models().models[-1]
 
-        input_model = GenerateCredentialInput(
-            audio=audio_file_path,
-            hash=model,
-        )
-        response = daspeak_client.generate_credential(input_model)
+        response = daspeak_client.generate_credential(audio=audio_file_path, hash=model)
         assert isinstance(response, GenerateCredentialOutput)
 
-        input_model = GenerateCredentialInput(
-            audio=audio_file,
-            hash=model,
-        )
-        response = daspeak_client.generate_credential(input_model)
+        response = daspeak_client.generate_credential(audio=audio_file, hash=model)
         assert isinstance(response, GenerateCredentialOutput)
 
 
@@ -216,12 +203,8 @@ def _test_error(  # noqa: ANN202
         else:
             model = daspeak_client.get_models().models[-1]
 
-        input_model = GenerateCredentialInput(
-            audio=audio_file,
-            hash=model,
-        )
         with pytest.raises(exception):
-            daspeak_client.generate_credential(input_model)
+            daspeak_client.generate_credential(audio=audio_file, hash=model)
 
 
 @pytest.mark.daspeak
@@ -335,13 +318,8 @@ def test_daspeak_generate_credential_invalid_specified_channel_error(
         else:
             model = daspeak_client.get_models().models[-1]
 
-        input_model = GenerateCredentialInput(
-            audio=audio_file,
-            hash=model,
-            channel=100,
-        )
         with pytest.raises(exception):
-            daspeak_client.generate_credential(input_model)
+            daspeak_client.generate_credential(audio=audio_file, hash=model, channel=100)
 
 
 @pytest.mark.daspeak
@@ -364,13 +342,8 @@ def test_daspeak_generate_credential_calibration_not_available_error(
         else:
             model = daspeak_client.get_models().models[-1]
 
-        input_model = GenerateCredentialInput(
-            audio=audio_file,
-            hash=model,
-            calibration="invalid-calibration",
-        )
         with pytest.raises(exception):
-            daspeak_client.generate_credential(input_model)
+            daspeak_client.generate_credential(audio=audio_file, hash=model, calibration="invalid-calibration")
 
 
 @pytest.mark.daspeak
@@ -404,12 +377,8 @@ def test_daspeak_server_error(
             mock_server.post(endpoint, json=mock_response, status_code=mock_status_code)
             model = "fake-model"
 
-            input_model = GenerateCredentialInput(
-                audio=audio_file,
-                hash=model,
-            )
             with pytest.raises(exception):
-                daspeak_client.generate_credential(input_model)
+                daspeak_client.generate_credential(audio=audio_file, hash=model)
 
 
 @pytest.mark.daspeak
@@ -434,21 +403,20 @@ def test_daspeak_compare_credential2audio(
         else:
             model = daspeak_client.get_models().models[-1]
             credential_reference = daspeak_client.generate_credential(
-                GenerateCredentialInput(audio=audio_file_path, hash=model),
+                audio=audio_file_path,
+                hash=model,
             ).credential
 
-        input_model = CompareCredential2AudioInput(
+        response = daspeak_client.compare_credential_to_audio(
             audio_to_evaluate=audio_file_path,
             credential_reference=credential_reference,
         )
-        response = daspeak_client.compare(input_model)
         assert isinstance(response, CompareCredential2AudioOutput)
 
-        input_model = CompareCredential2AudioInput(
+        response = daspeak_client.compare_credential_to_audio(
             audio_to_evaluate=audio_file,
             credential_reference=credential_reference,
         )
-        response = daspeak_client.compare(input_model)
         assert isinstance(response, CompareCredential2AudioOutput)
 
 
@@ -468,16 +436,13 @@ def test_daspeak_compare_audio2audio(
         )
         if mock_server:
             mock_server.post(endpoint, json=mock_response, status_code=mock_status_code)
-            model = "fake-model"
-        else:
-            model = daspeak_client.get_models().models[-1]
 
-        input_model = CompareAudio2AudioInput(
+        # No model is named here: this endpoint compares two recordings directly. The old
+        # call passed `hash=`, which this input never had and pydantic silently dropped.
+        response = daspeak_client.compare_audio_to_audio(
             audio_reference=audio_file,
             audio_to_evaluate=audio_file,
-            hash=model,
         )
-        response = daspeak_client.compare(input_model)
         assert isinstance(response, CompareAudio2AudioOutput)
 
 
@@ -502,14 +467,14 @@ def test_daspeak_compare_credential2credential(
         else:
             model = daspeak_client.get_models().models[-1]
             credential_reference = daspeak_client.generate_credential(
-                GenerateCredentialInput(audio=audio_file, hash=model),
+                audio=audio_file,
+                hash=model,
             ).credential
 
-        input_model = CompareCredential2CredentialInput(
+        response = daspeak_client.compare_credential_to_credential(
             credential_to_evaluate=credential_reference,
             credential_reference=credential_reference,
         )
-        response = daspeak_client.compare(input_model)
         assert isinstance(response, CompareCredential2CredentialOutput)
 
 
@@ -533,14 +498,13 @@ def test_daspeak_compare_audio2credentials(
             credential_list = [("id1", "fake-credential1"), ("id2", "fake-credential2")]
         else:
             model = daspeak_client.get_models().models[-1]
-            credential = daspeak_client.generate_credential(GenerateCredentialInput(audio=audio_file, hash=model)).credential
+            credential = daspeak_client.generate_credential(audio=audio_file, hash=model).credential
             credential_list = [("id1", credential), ("id2", credential)]
 
-        input_model = CompareAudio2CredentialsInput(
+        response = daspeak_client.identify_audio(
             audio_to_evaluate=audio_file,
             credential_list=credential_list,
         )
-        response = daspeak_client.compare(input_model)
         assert isinstance(response, CompareAudio2CredentialsOutput)
 
         if mock_server:
@@ -570,14 +534,12 @@ def test_daspeak_client_compare_credential2credentials(
             credential_list = [("id1", "fake-credential1"), ("id2", "fake-credential2")]
         else:
             model = daspeak_client.get_models().models[-1]
-            credential = daspeak_client.generate_credential(GenerateCredentialInput(audio=audio_file, hash=model)).credential
+            credential = daspeak_client.generate_credential(audio=audio_file, hash=model).credential
             credential_list = [("id1", credential), ("id2", credential)]
 
-        response = daspeak_client.compare(
-            CompareCredential2CredentialsInput(
-                credential_to_evaluate=credential,
-                credential_list=credential_list,
-            )
+        response = daspeak_client.identify_credential(
+            credential_to_evaluate=credential,
+            credential_list=credential_list,
         )
         assert isinstance(response, CompareCredential2CredentialsOutput)
 
@@ -598,5 +560,59 @@ def test_daspeak_client_invalid_file_path():
     invalid_audio_file_path = "invalid-file-path"
     daspeak_client = DaspeakClient(apikey="fake-apikey")
     with pytest.raises(FileNotFoundError) as excinfo:
-        daspeak_client.generate_credential(GenerateCredentialInput(audio="invalid-file-path", hash="fake-hash"))
+        daspeak_client.generate_credential(audio="invalid-file-path", hash="fake-hash")
     assert f"File {invalid_audio_file_path} not found" in str(excinfo.value)
+
+
+@pytest.mark.daspeak
+def test_compare_still_dispatches_and_warns(mock_server, daspeak_compare_credential2credential_parameters):
+    """`compare()` is deprecated, and has to keep working until 1.0.0.
+
+    It is the one method the change could not convert mechanically: it chose between five
+    comparisons by the *type* of the model handed to it, so it could not be called at all
+    without importing one of five classes. Each of them is a method with a name now, and
+    the warning says which.
+    """
+    if not mock_server:
+        pytest.skip("Covered against the real service by the five methods it dispatches to")
+
+    endpoint, mock_response, mock_status_code, *_ = daspeak_compare_credential2credential_parameters[0]
+    daspeak_client = DaspeakClient(apikey="fake-apikey")
+    mock_server.post(endpoint, json=mock_response, status_code=mock_status_code)
+
+    with pytest.warns(DeprecationWarning, match="compare_credential_to_credential"):
+        response = daspeak_client.compare(
+            CompareCredential2CredentialInput(
+                credential_reference="a-credential",
+                credential_to_evaluate="another-credential",
+            ),
+        )
+
+    assert isinstance(response, CompareCredential2CredentialOutput)
+
+
+@pytest.mark.daspeak
+def test_the_old_call_style_still_works_and_warns(mock_server, daspeak_get_model_metadata_parameters):
+    if not mock_server:
+        pytest.skip("Asserted on the request the client builds")
+
+    endpoint, mock_response, mock_status_code, *_ = daspeak_get_model_metadata_parameters[0]
+    daspeak_client = DaspeakClient(apikey="fake-apikey")
+    mock_server.post(endpoint, json=mock_response, status_code=mock_status_code)
+
+    with pytest.warns(DeprecationWarning, match="GetModelMetadataInput"):
+        daspeak_client.get_model_metadata(GetModelMetadataInput(hash="a-hash"))
+
+
+@pytest.mark.daspeak
+def test_daspeak_input_errors_name_the_method():
+    """The caller wrote `generate_credential(...)`, so that is what the error says."""
+    daspeak_client = DaspeakClient(apikey="fake-apikey")
+
+    with pytest.raises(ValidationError) as raised:
+        daspeak_client.generate_credential(audio=123, hash="a-hash")
+
+    assert len(raised.value.errors()) == 1
+    assert "expected a path to a file, or its content as bytes" in str(raised.value)
+    assert "generate_credential()" in str(raised.value)
+    assert "GenerateCredentialInput" not in str(raised.value)
