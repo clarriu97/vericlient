@@ -1492,7 +1492,7 @@ The project follows <a href="https://semver.org/">semantic versioning</a>.</p>
 <h3 id="changed">Changed<a class="headerlink" href="#changed" title="Link to this section">&para;</a></h3>
 <ul>
 <li>
-<p><strong>das-Peak and das-Face methods take their arguments directly.</strong> <code>client.verify_photo(anchor_image=a,
+<p><strong>Every client method takes its arguments directly.</strong> <code>client.verify_photo(anchor_image=a,
   target_image=b)</code> rather than <code>client.verify_photo(VerifyPhotoInput(anchor_image=a,
   target_image=b))</code>. The models are unchanged and still public — the methods build them, so
   validation and every error message are exactly as before — but calling no longer needs an
@@ -1508,8 +1508,8 @@ The project follows <a href="https://semver.org/">semantic versioning</a>.</p>
 </ul>
 <h3 id="deprecated">Deprecated<a class="headerlink" href="#deprecated" title="Link to this section">&para;</a></h3>
 <ul>
-<li><strong>Passing an input model to a das-Peak or das-Face method.</strong> It still works and now
-  raises <code>DeprecationWarning</code>; it is removed in 1.0.0.</li>
+<li><strong>Passing an input model to any client method.</strong> It still works and now raises
+  <code>DeprecationWarning</code>; it is removed in 1.0.0.</li>
 <li><strong><code>DaspeakClient.compare</code>.</strong> It chose between five comparisons by the <em>type</em> of the model
   handed to it, so it could not be called without importing one of five classes. Each has a
   method of its own now: <code>compare_credential_to_audio</code>, <code>compare_audio_to_audio</code>,
