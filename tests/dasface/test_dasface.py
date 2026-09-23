@@ -9,8 +9,11 @@ from vericlient import DasfaceClient
 from vericlient.dasface.exceptions import (
     DasfaceApiError,
     ExpiredOrInvalidChallengeError,
+    FaceNotFoundError,
     FaceTooSmallForIasError,
     FormValidationError,
+    InvalidVideoMetadataError,
+    UnknownHashAndModeError,
     VideoExtractionError,
 )
 from vericlient.dasface.models import (
@@ -833,3 +836,81 @@ def test_a_validation_failure_names_the_field(dasface_client, mock_server, dasfa
 
     assert raised.value.errors == [("length", "Number must be between 1 and 6.")]
     assert "length: Number must be between 1 and 6." in str(raised.value)
+
+
+# ---------------------------------------------------------------------------
+# Error paths, provoked against the real service rather than mocked.
+#
+# A mocked error body only proves the client maps a code it was handed. These send input the
+# service genuinely rejects, which is what catches a mapping built on a wrong assumption.
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.dasface
+def test_real_an_image_with_no_face_is_refused_everywhere(real_dasface, real_model, no_face_image_path):
+    """The same input fails the same way on all three endpoints that read a face."""
+    with pytest.raises(FaceNotFoundError):
+        real_dasface.generate_credential(
+            GenerateCredentialInput(image=no_face_image_path, hash=real_model.hash, mode=real_model.mode),
+        )
+
+    with pytest.raises(FaceNotFoundError):
+        real_dasface.verify_photo(VerifyPhotoInput(anchor_image=no_face_image_path, target_image=no_face_image_path))
+
+    with pytest.raises(FaceNotFoundError):
+        real_dasface.check_photo_authenticity(PhotoAuthenticityInput(image=no_face_image_path))
+
+
+@pytest.mark.dasface
+def test_real_an_unknown_mode_is_refused(real_dasface, real_model, face_image_path):
+    """A real model with a mode it does not run in.
+
+    The hash has to be real: the gateway only routes model paths it knows, so a made-up hash
+    never reaches the service to be judged.
+    """
+    with pytest.raises(UnknownHashAndModeError):
+        real_dasface.generate_credential(
+            GenerateCredentialInput(image=face_image_path, hash=real_model.hash, mode="no-such-mode"),
+        )
+
+
+@pytest.mark.dasface
+def test_real_a_video_with_nobody_in_it_is_refused(real_dasface, face_image_path, no_face_video_path):
+    """A video the service cannot use, reported under a name that does not fit.
+
+    The video is one second of flat grey at 25 frames per second, so its frame count and
+    frame rate are both fine and only the missing face is not. The service answers
+    `InvalidNumFramesVideoError` with a null message. Asserted as it behaves, not as it
+    reads; reported in #30.
+    """
+    with pytest.raises(InvalidVideoMetadataError):
+        real_dasface.verify_video(VerifyVideoInput(anchor_image=face_image_path, target_video=no_face_video_path))
+
+
+@pytest.mark.dasface
+def test_real_an_empty_video_is_refused(real_dasface, face_image_path, empty_file_path):
+    with pytest.raises(FormValidationError):
+        real_dasface.verify_video(VerifyVideoInput(anchor_image=face_image_path, target_video=empty_file_path))
+
+
+@pytest.mark.dasface
+def test_real_two_faces_in_one_photo_are_not_refused(real_dasface, real_model, two_people_image_path, face_image_path):
+    """das-Face does not raise `MoreThanOneFaceError`; it picks a face and says nothing.
+
+    This pins down behaviour rather than endorsing it. The specification documents the error
+    for exactly this input, the service does not raise it, and the face it settles on is the
+    one on the right — not the first, and not the caller's choice. A credential comes back
+    for a person the caller never selected.
+
+    Reported as #30. If Veridas changes it, this test fails and we find out from the suite
+    rather than from a user.
+    """
+    credential = real_dasface.generate_credential(
+        GenerateCredentialInput(image=two_people_image_path, hash=real_model.hash, mode=real_model.mode),
+    )
+    assert credential.credential
+
+    against_the_left = real_dasface.verify_photo(
+        VerifyPhotoInput(anchor_image=two_people_image_path, target_image=face_image_path),
+    )
+    assert against_the_left.confidence < 0.1, "the left-hand face is the one it ignored"

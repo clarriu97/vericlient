@@ -121,6 +121,14 @@ def unique_group_name() -> str:
     return f"{GROUP_PREFIX}_{uuid.uuid4().hex[:12]}"
 
 
+def unique_tag() -> str:
+    r"""Return a tag no other run will collide with.
+
+    The service's pattern is `^\w{1,32}:\w{1,32}$`, so neither half may hold a hyphen.
+    """
+    return f"vericlient:{uuid.uuid4().hex[:12]}"
+
+
 class ResourceTracker:
     """Records what a test created so it can be undone in reverse order.
 
@@ -196,6 +204,19 @@ def temp_tag(real_writes, resource_tracker) -> str:
 
 
 @pytest.fixture
+def own_tag(real_writes, resource_tracker) -> str:
+    """Create a tag of this test's own and remove it afterwards.
+
+    Unlike `temp_tag`, which owns the shared `vericlient:test`, this one collides with
+    nothing — including the session-scoped fixture that keeps the shared tag alive.
+    """
+    name = unique_tag()
+    real_writes.create_tags(data_model=CreateTagsInput(tags=[name]))
+    resource_tracker.add("tag", name, lambda: real_writes.delete_tag(DeleteTagInput(name=name)))
+    return name
+
+
+@pytest.fixture
 def temp_group(real_writes, resource_tracker, voice_credential_configuration) -> str:
     """Create a group and remove it afterwards."""
     name = unique_group_name()
@@ -216,6 +237,31 @@ def voice_credential_configuration(vcsp_client, mock_server) -> str:
         return "urn:vcsp:credential_configurations:voice_telephone:v1"
     configurations = vcsp_client.get_credential_configurations().credential_configurations
     return next(c for c in configurations if "voice" in c)
+
+
+@pytest.fixture(scope="session")
+def face_credential_configuration(vcsp_client, mock_server) -> str:
+    """Return a face credential configuration this subscription actually offers.
+
+    The face pipeline rejects a photo on grounds the voice one has no equivalent of, so the
+    error tests need an enrolment that reads a face.
+    """
+    if mock_server:
+        return "urn:vcsp:credential_configurations:face_selfie:v1"
+    configurations = vcsp_client.get_credential_configurations().credential_configurations
+    return next(c for c in configurations if "face" in c)
+
+
+@pytest.fixture
+def real_vcsp(vcsp_client, mock_server):
+    """Skip a test that only makes sense against the real service and creates nothing.
+
+    Separate from `real_writes`: a read-only check is safe against production too, so it does
+    not need the sandbox guard.
+    """
+    if mock_server:
+        pytest.skip("This test exercises real infrastructure")
+    return vcsp_client
 
 
 @pytest.fixture(scope="session")

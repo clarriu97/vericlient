@@ -8,11 +8,28 @@ from tests.vcsp.conftest import SUBJECT_PREFIX, TEST_TAG, unique_group_name
 from vericlient.vcsp.exceptions import (
     AccountNotFoundError,
     AssuranceMethodNotFoundError,
+    AssuranceValidationError,
     ClusteringNotSupportedError,
     CredentialNotFoundError,
+    EmptyFileError,
+    FaceNotFoundError,
+    FaceTooSmallError,
+    GroupAlreadyExistsError,
+    GroupNotFoundError,
+    InsufficientQualityError,
+    InvalidAssuranceError,
+    InvalidAssuranceMethodUrnError,
+    InvalidAudioFormatError,
     InvalidBatchFileError,
+    InvalidCredentialConfigurationUrnError,
+    InvalidSnrError,
+    InvalidTagsError,
+    RequestValidationError,
+    TagAlreadyExistsError,
+    TagListEmptyError,
     TaskNotFoundError,
     UnsupportedMediaTypeError,
+    VoiceDurationIsNotEnoughError,
 )
 from vericlient.vcsp.models import (
     Applicant,
@@ -929,3 +946,233 @@ def test_real_deleting_a_credential_leaves_the_account(real_writes, temp_subject
         real_writes.get_credential(
             data_model=GetCredentialInput(subject_id=subject_id, credential_id=credential_id),
         )
+
+
+# ---------------------------------------------------------------------------
+# Error paths, provoked against the real service rather than mocked.
+#
+# A mocked error body only proves the client maps a code it was handed. These send input the
+# service genuinely rejects. None of them can succeed, so none of them leaves anything behind
+# — which is why they need no resource tracking.
+# ---------------------------------------------------------------------------
+
+
+def _applicant(configuration: str, assurance_method: str, **overrides: object) -> Applicant:
+    """Build an applicant for an enrolment that is meant to fail."""
+    fields = {
+        "subject_id": f"{SUBJECT_PREFIX}-rejected-{uuid.uuid4().hex[:8]}",
+        "credential_configuration_urn": configuration,
+        "assurance_method_urn": assurance_method,
+        "assurance": {"authenticity_threshold": 0.5},
+    }
+    fields.update(overrides)
+    return Applicant(**fields)
+
+
+@pytest.mark.vcsp
+@pytest.mark.parametrize(
+    ("sample_fixture", "expected"),
+    [
+        ("audio_not_enough_speech_file_path", VoiceDurationIsNotEnoughError),
+        ("audio_bad_snr_file_path", InvalidSnrError),
+        ("audio_insufficient_quality_file_path", InsufficientQualityError),
+        ("audio_too_many_channels_file_path", InvalidAudioFormatError),
+        ("audio_invalid_sample_rate_file_path", InvalidAudioFormatError),
+        ("empty_file_path", EmptyFileError),
+    ],
+)
+def test_real_voice_enrollment_rejects_bad_audio(
+    real_writes,
+    request,
+    voice_credential_configuration,
+    enrollment_assurance_method,
+    sample_fixture,
+    expected,
+):
+    """Each way an audio sample can be unusable maps to its own exception.
+
+    Worth separating: a caller can retry a short recording, and cannot do anything about a
+    file that arrived empty.
+    """
+    with pytest.raises(expected):
+        real_writes.enroll_subject(
+            data_model=EnrollmentInput(
+                sample=request.getfixturevalue(sample_fixture),
+                applicant=_applicant(voice_credential_configuration, enrollment_assurance_method),
+            ),
+        )
+
+
+@pytest.mark.vcsp
+def test_real_voice_enrollment_rejects_a_sample_that_is_not_audio(
+    real_writes,
+    voice_credential_configuration,
+    enrollment_assurance_method,
+    face_image_path,
+):
+    """A photo sent where a recording belongs is caught on its media type, before analysis."""
+    with pytest.raises(UnsupportedMediaTypeError):
+        real_writes.enroll_subject(
+            data_model=EnrollmentInput(
+                sample=face_image_path,
+                applicant=_applicant(voice_credential_configuration, enrollment_assurance_method),
+            ),
+        )
+
+
+@pytest.mark.vcsp
+@pytest.mark.parametrize(
+    ("image_fixture", "expected"),
+    [
+        ("no_face_image_path", FaceNotFoundError),
+        ("other_face_image_path", FaceTooSmallError),
+        ("two_people_image_path", AssuranceValidationError),
+    ],
+)
+def test_real_face_enrollment_rejects_bad_photos(
+    real_writes,
+    request,
+    face_credential_configuration,
+    enrollment_assurance_method,
+    image_fixture,
+    expected,
+):
+    """The face pipeline judges a photo on three separate grounds.
+
+    Note the third: VCSP refuses a photo holding two people, where das-Face accepts the same
+    image and quietly picks one of them (#30). The two services do not agree.
+    """
+    with pytest.raises(expected):
+        real_writes.enroll_subject(
+            data_model=EnrollmentInput(
+                sample=request.getfixturevalue(image_fixture),
+                applicant=_applicant(face_credential_configuration, enrollment_assurance_method),
+            ),
+        )
+
+
+@pytest.mark.vcsp
+def test_real_enrollment_rejects_an_unknown_credential_configuration(
+    real_writes,
+    enrollment_assurance_method,
+    audio_file_path,
+):
+    with pytest.raises(InvalidCredentialConfigurationUrnError):
+        real_writes.enroll_subject(
+            data_model=EnrollmentInput(
+                sample=audio_file_path,
+                applicant=_applicant("urn:vcsp:credential_configurations:not_a_real_one:v1", enrollment_assurance_method),
+            ),
+        )
+
+
+@pytest.mark.vcsp
+def test_real_enrollment_rejects_an_unknown_assurance_method(
+    real_writes,
+    voice_credential_configuration,
+    audio_file_path,
+):
+    with pytest.raises(InvalidAssuranceMethodUrnError):
+        real_writes.enroll_subject(
+            data_model=EnrollmentInput(
+                sample=audio_file_path,
+                applicant=_applicant(voice_credential_configuration, "urn:vcsp:assurance_methods:not_a_real_one:v1"),
+            ),
+        )
+
+
+@pytest.mark.vcsp
+@pytest.mark.parametrize("assurance", [{}, {"authenticity_threshold": 5.0}], ids=["empty", "out of range"])
+def test_real_enrollment_rejects_an_assurance_that_does_not_fit_the_method(
+    real_writes,
+    voice_credential_configuration,
+    enrollment_assurance_method,
+    audio_file_path,
+    assurance,
+):
+    """The assurance is validated against the method's own schema, both ways it can miss."""
+    with pytest.raises(InvalidAssuranceError):
+        real_writes.enroll_subject(
+            data_model=EnrollmentInput(
+                sample=audio_file_path,
+                applicant=_applicant(
+                    voice_credential_configuration,
+                    enrollment_assurance_method,
+                    assurance=assurance,
+                ),
+            ),
+        )
+
+
+@pytest.mark.vcsp
+def test_real_enrollment_rejects_a_tag_that_does_not_exist(
+    real_writes,
+    voice_credential_configuration,
+    enrollment_assurance_method,
+    audio_file_path,
+):
+    """A credential can only carry tags the subscription already knows about."""
+    with pytest.raises(InvalidTagsError):
+        real_writes.enroll_subject(
+            data_model=EnrollmentInput(
+                sample=audio_file_path,
+                applicant=_applicant(
+                    voice_credential_configuration,
+                    enrollment_assurance_method,
+                    tags=["vericlient:nosuchtag"],
+                ),
+            ),
+        )
+
+
+@pytest.mark.vcsp
+def test_real_enrollment_rejects_a_tag_that_is_not_shaped_like_a_tag(
+    real_writes,
+    voice_credential_configuration,
+    enrollment_assurance_method,
+    audio_file_path,
+):
+    """A tag is `prefix:value`, and anything else fails validation before it is looked up.
+
+    Different from the test above, and easy to confuse: this one never reaches the tag store.
+    """
+    with pytest.raises(RequestValidationError):
+        real_writes.enroll_subject(
+            data_model=EnrollmentInput(
+                sample=audio_file_path,
+                applicant=_applicant(
+                    voice_credential_configuration,
+                    enrollment_assurance_method,
+                    tags=["no-colon-here"],
+                ),
+            ),
+        )
+
+
+@pytest.mark.vcsp
+def test_real_reading_a_group_that_does_not_exist(real_vcsp):
+    with pytest.raises(GroupNotFoundError):
+        real_vcsp.get_group(data_model=GetGroupInput(name="vericlient_test_no_such_group"))
+
+
+@pytest.mark.vcsp
+def test_real_creating_a_group_twice(real_writes, temp_group, voice_credential_configuration):
+    """The second attempt is refused rather than silently reusing the first."""
+    with pytest.raises(GroupAlreadyExistsError):
+        real_writes.create_group(
+            data_model=CreateGroupInput(name=temp_group, credential_configuration_urn=voice_credential_configuration),
+        )
+
+
+@pytest.mark.vcsp
+def test_real_creating_a_tag_twice(real_writes, own_tag):
+    """Uses a tag of its own: `vericlient:test` is already held by a session fixture."""
+    with pytest.raises(TagAlreadyExistsError):
+        real_writes.create_tags(data_model=CreateTagsInput(tags=[own_tag]))
+
+
+@pytest.mark.vcsp
+def test_real_creating_no_tags_at_all(real_writes):
+    """An empty list is refused rather than treated as a no-op."""
+    with pytest.raises(TagListEmptyError):
+        real_writes.create_tags(data_model=CreateTagsInput(tags=[]))

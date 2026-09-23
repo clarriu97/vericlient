@@ -185,6 +185,70 @@ def audio_file_path() -> str:
 
 
 @pytest.fixture(scope="session")
+def face_image_path() -> str:
+    return "tests/dasface/resources/face.jpg"
+
+
+@pytest.fixture(scope="session")
+def other_face_image_path() -> str:
+    """Return a different person, small enough that the face engines call the face too small."""
+    return "tests/dasface/resources/other_face.png"
+
+
+@pytest.fixture(scope="session")
+def no_face_image_path() -> str:
+    """Return an image the face engines find nothing in: flat grey, no features."""
+    return "tests/dasface/resources/no_face.jpg"
+
+
+@pytest.fixture(scope="session")
+def two_people_image_path() -> str:
+    """Return two different people side by side, each face large enough to be usable.
+
+    Built rather than found, so which person is on which side is known: `face.jpg` on the
+    left, `other_face.png` on the right.
+    """
+    return "tests/dasface/resources/two_people.jpg"
+
+
+@pytest.fixture(scope="session")
+def empty_file_path(tmp_path_factory) -> str:
+    """Return a zero-byte file, written rather than committed.
+
+    Git does not carry an empty file usefully and a reviewer cannot tell one from a mistake,
+    so it is made on the spot.
+    """
+    path = tmp_path_factory.mktemp("empty") / "empty.wav"
+    path.write_bytes(b"")
+    return str(path)
+
+
+@pytest.fixture(scope="session")
+def audio_not_enough_speech_file_path() -> str:
+    return "tests/daspeak/resources/audio_not_enough_speech.wav"
+
+
+@pytest.fixture(scope="session")
+def audio_bad_snr_file_path() -> str:
+    return "tests/daspeak/resources/audio_bad_snr.wav"
+
+
+@pytest.fixture(scope="session")
+def audio_insufficient_quality_file_path() -> str:
+    return "tests/daspeak/resources/audio_insufficient_quality.wav"
+
+
+@pytest.fixture(scope="session")
+def audio_too_many_channels_file_path() -> str:
+    return "tests/daspeak/resources/audio_too_many_channels.wav"
+
+
+@pytest.fixture(scope="session")
+def audio_invalid_sample_rate_file_path() -> str:
+    return "tests/daspeak/resources/audio_invalid_sample_rate.wav"
+
+
+@pytest.fixture(scope="session")
 def audio_file() -> bytes:
     with open("tests/daspeak/resources/audio.wav", "rb") as f:
         return f.read()
