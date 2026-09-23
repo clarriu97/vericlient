@@ -99,4 +99,7 @@ Every setting can also come from the environment. See
 - [Supported endpoints](supported_endpoints.md) — what is covered, per API
 - [Configuration](api_docs/vericlient.md) — targets, environments and settings
 - [Error handling](errors.md) — the exception tree
-- [das-Peak usage](api_docs/daspeak/client_usage.md) and [VCSP usage](api_docs/vcsp/client_usage.md)
+- Usage, per client: [das-Peak](api_docs/daspeak/client_usage.md),
+  [VCSP](api_docs/vcsp/client_usage.md) and [das-Face](api_docs/dasface/client_usage.md)
+- Runnable examples in [`scripts/`](https://github.com/clarriu97/vericlient/tree/master/scripts),
+  one per client, covering every endpoint it supports

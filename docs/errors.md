@@ -111,7 +111,5 @@ extension for a path and from the magic bytes for a bytes object. Where the gues
 wrong, set it explicitly:
 
 ```python
-from vericlient.vcsp.models import EnrollmentInput
-
-EnrollmentInput(sample=raw_bytes, applicant=applicant, content_type="audio/wav")
+client.enroll_subject(sample=raw_bytes, applicant=applicant, content_type="audio/wav")
 ```
