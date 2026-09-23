@@ -76,6 +76,40 @@ from vericlient import DaspeakClient
 client = DaspeakClient(apikey="your_api_key")
 ```
 
+### Self-hosted deployments
+
+Give the client a `url` and it skips the cloud entirely:
+
+```python
+from vericlient import DaspeakClient
+
+client = DaspeakClient(url="https://veridas.internal.example.com/daspeak/v1")
+```
+
+Two things work differently from the cloud, both on purpose.
+
+**The URL is used exactly as given**, service path included. For the cloud the client builds
+it, because the environment and the location determine where the service lives. For a
+self-hosted deployment only you know that, so nothing is appended.
+
+**The `apikey` is ignored.** It is the Veridas cloud's authentication scheme, and a deployment
+you run yourself has whatever you put in front of it instead. That is what `headers` is for:
+
+```python
+client = DaspeakClient(
+    url="https://veridas.internal.example.com/daspeak/v1",
+    headers={"Authorization": "Bearer your-token", "X-Tenant": "acme"},
+)
+```
+
+Anything in `headers` is sent with every request. It is not limited to authentication, and it
+is not limited to self-hosted deployments — a cloud client can carry its own headers too, for
+tracing or routing, alongside the apikey:
+
+```python
+client = DaspeakClient(apikey="your_api_key", headers={"X-Request-Id": "abc123"})
+```
+
 ### Environment variables
 
 | Variable | Sets | Default |
