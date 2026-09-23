@@ -63,20 +63,9 @@ def real_model(real_dasface):
 
 
 @pytest.fixture(scope="session")
-def face_image_path() -> str:
-    return "tests/dasface/resources/face.jpg"
-
-
-@pytest.fixture(scope="session")
 def face_image(face_image_path) -> bytes:
     with open(face_image_path, "rb") as f:
         return f.read()
-
-
-@pytest.fixture(scope="session")
-def other_face_image_path() -> str:
-    """Return a different person, small enough that the authenticity analysis rejects it."""
-    return "tests/dasface/resources/other_face.png"
 
 
 @pytest.fixture(scope="session")
@@ -88,6 +77,12 @@ def other_face_image(other_face_image_path) -> bytes:
 @pytest.fixture(scope="session")
 def face_video_path() -> str:
     return "tests/dasface/resources/face_video.mp4"
+
+
+@pytest.fixture(scope="session")
+def no_face_video_path() -> str:
+    """Return a video of flat grey: right length, right frame rate, nobody in it."""
+    return "tests/dasface/resources/no_face_video.mp4"
 
 
 @pytest.fixture(scope="session")
