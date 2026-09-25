@@ -5,6 +5,19 @@ The project follows [semantic versioning](https://semver.org/).
 
 ## Unreleased
 
+### Fixed
+
+- **The Supported endpoints page was stale in two places.** Its summary still read `10 / 11`
+  for das-Face after the eleventh endpoint landed, contradicting its own section below, and
+  the das-Peak table still showed `compare(CompareCredential2AudioInput)` for five endpoints
+  after 0.5.0 split `compare` into five named methods. A test now checks the page's client
+  column against the clients themselves, so a rename cannot leave it behind again.
+
+### Documentation
+
+- The endpoint summary distinguishes the **documentation version** from the **API version**:
+  das-Face product 3.35 serves API `v2`, which is why the client calls `dasface/v2`.
+
 ## [0.5.0] — 2026-09-25
 
 Calling the clients no longer starts with an import. Every method takes its arguments

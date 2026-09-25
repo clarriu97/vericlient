@@ -3,11 +3,21 @@
 What the client covers today, checked endpoint by endpoint against the official OpenAPI
 specifications rather than against memory.
 
-| API | Specification | Covered |
-|---|---|---|
-| das-Peak | [v2.33](https://docs.veridas.com/das-peak/cloud/v2.33/api/definition/) | **11 / 11** |
-| VCSP | [v1.17](https://docs.veridas.com/vcsp_echo/cloud/v1.17/api/definition/) | **31 / 31** |
-| das-Face | [v2](https://docs.veridas.com/das-face/cloud/v3.35/api/definition/) | **10 / 11** |
+| API | Documentation | API version | Covered |
+|---|---|---|---|
+| das-Peak | [v2.33](https://docs.veridas.com/das-peak/cloud/v2.33/api/definition/) | `v1` | **11 / 11** |
+| VCSP | [v1.17](https://docs.veridas.com/vcsp_echo/cloud/v1.17/api/definition/) | `v1` | **31 / 31** |
+| das-Face | [v3.35](https://docs.veridas.com/das-face/cloud/v3.35/api/definition/) | `v2` | **11 / 11**, plus 2 † |
+
+!!! note "Two version numbers, and they are not the same thing"
+
+    The version in a documentation URL is the **product release**; the API is versioned
+    separately and appears in the request path. das-Face product 3.35 serves API `v2`, which
+    is why the client calls `dasface/v2`. das-Peak product 2.33 serves `v1`, and so does VCSP
+    1.17.
+
+    † das-Face also covers the two liveness challenge endpoints, which the v3.35
+    specification dropped while the service kept answering. See the section below.
 
 ---
 
@@ -23,11 +33,11 @@ Fully covered.
 | `POST /v1/models/calibration` | `get_model_calibrations()` |
 | `POST /v1/models/metadata/from-credential` | `get_model_metadata_from_credential()` |
 | `POST /v1/models/{hash}/credential/wav` | `generate_credential()` |
-| `POST /v1/similarity/credential2credential` | `compare(CompareCredential2CredentialInput)` |
-| `POST /v1/similarity/credential2wav` | `compare(CompareCredential2AudioInput)` |
-| `POST /v1/similarity/wav2wav` | `compare(CompareAudio2AudioInput)` |
-| `POST /v1/identification/wav2credentials` | `compare(CompareAudio2CredentialsInput)` |
-| `POST /v1/identification/credential2credentials` | `compare(CompareCredential2CredentialsInput)` |
+| `POST /v1/similarity/credential2credential` | `compare_credential_to_credential()` |
+| `POST /v1/similarity/credential2wav` | `compare_credential_to_audio()` |
+| `POST /v1/similarity/wav2wav` | `compare_audio_to_audio()` |
+| `POST /v1/identification/wav2credentials` | `identify_audio()` |
+| `POST /v1/identification/credential2credentials` | `identify_credential()` |
 
 ## VCSP
 
@@ -56,9 +66,9 @@ Fully covered.
 | `POST /v1/groups/{group_name}/clustering` | `start_clustering()` |
 | `POST /v1/matchings` | `match()` |
 | `GET /v1/credential_configurations` | `get_credential_configurations()` |
-| `GET /v1/credential_configurations/{urn}` | `get_credential_configuration()` |
+| `GET /v1/credential_configurations/{credential_configuration_urn}` | `get_credential_configuration()` |
 | `GET /v1/assurance_methods` | `get_assurance_methods()` |
-| `GET /v1/assurance_methods/{urn}` | `get_assurance_method_info()` |
+| `GET /v1/assurance_methods/{assurance_method_urn}` | `get_assurance_method_info()` |
 | `POST /v1/tags` | `create_tags()` |
 | `GET /v1/tags` | `get_tags()` |
 | `DELETE /v1/tags/{tag_name}` | `delete_tag()` |
