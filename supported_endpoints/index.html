@@ -1028,7 +1028,8 @@ specifications rather than against memory.</p>
 <thead>
 <tr>
 <th>API</th>
-<th>Specification</th>
+<th>Documentation</th>
+<th>API version</th>
 <th>Covered</th>
 </tr>
 </thead>
@@ -1036,20 +1037,32 @@ specifications rather than against memory.</p>
 <tr>
 <td>das-Peak</td>
 <td><a href="https://docs.veridas.com/das-peak/cloud/v2.33/api/definition/">v2.33</a></td>
+<td><code>v1</code></td>
 <td><strong>11 / 11</strong></td>
 </tr>
 <tr>
 <td>VCSP</td>
 <td><a href="https://docs.veridas.com/vcsp_echo/cloud/v1.17/api/definition/">v1.17</a></td>
+<td><code>v1</code></td>
 <td><strong>31 / 31</strong></td>
 </tr>
 <tr>
 <td>das-Face</td>
-<td><a href="https://docs.veridas.com/das-face/cloud/v3.35/api/definition/">v2</a></td>
-<td><strong>10 / 11</strong></td>
+<td><a href="https://docs.veridas.com/das-face/cloud/v3.35/api/definition/">v3.35</a></td>
+<td><code>v2</code></td>
+<td><strong>11 / 11</strong>, plus 2 †</td>
 </tr>
 </tbody>
 </table>
+<div class="admonition note">
+<p class="admonition-title">Two version numbers, and they are not the same thing</p>
+<p>The version in a documentation URL is the <strong>product release</strong>; the API is versioned
+separately and appears in the request path. das-Face product 3.35 serves API <code>v2</code>, which
+is why the client calls <code>dasface/v2</code>. das-Peak product 2.33 serves <code>v1</code>, and so does VCSP
+1.17.</p>
+<p>† das-Face also covers the two liveness challenge endpoints, which the v3.35
+specification dropped while the service kept answering. See the section below.</p>
+</div>
 <hr />
 <h2 id="das-peak">das-Peak<a class="headerlink" href="#das-peak" title="Link to this section">&para;</a></h2>
 <p>Fully covered.</p>
@@ -1087,23 +1100,23 @@ specifications rather than against memory.</p>
 </tr>
 <tr>
 <td><code>POST /v1/similarity/credential2credential</code></td>
-<td><code>compare(CompareCredential2CredentialInput)</code></td>
+<td><code>compare_credential_to_credential()</code></td>
 </tr>
 <tr>
 <td><code>POST /v1/similarity/credential2wav</code></td>
-<td><code>compare(CompareCredential2AudioInput)</code></td>
+<td><code>compare_credential_to_audio()</code></td>
 </tr>
 <tr>
 <td><code>POST /v1/similarity/wav2wav</code></td>
-<td><code>compare(CompareAudio2AudioInput)</code></td>
+<td><code>compare_audio_to_audio()</code></td>
 </tr>
 <tr>
 <td><code>POST /v1/identification/wav2credentials</code></td>
-<td><code>compare(CompareAudio2CredentialsInput)</code></td>
+<td><code>identify_audio()</code></td>
 </tr>
 <tr>
 <td><code>POST /v1/identification/credential2credentials</code></td>
-<td><code>compare(CompareCredential2CredentialsInput)</code></td>
+<td><code>identify_credential()</code></td>
 </tr>
 </tbody>
 </table>
@@ -1202,7 +1215,7 @@ specifications rather than against memory.</p>
 <td><code>get_credential_configurations()</code></td>
 </tr>
 <tr>
-<td><code>GET /v1/credential_configurations/{urn}</code></td>
+<td><code>GET /v1/credential_configurations/{credential_configuration_urn}</code></td>
 <td><code>get_credential_configuration()</code></td>
 </tr>
 <tr>
@@ -1210,7 +1223,7 @@ specifications rather than against memory.</p>
 <td><code>get_assurance_methods()</code></td>
 </tr>
 <tr>
-<td><code>GET /v1/assurance_methods/{urn}</code></td>
+<td><code>GET /v1/assurance_methods/{assurance_method_urn}</code></td>
 <td><code>get_assurance_method_info()</code></td>
 </tr>
 <tr>
