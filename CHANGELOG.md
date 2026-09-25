@@ -5,6 +5,11 @@ The project follows [semantic versioning](https://semver.org/).
 
 ## Unreleased
 
+## [0.5.0] — 2026-09-25
+
+Calling the clients no longer starts with an import. Every method takes its arguments
+directly, and the pydantic models stay where they belong — inside.
+
 ### Changed
 
 - **Every client method takes its arguments directly.** `client.verify_photo(anchor_image=a,
@@ -35,8 +40,6 @@ The project follows [semantic versioning](https://semver.org/).
   deprecated, and were never executed by anything, so nothing caught it. All three now
   default to the repository's own test media and were run end to end against `work`/`eu`.
   das-Face gained the script it never had, and the README and the quickstart link to them.
-
-
 - **Self-hosted deployments have a page section of their own.** `headers` was always
   accepted and never documented, which mattered because the apikey is the Veridas cloud's
   authentication scheme and does not apply to a deployment you run yourself — `headers` is
@@ -216,6 +219,7 @@ everything else is built on:
 - The `Environments` and `Locations` enums for cloud targets, and a `url` argument for
   self-hosted deployments
 
+[0.5.0]: https://github.com/clarriu97/vericlient/releases/tag/v0.5.0
 [0.4.0]: https://github.com/clarriu97/vericlient/releases/tag/v0.4.0
 [0.3.0]: https://github.com/clarriu97/vericlient/releases/tag/v0.3.0
 [0.2.0]: https://github.com/clarriu97/vericlient/releases/tag/v0.2.0
